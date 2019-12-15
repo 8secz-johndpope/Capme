@@ -13,6 +13,7 @@ import Parse
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     /* COMPLETE */
+    // Registration
     
     /* IN PROGRESS */
     
