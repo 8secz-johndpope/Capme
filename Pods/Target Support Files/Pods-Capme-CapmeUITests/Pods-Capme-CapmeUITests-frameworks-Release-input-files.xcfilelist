@@ -1,0 +1,6 @@
+${PODS_ROOT}/Target Support Files/Pods-Capme-CapmeUITests/Pods-Capme-CapmeUITests-frameworks.sh
+${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework
+${BUILT_PRODUCTS_DIR}/DropDown/DropDown.framework
+${BUILT_PRODUCTS_DIR}/Parse/Parse.framework
+${BUILT_PRODUCTS_DIR}/SCLAlertView/SCLAlertView.framework
+${BUILT_PRODUCTS_DIR}/SimpleAnimation/SimpleAnimation.framework

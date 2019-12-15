@@ -1,0 +1,6 @@
+framework module Pods_Capme {
+  umbrella header "Pods-Capme-umbrella.h"
+
+  export *
+  module * { export * }
+}

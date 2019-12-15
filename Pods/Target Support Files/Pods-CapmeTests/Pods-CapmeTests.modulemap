@@ -1,0 +1,6 @@
+framework module Pods_CapmeTests {
+  umbrella header "Pods-CapmeTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
