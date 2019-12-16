@@ -36,7 +36,8 @@ class FriendRequest {
                         if sender.objectId == PFUser.current()!.objectId! {
                             request.sender = User(user: PFUser.current()!, image: DataModel.profilePic)
                             if let recipient = object["recipient"] as? PFUser {
-                                if let image = recipient["profilePic"] as? PFFileObject {
+                                print(recipient)
+                                if let image = recipient.object(forKey: "profilePic") as? PFFileObject {
                                     image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                         if error == nil  {
                                             if let finalimage = UIImage(data: imageData!) {
@@ -60,7 +61,7 @@ class FriendRequest {
                             }
                         } else {
                             request.reciever = User(user: PFUser.current()!, image: DataModel.profilePic)
-                            if let image = sender["profilePic"] as? PFFileObject {
+                            if let image = sender.object(forKey: "profilePic") as? PFFileObject {
                                 image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                     if error == nil  {
                                         if let finalimage = UIImage(data: imageData!) {

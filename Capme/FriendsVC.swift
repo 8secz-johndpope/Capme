@@ -26,16 +26,25 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     var sentRequests = [User]()
     var recievedRequests = [User]()
     
-    
     var users = [User]()
     var filteredUsers = [User]()
     var segmentedTitles = ["Friends", "Search"]
     
+    var restrictedIds = [String]()
+    
     override func viewDidLoad() {
         setupUI()
+        self.queryUsers()
     }
     
     func setupUI() {
+        
+        // Cannot Friend these object ids
+        restrictedIds = self.friends.map { $0.objectId! }
+        print("sent", self.sentRequests.map { $0.objectId! })
+        print("recieved", self.recievedRequests.map { $0.objectId! })
+        restrictedIds.append(contentsOf: self.sentRequests.map { $0.objectId! })
+        restrictedIds.append(contentsOf: self.recievedRequests.map { $0.objectId! })
         
         segmentControl.delegate = self
         // Hide the navigation bar line
@@ -59,43 +68,19 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         // Table View
         self.tableView.delegate = self
         self.tableView.dataSource = self
-        
+    }
+    
+    func queryUsers() {
         let query = PFQuery(className: "_User")
         query.whereKey("objectId", notEqualTo: PFUser.current()!.objectId!)
         let userRef = User()
         userRef.getUsers(query: query) { (queriedUsers) in
-            self.users = queriedUsers
-            print(self.users)
-            self.tableView.reloadData()
-        }
-    }
-    
-    func queryFriends() {
-        var predicates: [NSPredicate] = []
-        predicates.append(NSPredicate(format: "recipient = %@", PFUser.current()!))
-        predicates.append(NSPredicate(format: "sender = %@", PFUser.current()!))
-        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-        
-        let query = PFQuery(className: "FriendRequest", predicate: predicate)
-        query.whereKey("recipient", equalTo: PFUser.current()!.objectId!)
-        let requestRef = FriendRequest()
-        requestRef.getRequests(query: query) { (queriedRequests) in
-            for request in queriedRequests {
-                if request.status == "accepted" {
-                    if request.reciever === PFUser.current()! {
-                        self.friends.append(request.sender)
-                    } else if request.sender === PFUser.current()! {
-                        self.friends.append(request.reciever)
-                    }
-                } else if request.status == "pending" {
-                    if request.reciever === PFUser.current()! {
-                        self.recievedRequests.append(request.sender)
-                    } else if request.sender === PFUser.current()! {
-                        self.sentRequests.append(request.reciever)
-                    }
+            for user in queriedUsers {
+                if !self.restrictedIds.contains(user.objectId) {
+                    self.users.append(user)
+                    self.tableView.reloadData()
                 }
             }
-            self.tableView.reloadData()
         }
     }
     
@@ -104,8 +89,12 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         var customUser = User()
         if searchController.searchBar.isHidden {
             customUser = self.friends[indexPath.row]
+            cell.addFriendOutlet.isHidden = true
+            cell.addFriendLabel.isHidden = true
         } else {
             customUser = self.users[indexPath.row]
+            cell.addFriendOutlet.isHidden = false
+            cell.addFriendLabel.isHidden = false
         }
         cell.addFriendOutlet.layer.cornerRadius = 8
         cell.addFriendOutlet.layer.masksToBounds = true

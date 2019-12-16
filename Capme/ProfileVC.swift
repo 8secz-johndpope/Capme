@@ -19,7 +19,11 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBOutlet weak var shadowLabel: UILabel!
     
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
-    var collectionViewCounts = [100, 100, 0]
+    var collectionViewCounts = ["---", "---", "---"]
+    
+    var friends = [User]()
+    var sentRequests = [User]()
+    var recievedRequests = [User]()
     
     @IBAction func logoutAction(_ sender: Any) {
         let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
@@ -35,6 +39,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     override func viewDidLoad() {
         setupUI()
+        self.queryFriends()
     }
     
     func setupUI() {
@@ -72,6 +77,42 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         self.profilePicImageView.layer.masksToBounds = true
     }
     
+    func queryFriends() {
+        var predicates: [NSPredicate] = []
+        predicates.append(NSPredicate(format: "recipient = %@", PFUser.current()!))
+        predicates.append(NSPredicate(format: "sender = %@", PFUser.current()!))
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+        
+        let query = PFQuery(className: "FriendRequest", predicate: predicate)
+        query.includeKey("recipient")
+        query.includeKey("sender")
+        let requestRef = FriendRequest()
+        requestRef.getRequests(query: query) { (queriedRequests) in
+            print("Recieved this many requests:", queriedRequests.count)
+            for request in queriedRequests {
+                if request.status == "accepted" {
+                    if request.reciever.objectId == PFUser.current()!.objectId {
+                        print("in here!1")
+                        self.friends.append(request.sender)
+                    } else if request.sender.objectId == PFUser.current()!.objectId {
+                        self.friends.append(request.reciever)
+                        print("in here!2")
+                    }
+                } else if request.status == "pending" {
+                    if request.reciever.objectId == PFUser.current()!.objectId! {
+                        self.recievedRequests.append(request.sender)
+                    } else if request.sender.objectId == PFUser.current()!.objectId! {
+                        self.sentRequests.append(request.reciever)
+                    }
+                }
+                if request === queriedRequests.last {
+                    self.collectionViewCounts[2] = String(describing: self.friends.count)
+                    self.collectionView.reloadData()
+                }
+            }
+        }
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.collectionViewTitles.count
     }
@@ -83,7 +124,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         cell.isUserInteractionEnabled = true
         cell.addGestureRecognizer(tapGestureRecognizer)
         cell.titleLabel.text = collectionViewTitles[indexPath.row]
-        cell.countLabel.text = "100"
+        cell.countLabel.text = String(describing: collectionViewCounts[indexPath.row])
         return cell
     }
     
@@ -140,6 +181,18 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     func friendsSelected(count: Int) {
         self.performSegue(withIdentifier: "showFriends", sender: nil)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showFriends" {
+            let targetVC = segue.destination as! FriendsVC
+            targetVC.friends = self.friends
+            targetVC.sentRequests = self.sentRequests
+            targetVC.recievedRequests = self.recievedRequests
+            print(self.friends, "friends")
+            print(self.sentRequests, "sent requests")
+            print(self.recievedRequests, "recieved requests")
+        }
     }
     
     

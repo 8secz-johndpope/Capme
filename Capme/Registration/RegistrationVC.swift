@@ -124,6 +124,8 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
             user.signUpInBackground(block: { (success, error) in
                 if success {
                     print("Success: Registered User \(user.username!)")
+                    self.usernameTextField.text = ""
+                    self.passwordTextField.text = ""
                     //self.setupAdminStatus()
                     self.performSegue(withIdentifier: "showTabBar", sender: nil)
                 } else {

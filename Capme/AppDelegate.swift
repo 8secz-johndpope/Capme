@@ -14,12 +14,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     /* COMPLETE */
     // Registration
+    // Friends and search friends tableviews side by side
     
     /* IN PROGRESS */
+    // Select friends' profiles
+    // Filter friends by username
     
     /* BACK LOG */
-    // Friends and search friends tableviews side by side
-
+    // Friends (Search) shrink tableview to be the height of the keyboard
+    // Change the settings alert view tint color
+    
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.

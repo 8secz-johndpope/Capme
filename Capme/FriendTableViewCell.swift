@@ -15,6 +15,7 @@ class FriendTableViewCell: UITableViewCell {
     @IBOutlet weak var profilePicImageView: UIImageView!
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var addFriendOutlet: UIButton!
+    @IBOutlet weak var addFriendLabel: UILabel!
     
     @IBAction func addFriendAction(_ sender: Any) {
         print("adding friend")
