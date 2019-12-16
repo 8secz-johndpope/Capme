@@ -8,11 +8,14 @@
 
 import Foundation
 import UIKit
+import Parse
 
 class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     
     @IBOutlet weak var tableView: UITableView!
+    
+    
     
     override func viewDidLoad() {
         setupUI()
@@ -21,6 +24,17 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func setupUI() {
         self.tableView.delegate = self
         self.tableView.dataSource = self
+        self.queryFriendRequests()
+    }
+    
+    func queryFriendRequests() {
+        let query = PFQuery(className: "FriendRequest")
+        query.whereKey("recipient", equalTo: PFUser.current()!.objectId!)
+        query.whereKey("status", equalTo: "pending")
+        let userRef = User()
+        userRef.getUsers(query: query) { (userRequests) in
+            
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

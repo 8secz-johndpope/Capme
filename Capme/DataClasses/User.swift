@@ -15,9 +15,25 @@ class User {
     
     var objectId: String!
     var username: String!
+    
     var profilePic: UIImage?
     
+    var requestSender: PFUser?
+    var requestReciever: PFUser?
+    
     var users = [User]()
+    
+    init() {
+        self.objectId = ""
+        self.username = ""
+        self.profilePic = UIImage()
+    }
+    
+    init(user: PFUser, image: UIImage) {
+        self.objectId = user.objectId!
+        self.username = user.username!
+        self.profilePic = image
+    }
     
     func getUsers(query: PFQuery<PFObject>, completion: @escaping (_ result: [User])->()) {
         query.findObjectsInBackground {
@@ -37,6 +53,7 @@ class User {
                             if error == nil  {
                                 if let finalimage = UIImage(data: imageData!) {
                                     let user = User()
+                                    
                                     user.username = object.username!
                                     user.objectId = object.objectId!
                                     user.profilePic = finalimage

@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import Parse
 
 class FriendTableViewCell: UITableViewCell {
     
@@ -18,7 +19,17 @@ class FriendTableViewCell: UITableViewCell {
     @IBAction func addFriendAction(_ sender: Any) {
         print("adding friend")
         if let addFriendButton = sender as? UIButton {
-            print(addFriendOutlet.accessibilityLabel)
+            print(addFriendButton.accessibilityLabel!)
+            let Request = PFObject(className: "FriendRequest")
+            Request["sender"] = PFUser.current()
+            Request["recipient"] = PFUser(withoutDataWithObjectId: addFriendButton.accessibilityLabel!)
+            Request["status"] = "pending"
+            Request.saveInBackground { (success, error) in
+                if error == nil {
+                    print("Success: Saved the new friend request")
+                    self.addFriendOutlet.setTitle("Pending...", for: .normal)
+                }
+            }
         }
     }
     

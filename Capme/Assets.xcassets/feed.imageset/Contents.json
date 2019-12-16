@@ -2,17 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "icons8-scroll-96.png",
+      "filename" : "icons8-scroll-48-2.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "icons8-scroll-97.png",
+      "filename" : "icons8-scroll-48-3.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "icons8-scroll-98.png",
+      "filename" : "icons8-scroll-48-4.png",
       "scale" : "3x"
     }
   ],

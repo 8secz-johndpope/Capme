@@ -69,6 +69,16 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         if PFUser.current() != nil {
+            if let image = PFUser.current()!["profilePic"] as? PFFileObject {
+                image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                    if error == nil  {
+                        if let finalimage = UIImage(data: imageData!) {
+                            DataModel.profilePic = finalimage
+                        }
+                        self.performSegue(withIdentifier: "showTabBar", sender: nil)
+                    }
+                }
+            }
         }
     }
     

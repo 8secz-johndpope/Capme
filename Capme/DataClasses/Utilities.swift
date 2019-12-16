@@ -22,6 +22,12 @@ extension UIViewController {
     }
 }
 
+extension UINavigationController {
+    func hideLine() {
+        navigationBar.shadowImage = UIImage()
+    }
+}
+
 extension String {
     func convertStringToInt() -> Int {
         return Int(Double(self) ?? 0.0)

@@ -18,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /* IN PROGRESS */
     
     /* BACK LOG */
+    // Friends and search friends tableviews side by side
 
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {

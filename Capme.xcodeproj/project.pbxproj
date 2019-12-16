@@ -25,6 +25,8 @@
 		8C14B9C323A5CFC800C4FA58 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9C223A5CFC800C4FA58 /* User.swift */; };
 		8C14B9C523A5DAA700C4FA58 /* FriendsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9C423A5DAA700C4FA58 /* FriendsVC.swift */; };
 		8C14B9C723A5FF6700C4FA58 /* FriendTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9C623A5FF6700C4FA58 /* FriendTableViewCell.swift */; };
+		8C9029B323A7194B00CA465D /* SlidingSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */; };
+		8C9029B523A74D6F00CA465D /* FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9029B423A74D6F00CA465D /* FriendRequest.swift */; };
 		D313CA4DD3B4B19E65D831D2 /* Pods_Capme_CapmeUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C682F27F8DB13310B9A9A13B /* Pods_Capme_CapmeUITests.framework */; };
 		F20F698B786CD5A31B89ACAE /* Pods_CapmeTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEF6FD687CAA7AEF3AE37EAF /* Pods_CapmeTests.framework */; };
 		FFC4F5C58537C5E2F2233F44 /* Pods_Capme.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 663D93E4504B6F8D1C68F8FF /* Pods_Capme.framework */; };
@@ -74,6 +76,8 @@
 		8C14B9C223A5CFC800C4FA58 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		8C14B9C423A5DAA700C4FA58 /* FriendsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsVC.swift; sourceTree = "<group>"; };
 		8C14B9C623A5FF6700C4FA58 /* FriendTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendTableViewCell.swift; sourceTree = "<group>"; };
+		8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlidingSegmentedControl.swift; sourceTree = "<group>"; };
+		8C9029B423A74D6F00CA465D /* FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequest.swift; sourceTree = "<group>"; };
 		919ED97A427637D1B68F5761 /* Pods-CapmeTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CapmeTests.release.xcconfig"; path = "Target Support Files/Pods-CapmeTests/Pods-CapmeTests.release.xcconfig"; sourceTree = "<group>"; };
 		BCF4157331C7ABA7E6C4DE8B /* Pods-Capme-CapmeUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Capme-CapmeUITests.debug.xcconfig"; path = "Target Support Files/Pods-Capme-CapmeUITests/Pods-Capme-CapmeUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		C682F27F8DB13310B9A9A13B /* Pods_Capme_CapmeUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Capme_CapmeUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -143,7 +147,7 @@
 				8C14B9C623A5FF6700C4FA58 /* FriendTableViewCell.swift */,
 				8C14B9BA23A5ADA800C4FA58 /* ProfileVC.swift */,
 				8C14B9C423A5DAA700C4FA58 /* FriendsVC.swift */,
-				8C14B9C223A5CFC800C4FA58 /* User.swift */,
+				8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */,
 				8C14B9C023A5BC6C00C4FA58 /* ProfileCollectionViewCell.swift */,
 				8C14B98423A5966200C4FA58 /* SceneDelegate.swift */,
 				8C14B9B723A5A89200C4FA58 /* Registration */,
@@ -176,6 +180,8 @@
 		8C14B9B623A5A88600C4FA58 /* DataClasses */ = {
 			isa = PBXGroup;
 			children = (
+				8C14B9C223A5CFC800C4FA58 /* User.swift */,
+				8C9029B423A74D6F00CA465D /* FriendRequest.swift */,
 				8C14B9B223A59F0F00C4FA58 /* Utilities.swift */,
 				8C14B9B423A59F1E00C4FA58 /* DataModel.swift */,
 			);
@@ -464,8 +470,10 @@
 				8C14B9BD23A5B0B800C4FA58 /* MessagesVC.swift in Sources */,
 				8C14B98323A5966200C4FA58 /* AppDelegate.swift in Sources */,
 				8C14B9B323A59F0F00C4FA58 /* Utilities.swift in Sources */,
+				8C9029B523A74D6F00CA465D /* FriendRequest.swift in Sources */,
 				8C14B98523A5966200C4FA58 /* SceneDelegate.swift in Sources */,
 				8C14B9C323A5CFC800C4FA58 /* User.swift in Sources */,
+				8C9029B323A7194B00CA465D /* SlidingSegmentedControl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
