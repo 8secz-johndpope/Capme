@@ -18,6 +18,7 @@ class FriendTableViewCell: UITableViewCell {
     @IBOutlet weak var addFriendLabel: UILabel!
     
     @IBAction func addFriendAction(_ sender: Any) {
+        self.addFriendLabel.text = "Sent ✓"
         print("adding friend")
         if let addFriendButton = sender as? UIButton {
             print(addFriendButton.accessibilityLabel!)

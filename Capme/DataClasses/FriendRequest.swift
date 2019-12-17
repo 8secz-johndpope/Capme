@@ -15,6 +15,7 @@ class FriendRequest {
     var status: String!
     var sender: User!
     var reciever: User!
+    var objectId: String!
     
     var requests = [FriendRequest]()
     

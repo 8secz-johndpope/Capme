@@ -16,6 +16,7 @@ class User {
     var objectId: String!
     var username: String!
     
+    var requestId: String?
     var profilePic: UIImage?
     
     var requestSender: PFUser?

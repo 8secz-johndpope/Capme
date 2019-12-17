@@ -25,12 +25,14 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     var sentRequests = [User]()
     var recievedRequests = [User]()
     
+    var selectedUser = User()
+    var fromSelectedUser = false
+    
     @IBAction func logoutAction(_ sender: Any) {
         let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
         let alert = SCLAlertView(appearance: appearance)
         alert.addButton("Confirm") {
             PFUser.logOut()
-            //self.performSegue(withIdentifier: "unwindProfileToRegistration", sender: nil)
             self.performSegue(withIdentifier: "profileUnwind", sender: nil)
         }
         alert.showInfo("Notice", subTitle: "Are you sure you want to log out?")
@@ -48,10 +50,16 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
         profilePicImageView.isUserInteractionEnabled = true
         profilePicImageView.addGestureRecognizer(tapGestureRecognizer)
-        if DataModel.profilePic != UIImage() {
-            self.profilePicImageView.image = DataModel.profilePic
+        if self.fromSelectedUser {
+            self.profilePicImageView.image = self.selectedUser.profilePic
+            self.usernameLabel.text = self.selectedUser.username
         } else {
-            self.profilePicImageView.image = UIImage(named: "defaultProfilePic")
+            self.usernameLabel.text = PFUser.current()?.username!
+            if DataModel.profilePic != UIImage() {
+                self.profilePicImageView.image = DataModel.profilePic
+            } else {
+                self.profilePicImageView.image = UIImage(named: "defaultProfilePic")
+            }
         }
         
         // Collection View
@@ -70,7 +78,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         shadowLabel.layer.shadowOffset = .zero
         shadowLabel.layer.shadowOpacity = 0.8
         
-        self.usernameLabel.text = PFUser.current()?.username!
+        
         self.profilePicImageView.layer.borderWidth = 3.0
         self.profilePicImageView.layer.borderColor = UIColor.white.cgColor
         self.profilePicImageView.layer.cornerRadius = self.profilePicImageView.frame.height/2
@@ -92,14 +100,13 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             for request in queriedRequests {
                 if request.status == "accepted" {
                     if request.reciever.objectId == PFUser.current()!.objectId {
-                        print("in here!1")
                         self.friends.append(request.sender)
                     } else if request.sender.objectId == PFUser.current()!.objectId {
                         self.friends.append(request.reciever)
-                        print("in here!2")
                     }
                 } else if request.status == "pending" {
                     if request.reciever.objectId == PFUser.current()!.objectId! {
+                        request.sender.requestId = request.objectId
                         self.recievedRequests.append(request.sender)
                     } else if request.sender.objectId == PFUser.current()!.objectId! {
                         self.sentRequests.append(request.reciever)
@@ -180,7 +187,10 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     }
     
     func friendsSelected(count: Int) {
-        self.performSegue(withIdentifier: "showFriends", sender: nil)
+        // TODO determine if we will show friends of other users
+        if !fromSelectedUser {
+            self.performSegue(withIdentifier: "showFriends", sender: nil)
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

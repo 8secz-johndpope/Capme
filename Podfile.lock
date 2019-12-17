@@ -1,34 +1,42 @@
 PODS:
   - Bolts/Tasks (1.9.0)
   - DropDown (2.3.13)
+  - FloatingPanel (1.7.1)
   - Parse (1.17.3):
     - Parse/Core (= 1.17.3)
   - Parse/Core (1.17.3):
     - Bolts/Tasks (~> 1.9)
   - SCLAlertView (0.8)
   - SimpleAnimation (0.4.2)
+  - WLEmptyState (3.1.0)
 
 DEPENDENCIES:
   - DropDown
+  - FloatingPanel
   - Parse
   - SCLAlertView
   - SimpleAnimation
+  - WLEmptyState
 
 SPEC REPOS:
   trunk:
     - Bolts
     - DropDown
+    - FloatingPanel
     - Parse
     - SCLAlertView
     - SimpleAnimation
+    - WLEmptyState
 
 SPEC CHECKSUMS:
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   DropDown: 8a2116376c1981888557f72ec2ffc9a5e0e456ec
+  FloatingPanel: 2f87246071476cf05d77ba3f50a373ca4b04549e
   Parse: c1ad2a04d2cab2b54b6fb7da05f741abf2cf57d1
   SCLAlertView: 6a77bb2edfc65e04dbe57725546cb4107a506b85
   SimpleAnimation: 5430010b9548f392e7459290acce01c9ceba7171
+  WLEmptyState: 2bbb3970f62c0b9252029d34a8f74cb3d436eeea
 
-PODFILE CHECKSUM: 26f4e86451b4d548962ea6681ea375c16b1f733a
+PODFILE CHECKSUM: 8851fb3d2172e995c34f6fd398dc73165a4e747c
 
 COCOAPODS: 1.8.3
