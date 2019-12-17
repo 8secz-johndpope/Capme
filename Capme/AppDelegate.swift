@@ -20,6 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /* IN PROGRESS */
     // Select friends' profiles
     // Filter friends by username
+    // Capture friends, requests, and users data in DataModel to make VCs more dynamic
     
     /* BACK LOG */
     // Friends (Search) shrink tableview to be the height of the keyboard

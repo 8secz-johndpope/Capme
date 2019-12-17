@@ -40,6 +40,9 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     var restrictedIds = [String]()
     
+    let fpc = FloatingPanelController()
+    var contentVC = RequestsVC()
+    
     override func viewDidLoad() {
         setupUI()
         self.queryUsers()
@@ -86,15 +89,19 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.tableViewHeight = self.tableView.frame.height
         self.tableView.tableFooterView = UIView()
         
-        let fpc = FloatingPanelController()
-        let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-        let contentVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
-        contentVC.recievedRequests = self.recievedRequests
-        fpc.set(contentViewController: contentVC)
-        fpc.isRemovalInteractionEnabled = true
-
-        self.present(fpc, animated: true, completion: nil)
-        
+        // Show Floating Requests Panel
+        if self.recievedRequests.count > 0 {
+            
+            let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+            let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
+            tempVC.recievedRequests = self.recievedRequests
+            tempVC.view.layer.cornerRadius = 10.0
+            tempVC.view.layer.masksToBounds = true
+            fpc.set(contentViewController: tempVC)
+            self.contentVC = tempVC
+            fpc.isRemovalInteractionEnabled = true
+            self.present(fpc, animated: true, completion: nil)
+        }
     }
     
     func queryUsers() {
@@ -181,9 +188,22 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         if index == 0 {
             self.searchController.searchBar.isHidden = true
             self.searchController.searchBar.resignFirstResponder()
+            if self.recievedRequests.count > 0 {
+                fpc.show(animated: true) {}
+            }
         } else if index == 1 {
             self.searchController.searchBar.isHidden = false
             self.searchController.searchBar.becomeFirstResponder()
+            // Hide the floating panel.
+            if self.recievedRequests.count > 0 {
+                fpc.hide(animated: true) {
+                    // Remove the floating panel view from your controller's view.
+                    self.fpc.view.removeFromSuperview()
+                    // Remove the floating panel controller from the controller hierarchy.
+                    self.fpc.removeFromParent()
+                }
+            }
+            
         }
         self.tableView.reloadData()
     }
