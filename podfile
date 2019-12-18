@@ -6,6 +6,7 @@ target 'Capme' do
   use_frameworks!
 
   # Pods for Capme
+  pod 'WSTagsField'
   pod 'FloatingPanel'
   pod 'WLEmptyState'
   pod 'DropDown'

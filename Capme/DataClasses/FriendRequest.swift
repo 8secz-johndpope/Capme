@@ -16,6 +16,7 @@ class FriendRequest {
     var sender: User!
     var reciever: User!
     var objectId: String!
+    var updatedAt: Date!
     
     var requests = [FriendRequest]()
     
@@ -34,6 +35,7 @@ class FriendRequest {
                     let request = FriendRequest()
                     request.objectId = object.objectId!
                     request.status = (object["status"] as! String)
+                    request.updatedAt = object.updatedAt!
                     if let sender = object["sender"] as? PFUser {
                         if sender.objectId == PFUser.current()!.objectId! {
                             request.sender = User(user: PFUser.current()!, image: DataModel.profilePic)
@@ -47,7 +49,7 @@ class FriendRequest {
                                                 self.requests.append(request)
                                                 if self.requests.count == objects?.count {
                                                     print(self.requests.count)
-                                                    completion(self.requests)
+                                                    completion(self.sortRequests(requestsToSort: self.requests))
                                                 }
                                             }
                                         }
@@ -57,7 +59,7 @@ class FriendRequest {
                                     self.requests.append(request)
                                     if self.requests.count == objects?.count {
                                         print(self.requests.count)
-                                        completion(self.requests)
+                                        completion(self.sortRequests(requestsToSort: self.requests))
                                     }
                                 }
                             }
@@ -71,7 +73,7 @@ class FriendRequest {
                                             self.requests.append(request)
                                             if self.requests.count == objects?.count {
                                                 print(self.requests.count)
-                                                completion(self.requests)
+                                                completion(self.sortRequests(requestsToSort: self.requests))
                                             }
                                         }
                                     }
@@ -81,7 +83,7 @@ class FriendRequest {
                                 self.requests.append(request)
                                 if self.requests.count == objects?.count {
                                     print(self.requests.count)
-                                    completion(self.requests)
+                                    completion(self.sortRequests(requestsToSort: self.requests))
                                 }
                             }
                         }
@@ -91,5 +93,11 @@ class FriendRequest {
             }
         }
     }
+    
+    func sortRequests(requestsToSort: [FriendRequest]) -> [FriendRequest] {
+        return requestsToSort.sorted(by: { $0.updatedAt > $1.updatedAt })
+    }
+    
+    
     
 }

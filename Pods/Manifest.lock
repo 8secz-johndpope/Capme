@@ -9,6 +9,7 @@ PODS:
   - SCLAlertView (0.8)
   - SimpleAnimation (0.4.2)
   - WLEmptyState (3.1.0)
+  - WSTagsField (5.2.0)
 
 DEPENDENCIES:
   - DropDown
@@ -17,6 +18,7 @@ DEPENDENCIES:
   - SCLAlertView
   - SimpleAnimation
   - WLEmptyState
+  - WSTagsField
 
 SPEC REPOS:
   trunk:
@@ -27,6 +29,7 @@ SPEC REPOS:
     - SCLAlertView
     - SimpleAnimation
     - WLEmptyState
+    - WSTagsField
 
 SPEC CHECKSUMS:
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
@@ -36,7 +39,8 @@ SPEC CHECKSUMS:
   SCLAlertView: 6a77bb2edfc65e04dbe57725546cb4107a506b85
   SimpleAnimation: 5430010b9548f392e7459290acce01c9ceba7171
   WLEmptyState: 2bbb3970f62c0b9252029d34a8f74cb3d436eeea
+  WSTagsField: d57a287fd552934db1d93a85d38abbf74b067d6a
 
-PODFILE CHECKSUM: 8851fb3d2172e995c34f6fd398dc73165a4e747c
+PODFILE CHECKSUM: 5847e99484b877ed771d4058dbb02d74e11de0e6
 
 COCOAPODS: 1.8.3

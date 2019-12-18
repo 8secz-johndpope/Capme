@@ -16,6 +16,7 @@ class RequestCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var removeOutlet: UIButton!
     @IBOutlet weak var acceptOutlet: UIButton!
+    @IBOutlet weak var profilePicOutlet: UIButton!
     
     var requestId = ""
     

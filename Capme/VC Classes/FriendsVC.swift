@@ -23,10 +23,6 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     }
     
     let searchController = UISearchController(searchResultsController: nil)
-
-    var friends = [User]()
-    var sentRequests = [User]()
-    var recievedRequests = [User]()
     
     var users = [User]()
     var filteredUsers = [User]()
@@ -41,7 +37,14 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     var restrictedIds = [String]()
     
     let fpc = FloatingPanelController()
-    var contentVC = RequestsVC()
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        if DataModel.recievedRequests.count > 0 {
+            fpc.hide(animated: true) {
+                self.fpc.dismiss(animated: true) {}
+            }
+        }
+    }
     
     override func viewDidLoad() {
         setupUI()
@@ -51,13 +54,13 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     func setupUI() {
         
         // Cannot Friend these object ids
-        restrictedIds = self.friends.map { $0.objectId! }
-        print("recieved", self.recievedRequests.map { $0.objectId! })
-        restrictedIds.append(contentsOf: self.recievedRequests.map { $0.objectId! })
+        restrictedIds = DataModel.friends.map { $0.objectId! }
+        print("recieved", DataModel.recievedRequests.map { $0.objectId! })
+        restrictedIds.append(contentsOf: DataModel.recievedRequests.map { $0.objectId! })
         
         segmentControl.delegate = self
         // Hide the navigation bar line
-        if let navigationControllerItem = navigationController as? UINavigationController {
+        if let navigationControllerItem = navigationController {
             navigationControllerItem.hideLine()
         }
         
@@ -76,7 +79,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         searchController.searchBar.autocapitalizationType = .none
         
         // Table View
-        if self.friends.count == 0 && self.searchController.searchBar.isHidden  { // Show empty set
+        if DataModel.friends.count == 0 && self.searchController.searchBar.isHidden  { // Show empty set
             self.tableView.emptyStateDataSource = self
             self.tableView.reloadData()
         }
@@ -90,18 +93,33 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.tableView.tableFooterView = UIView()
         
         // Show Floating Requests Panel
-        if self.recievedRequests.count > 0 {
-            
-            let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-            let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
-            tempVC.recievedRequests = self.recievedRequests
-            tempVC.view.layer.cornerRadius = 10.0
-            tempVC.view.layer.masksToBounds = true
-            fpc.set(contentViewController: tempVC)
-            self.contentVC = tempVC
-            fpc.isRemovalInteractionEnabled = true
-            self.present(fpc, animated: true, completion: nil)
+        if DataModel.recievedRequests.count > 0 {
+            if DataModel.requestsVC.status != "" {
+                fpc.set(contentViewController: DataModel.requestsVC)
+                fpc.isRemovalInteractionEnabled = true
+                print("crashing here?")
+                self.present(fpc, animated: true, completion: nil)
+                print("after")
+            } else {
+                let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+                let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
+                tempVC.recievedRequests = DataModel.recievedRequests
+                tempVC.view.layer.cornerRadius = 10.0
+                tempVC.view.layer.masksToBounds = true
+                fpc.set(contentViewController: tempVC)
+                tempVC.status = "active"
+                tempVC.friendsRef = self
+                DataModel.requestsVC = tempVC
+                fpc.isRemovalInteractionEnabled = true
+                self.present(fpc, animated: true, completion: nil)
+            }
         }
+    }
+    
+    @objc func selectedImage(sender:UIButton) {
+        print("seletced an image")
+        self.selectedUser = DataModel.recievedRequests[sender.tag]
+        self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
     }
     
     func queryUsers() {
@@ -111,6 +129,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         userRef.getUsers(query: query) { (queriedUsers) in
             for user in queriedUsers {
                 if !self.restrictedIds.contains(user.objectId) {
+                    DataModel.users.append(user)
                     self.users.append(user)
                     self.tableView.reloadData()
                 }
@@ -120,7 +139,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if self.searchController.searchBar.isHidden {
-            self.selectedUser = self.friends[indexPath.row]
+            self.selectedUser = DataModel.friends[indexPath.row]
             self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
         }
     }
@@ -129,13 +148,13 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! FriendTableViewCell
         var customUser = User()
         if searchController.searchBar.isHidden {
-            customUser = self.friends[indexPath.row]
+            customUser = DataModel.friends[indexPath.row]
             cell.addFriendOutlet.isHidden = true
             cell.addFriendLabel.isHidden = true
         } else {
             if (searchController.isActive) {
                 customUser = self.filteredUsers[indexPath.row]
-                let sentUserIds = self.sentRequests.map { $0.objectId! }
+                let sentUserIds = DataModel.sentRequests.map { $0.objectId! }
                 if sentUserIds.contains(customUser.objectId) {
                     cell.addFriendLabel.text = "Sent ✓"
                 } else {
@@ -157,7 +176,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if searchController.searchBar.isHidden {
-            return self.friends.count
+            return DataModel.friends.count
         } else {
             if (searchController.isActive) {
                 return self.filteredUsers.count
@@ -188,19 +207,23 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         if index == 0 {
             self.searchController.searchBar.isHidden = true
             self.searchController.searchBar.resignFirstResponder()
-            if self.recievedRequests.count > 0 {
-                fpc.show(animated: true) {}
+            if DataModel.recievedRequests.count > 0 {
+                self.fpc.dismiss(animated: true) {
+                    self.present(self.fpc, animated: true, completion: nil)
+                }
             }
         } else if index == 1 {
             self.searchController.searchBar.isHidden = false
             self.searchController.searchBar.becomeFirstResponder()
             // Hide the floating panel.
-            if self.recievedRequests.count > 0 {
+            if DataModel.recievedRequests.count > 0 {
                 fpc.hide(animated: true) {
-                    // Remove the floating panel view from your controller's view.
-                    self.fpc.view.removeFromSuperview()
-                    // Remove the floating panel controller from the controller hierarchy.
-                    self.fpc.removeFromParent()
+                    self.fpc.dismiss(animated: true) {
+                        
+                    }
+                    
+                    //self.fpc.view.removeFromSuperview()
+                    //self.fpc.removeFromParent()
                 }
             }
             

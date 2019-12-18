@@ -6,3 +6,4 @@ ${BUILT_PRODUCTS_DIR}/Parse/Parse.framework
 ${BUILT_PRODUCTS_DIR}/SCLAlertView/SCLAlertView.framework
 ${BUILT_PRODUCTS_DIR}/SimpleAnimation/SimpleAnimation.framework
 ${BUILT_PRODUCTS_DIR}/WLEmptyState/WLEmptyState.framework
+${BUILT_PRODUCTS_DIR}/WSTagsField/WSTagsField.framework

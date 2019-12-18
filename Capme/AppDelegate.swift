@@ -14,18 +14,26 @@ import WLEmptyState
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     /* COMPLETE */
-    // Registration
-    // Friends and search friends tableviews side by side
+    //*Registration
+    //*Friends and search friends tableviews side by side
+    //*Select friends' profiles
+    //*Filter users (Search) by username
+    //*Logout alert view color
+    //*Floating panel crashes when it attempts to present on null
     
     /* IN PROGRESS */
-    // Select friends' profiles
-    // Filter friends by username
     // Capture friends, requests, and users data in DataModel to make VCs more dynamic
+    // Add contact picker to send invite to use the app
+    // Wifi alert view
+    // Remove requests from the collection view
     
     /* BACK LOG */
     // Friends (Search) shrink tableview to be the height of the keyboard
     // Change the settings alert view tint color
-    
+    // Corner radius of the Requests Floating Panel
+    // Request deletion animation
+    // Center odd requests in the collection view
+    // Remove the intermediate floating panel (equivalent to the size of the nav bar)
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.

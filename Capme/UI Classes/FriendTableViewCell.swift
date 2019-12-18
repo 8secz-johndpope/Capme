@@ -20,9 +20,12 @@ class FriendTableViewCell: UITableViewCell {
     @IBAction func addFriendAction(_ sender: Any) {
         self.addFriendOutlet.isEnabled = false
         self.addFriendLabel.text = "Sent ✓"
-        print("adding friend")
         if let addFriendButton = sender as? UIButton {
             print(addFriendButton.accessibilityLabel!)
+            if let i = DataModel.users.firstIndex(where: { $0.objectId == addFriendButton.accessibilityLabel }) {
+                print("adding to Data Model")
+                DataModel.sentRequests.append(DataModel.users[i])
+            }
             let Request = PFObject(className: "FriendRequest")
             Request["sender"] = PFUser.current()
             Request["recipient"] = PFUser(withoutDataWithObjectId: addFriendButton.accessibilityLabel!)

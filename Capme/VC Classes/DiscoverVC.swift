@@ -9,9 +9,12 @@
 import Foundation
 import UIKit
 
-class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var tableView: UITableView!
+    @IBAction func postAction(_ sender: Any) {
+        self.performSegue(withIdentifier: "showCreate", sender: nil)
+    }
     
     override func viewDidLoad() {
         setupUI()

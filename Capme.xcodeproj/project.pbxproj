@@ -17,7 +17,7 @@
 		8C14B9A523A5966300C4FA58 /* CapmeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9A423A5966300C4FA58 /* CapmeUITests.swift */; };
 		8C14B9B323A59F0F00C4FA58 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9B223A59F0F00C4FA58 /* Utilities.swift */; };
 		8C14B9B523A59F1E00C4FA58 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9B423A59F1E00C4FA58 /* DataModel.swift */; };
-		8C14B9B923A5A8BA00C4FA58 /* FeedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9B823A5A8BA00C4FA58 /* FeedVC.swift */; };
+		8C14B9B923A5A8BA00C4FA58 /* DiscoverVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9B823A5A8BA00C4FA58 /* DiscoverVC.swift */; };
 		8C14B9BB23A5ADA800C4FA58 /* ProfileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9BA23A5ADA800C4FA58 /* ProfileVC.swift */; };
 		8C14B9BD23A5B0B800C4FA58 /* MessagesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9BC23A5B0B800C4FA58 /* MessagesVC.swift */; };
 		8C14B9BF23A5B25200C4FA58 /* MessageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C14B9BE23A5B25200C4FA58 /* MessageTableViewCell.swift */; };
@@ -29,6 +29,13 @@
 		8C1E71B323A84EE5006352E2 /* RequestCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1E71B223A84EE5006352E2 /* RequestCollectionViewCell.swift */; };
 		8C9029B323A7194B00CA465D /* SlidingSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */; };
 		8C9029B523A74D6F00CA465D /* FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9029B423A74D6F00CA465D /* FriendRequest.swift */; };
+		8CF5242B23A98DDC0039EBDC /* PostDescriptionVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5242A23A98DDC0039EBDC /* PostDescriptionVC.swift */; };
+		8CF5242D23A98DF70039EBDC /* PostKeywordsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5242C23A98DF70039EBDC /* PostKeywordsVC.swift */; };
+		8CF5242F23A98E130039EBDC /* PostImageVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5242E23A98E130039EBDC /* PostImageVC.swift */; };
+		8CF5243723A98EFF0039EBDC /* CreateAttributesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243623A98EFF0039EBDC /* CreateAttributesVC.swift */; };
+		8CF5243923A98FBD0039EBDC /* NewAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243823A98FBD0039EBDC /* NewAttributes.swift */; };
+		8CF5243D23A98FD60039EBDC /* CreatePostVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243C23A98FD60039EBDC /* CreatePostVC.swift */; };
+		8CF5243F23A9B8E80039EBDC /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243E23A9B8E80039EBDC /* Post.swift */; };
 		D313CA4DD3B4B19E65D831D2 /* Pods_Capme_CapmeUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C682F27F8DB13310B9A9A13B /* Pods_Capme_CapmeUITests.framework */; };
 		F20F698B786CD5A31B89ACAE /* Pods_CapmeTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEF6FD687CAA7AEF3AE37EAF /* Pods_CapmeTests.framework */; };
 		FFC4F5C58537C5E2F2233F44 /* Pods_Capme.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 663D93E4504B6F8D1C68F8FF /* Pods_Capme.framework */; };
@@ -70,7 +77,7 @@
 		8C14B9A623A5966300C4FA58 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8C14B9B223A59F0F00C4FA58 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		8C14B9B423A59F1E00C4FA58 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
-		8C14B9B823A5A8BA00C4FA58 /* FeedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedVC.swift; sourceTree = "<group>"; };
+		8C14B9B823A5A8BA00C4FA58 /* DiscoverVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverVC.swift; sourceTree = "<group>"; };
 		8C14B9BA23A5ADA800C4FA58 /* ProfileVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileVC.swift; sourceTree = "<group>"; };
 		8C14B9BC23A5B0B800C4FA58 /* MessagesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesVC.swift; sourceTree = "<group>"; };
 		8C14B9BE23A5B25200C4FA58 /* MessageTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTableViewCell.swift; sourceTree = "<group>"; };
@@ -82,6 +89,13 @@
 		8C1E71B223A84EE5006352E2 /* RequestCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestCollectionViewCell.swift; sourceTree = "<group>"; };
 		8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlidingSegmentedControl.swift; sourceTree = "<group>"; };
 		8C9029B423A74D6F00CA465D /* FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequest.swift; sourceTree = "<group>"; };
+		8CF5242A23A98DDC0039EBDC /* PostDescriptionVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDescriptionVC.swift; sourceTree = "<group>"; };
+		8CF5242C23A98DF70039EBDC /* PostKeywordsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostKeywordsVC.swift; sourceTree = "<group>"; };
+		8CF5242E23A98E130039EBDC /* PostImageVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostImageVC.swift; sourceTree = "<group>"; };
+		8CF5243623A98EFF0039EBDC /* CreateAttributesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAttributesVC.swift; sourceTree = "<group>"; };
+		8CF5243823A98FBD0039EBDC /* NewAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewAttributes.swift; sourceTree = "<group>"; };
+		8CF5243C23A98FD60039EBDC /* CreatePostVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostVC.swift; sourceTree = "<group>"; };
+		8CF5243E23A9B8E80039EBDC /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		919ED97A427637D1B68F5761 /* Pods-CapmeTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CapmeTests.release.xcconfig"; path = "Target Support Files/Pods-CapmeTests/Pods-CapmeTests.release.xcconfig"; sourceTree = "<group>"; };
 		BCF4157331C7ABA7E6C4DE8B /* Pods-Capme-CapmeUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Capme-CapmeUITests.debug.xcconfig"; path = "Target Support Files/Pods-Capme-CapmeUITests/Pods-Capme-CapmeUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		C682F27F8DB13310B9A9A13B /* Pods_Capme_CapmeUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Capme_CapmeUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -178,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				8C14B9C223A5CFC800C4FA58 /* User.swift */,
+				8CF5243E23A9B8E80039EBDC /* Post.swift */,
 				8C9029B423A74D6F00CA465D /* FriendRequest.swift */,
 				8C14B9B223A59F0F00C4FA58 /* Utilities.swift */,
 				8C14B9B423A59F1E00C4FA58 /* DataModel.swift */,
@@ -197,6 +212,7 @@
 		8C1E71B423A84F5B006352E2 /* UI Classes */ = {
 			isa = PBXGroup;
 			children = (
+				8CF5243823A98FBD0039EBDC /* NewAttributes.swift */,
 				8C14B98423A5966200C4FA58 /* SceneDelegate.swift */,
 				8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */,
 				8C1E71B223A84EE5006352E2 /* RequestCollectionViewCell.swift */,
@@ -210,7 +226,12 @@
 		8C3EFE2823A867C400039B01 /* VC Classes */ = {
 			isa = PBXGroup;
 			children = (
-				8C14B9B823A5A8BA00C4FA58 /* FeedVC.swift */,
+				8CF5243623A98EFF0039EBDC /* CreateAttributesVC.swift */,
+				8CF5243C23A98FD60039EBDC /* CreatePostVC.swift */,
+				8C14B9B823A5A8BA00C4FA58 /* DiscoverVC.swift */,
+				8CF5242A23A98DDC0039EBDC /* PostDescriptionVC.swift */,
+				8CF5242E23A98E130039EBDC /* PostImageVC.swift */,
+				8CF5242C23A98DF70039EBDC /* PostKeywordsVC.swift */,
 				8C14B9BC23A5B0B800C4FA58 /* MessagesVC.swift */,
 				8C14B9BA23A5ADA800C4FA58 /* ProfileVC.swift */,
 				8C14B9C423A5DAA700C4FA58 /* FriendsVC.swift */,
@@ -483,20 +504,27 @@
 			files = (
 				8C1E71B123A81D34006352E2 /* RequestsVC.swift in Sources */,
 				8C1E71B323A84EE5006352E2 /* RequestCollectionViewCell.swift in Sources */,
-				8C14B9B923A5A8BA00C4FA58 /* FeedVC.swift in Sources */,
+				8C14B9B923A5A8BA00C4FA58 /* DiscoverVC.swift in Sources */,
+				8CF5243F23A9B8E80039EBDC /* Post.swift in Sources */,
 				8C14B9B523A59F1E00C4FA58 /* DataModel.swift in Sources */,
 				8C14B9C523A5DAA700C4FA58 /* FriendsVC.swift in Sources */,
 				8C14B9BF23A5B25200C4FA58 /* MessageTableViewCell.swift in Sources */,
 				8C14B9BB23A5ADA800C4FA58 /* ProfileVC.swift in Sources */,
 				8C14B9C123A5BC6C00C4FA58 /* ProfileCollectionViewCell.swift in Sources */,
 				8C14B98723A5966200C4FA58 /* RegistrationVC.swift in Sources */,
+				8CF5242B23A98DDC0039EBDC /* PostDescriptionVC.swift in Sources */,
 				8C14B9C723A5FF6700C4FA58 /* FriendTableViewCell.swift in Sources */,
+				8CF5243923A98FBD0039EBDC /* NewAttributes.swift in Sources */,
 				8C14B9BD23A5B0B800C4FA58 /* MessagesVC.swift in Sources */,
 				8C14B98323A5966200C4FA58 /* AppDelegate.swift in Sources */,
 				8C14B9B323A59F0F00C4FA58 /* Utilities.swift in Sources */,
+				8CF5243723A98EFF0039EBDC /* CreateAttributesVC.swift in Sources */,
+				8CF5242D23A98DF70039EBDC /* PostKeywordsVC.swift in Sources */,
+				8CF5243D23A98FD60039EBDC /* CreatePostVC.swift in Sources */,
 				8C9029B523A74D6F00CA465D /* FriendRequest.swift in Sources */,
 				8C14B98523A5966200C4FA58 /* SceneDelegate.swift in Sources */,
 				8C14B9C323A5CFC800C4FA58 /* User.swift in Sources */,
+				8CF5242F23A98E130039EBDC /* PostImageVC.swift in Sources */,
 				8C9029B323A7194B00CA465D /* SlidingSegmentedControl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

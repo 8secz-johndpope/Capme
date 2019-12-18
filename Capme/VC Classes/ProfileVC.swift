@@ -22,8 +22,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     var collectionViewCounts = ["---", "---", "---"]
     
     var friends = [User]()
-    var sentRequests = [User]()
-    var recievedRequests = [User]()
     
     var selectedUser = User()
     var fromSelectedUser = false
@@ -31,12 +29,16 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBAction func logoutAction(_ sender: Any) {
         let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
         let alert = SCLAlertView(appearance: appearance)
-        alert.addButton("Confirm") {
+        alert.addButton("Log Out") {
             PFUser.logOut()
             self.performSegue(withIdentifier: "profileUnwind", sender: nil)
         }
-        alert.showInfo("Notice", subTitle: "Are you sure you want to log out?")
+        alert.showInfo("Notice", subTitle: "Are you sure you want to log out?", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
         DataModel.profilePic = UIImage()
+        DataModel.friends = [User]()
+        DataModel.users = [User]()
+        DataModel.sentRequests = [User]()
+        DataModel.recievedRequests = [User]()
     }
     
     override func viewDidLoad() {
@@ -100,20 +102,21 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             for request in queriedRequests {
                 if request.status == "accepted" {
                     if request.reciever.objectId == PFUser.current()!.objectId {
-                        self.friends.append(request.sender)
+                        DataModel.friends.append(request.sender)
                     } else if request.sender.objectId == PFUser.current()!.objectId {
-                        self.friends.append(request.reciever)
+                        DataModel.friends.append(request.reciever)
                     }
                 } else if request.status == "pending" {
                     if request.reciever.objectId == PFUser.current()!.objectId! {
                         request.sender.requestId = request.objectId
-                        self.recievedRequests.append(request.sender)
+                        DataModel.recievedRequests.append(request.sender)
                     } else if request.sender.objectId == PFUser.current()!.objectId! {
-                        self.sentRequests.append(request.reciever)
+                        
+                        DataModel.sentRequests.append(request.reciever)
                     }
                 }
                 if request === queriedRequests.last {
-                    self.collectionViewCounts[2] = String(describing: self.friends.count)
+                    self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
                     self.collectionView.reloadData()
                 }
             }
@@ -195,13 +198,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showFriends" {
-            let targetVC = segue.destination as! FriendsVC
-            targetVC.friends = self.friends
-            targetVC.sentRequests = self.sentRequests
-            targetVC.recievedRequests = self.recievedRequests
-            print(self.friends, "friends")
-            print(self.sentRequests, "sent requests")
-            print(self.recievedRequests, "recieved requests")
+            let _ = segue.destination as! FriendsVC
         }
     }
     
