@@ -14,6 +14,7 @@ class NewAttributesVC: UIPageViewController, UIPageViewControllerDataSource, UIP
         case firstPV
         case secondPV
         case thirdPV
+        case fourthPV
     }
     
     override func viewDidLoad() {
@@ -29,7 +30,8 @@ class NewAttributesVC: UIPageViewController, UIPageViewControllerDataSource, UIP
     fileprivate lazy var orderedViewController: [UIViewController] = {
         return [self.getViewController(withIdentifier: PageViews.firstPV.rawValue),
                 self.getViewController(withIdentifier: PageViews.secondPV.rawValue),
-                self.getViewController(withIdentifier: PageViews.thirdPV.rawValue)]
+                self.getViewController(withIdentifier: PageViews.thirdPV.rawValue),
+                self.getViewController(withIdentifier: PageViews.fourthPV.rawValue)]
     }()
     
     fileprivate func getViewController(withIdentifier identifier: String) -> UIViewController

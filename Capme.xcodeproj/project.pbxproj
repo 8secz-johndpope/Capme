@@ -36,6 +36,8 @@
 		8CF5243923A98FBD0039EBDC /* NewAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243823A98FBD0039EBDC /* NewAttributes.swift */; };
 		8CF5243D23A98FD60039EBDC /* CreatePostVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243C23A98FD60039EBDC /* CreatePostVC.swift */; };
 		8CF5243F23A9B8E80039EBDC /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5243E23A9B8E80039EBDC /* Post.swift */; };
+		8CF5244323AA0EAE0039EBDC /* PostHashtagsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5244223AA0EAE0039EBDC /* PostHashtagsVC.swift */; };
+		8CF5244523AA1DDF0039EBDC /* PostReviewVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF5244423AA1DDF0039EBDC /* PostReviewVC.swift */; };
 		D313CA4DD3B4B19E65D831D2 /* Pods_Capme_CapmeUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C682F27F8DB13310B9A9A13B /* Pods_Capme_CapmeUITests.framework */; };
 		F20F698B786CD5A31B89ACAE /* Pods_CapmeTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEF6FD687CAA7AEF3AE37EAF /* Pods_CapmeTests.framework */; };
 		FFC4F5C58537C5E2F2233F44 /* Pods_Capme.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 663D93E4504B6F8D1C68F8FF /* Pods_Capme.framework */; };
@@ -96,6 +98,8 @@
 		8CF5243823A98FBD0039EBDC /* NewAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewAttributes.swift; sourceTree = "<group>"; };
 		8CF5243C23A98FD60039EBDC /* CreatePostVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostVC.swift; sourceTree = "<group>"; };
 		8CF5243E23A9B8E80039EBDC /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		8CF5244223AA0EAE0039EBDC /* PostHashtagsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostHashtagsVC.swift; sourceTree = "<group>"; };
+		8CF5244423AA1DDF0039EBDC /* PostReviewVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostReviewVC.swift; sourceTree = "<group>"; };
 		919ED97A427637D1B68F5761 /* Pods-CapmeTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CapmeTests.release.xcconfig"; path = "Target Support Files/Pods-CapmeTests/Pods-CapmeTests.release.xcconfig"; sourceTree = "<group>"; };
 		BCF4157331C7ABA7E6C4DE8B /* Pods-Capme-CapmeUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Capme-CapmeUITests.debug.xcconfig"; path = "Target Support Files/Pods-Capme-CapmeUITests/Pods-Capme-CapmeUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		C682F27F8DB13310B9A9A13B /* Pods_Capme_CapmeUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Capme_CapmeUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -231,7 +235,9 @@
 				8C14B9B823A5A8BA00C4FA58 /* DiscoverVC.swift */,
 				8CF5242A23A98DDC0039EBDC /* PostDescriptionVC.swift */,
 				8CF5242E23A98E130039EBDC /* PostImageVC.swift */,
+				8CF5244223AA0EAE0039EBDC /* PostHashtagsVC.swift */,
 				8CF5242C23A98DF70039EBDC /* PostKeywordsVC.swift */,
+				8CF5244423AA1DDF0039EBDC /* PostReviewVC.swift */,
 				8C14B9BC23A5B0B800C4FA58 /* MessagesVC.swift */,
 				8C14B9BA23A5ADA800C4FA58 /* ProfileVC.swift */,
 				8C14B9C423A5DAA700C4FA58 /* FriendsVC.swift */,
@@ -512,6 +518,7 @@
 				8C14B9BB23A5ADA800C4FA58 /* ProfileVC.swift in Sources */,
 				8C14B9C123A5BC6C00C4FA58 /* ProfileCollectionViewCell.swift in Sources */,
 				8C14B98723A5966200C4FA58 /* RegistrationVC.swift in Sources */,
+				8CF5244323AA0EAE0039EBDC /* PostHashtagsVC.swift in Sources */,
 				8CF5242B23A98DDC0039EBDC /* PostDescriptionVC.swift in Sources */,
 				8C14B9C723A5FF6700C4FA58 /* FriendTableViewCell.swift in Sources */,
 				8CF5243923A98FBD0039EBDC /* NewAttributes.swift in Sources */,
@@ -519,6 +526,7 @@
 				8C14B98323A5966200C4FA58 /* AppDelegate.swift in Sources */,
 				8C14B9B323A59F0F00C4FA58 /* Utilities.swift in Sources */,
 				8CF5243723A98EFF0039EBDC /* CreateAttributesVC.swift in Sources */,
+				8CF5244523AA1DDF0039EBDC /* PostReviewVC.swift in Sources */,
 				8CF5242D23A98DF70039EBDC /* PostKeywordsVC.swift in Sources */,
 				8CF5243D23A98FD60039EBDC /* CreatePostVC.swift in Sources */,
 				8C9029B523A74D6F00CA465D /* FriendRequest.swift in Sources */,

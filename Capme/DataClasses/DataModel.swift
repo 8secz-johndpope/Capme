@@ -22,6 +22,8 @@ struct DataModel {
     
     static var requestsVC = RequestsVC()
     
+    static var newPost = Post()
+    
     
 }
     

@@ -1,5 +1,5 @@
 //
-//  PostKeywordsVC.swift
+//  PostHashtagsVC.swift
 //  Capme
 //
 //  Created by Gabe Wilson on 12/17/19.
@@ -10,10 +10,10 @@ import Foundation
 import UIKit
 import WSTagsField
 
-class PostKeywordsVC: UIViewController, UITextFieldDelegate {
+class PostHashtagsVC: UIViewController, UITextFieldDelegate {
     
-    @IBOutlet weak var textfield: UITextField!
     @IBOutlet weak var mainLabel: UILabel!
+    @IBOutlet weak var textfield: UITextField!
     @IBOutlet weak var underlineLabel: UILabel!
     
     fileprivate let tagsField = WSTagsField()
@@ -27,7 +27,6 @@ class PostKeywordsVC: UIViewController, UITextFieldDelegate {
         self.textfield.delegate = self
         self.textfield.tintColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
         tagsField.frame = CGRect(x: 15.0, y: self.mainLabel.frame.maxY + 60.0, width: (self.view.frame.width - 60.0), height: 20.0)
-        
         
         self.textfield.isHidden = true
         tagsField.spaceBetweenLines = 5.0
@@ -47,24 +46,15 @@ class PostKeywordsVC: UIViewController, UITextFieldDelegate {
         tagsField.keyboardAppearance = .dark
         tagsField.returnKeyType = .next
         tagsField.acceptTagOption = .space
-        tagsField.placeholder = "Add a new keyword"
-        
+        tagsField.placeholder = "Add a new #"
         tagsField.textDelegate = self
         self.view.addSubview(tagsField)
         textFieldEvents()
-       
     }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
-        return true
-    }
-    
-    
 }
 
 
-extension PostKeywordsVC {
+extension PostHashtagsVC {
 
     fileprivate func textFieldEvents() {
         
@@ -78,7 +68,18 @@ extension PostKeywordsVC {
        }
 
        tagsField.onDidChangeText = { _, text in
-           print("DidChangeText")
+        print(self.tagsField.text!.prefix(1))
+        if let char = text!.cString(using: String.Encoding.utf8) {
+            let isBackSpace = strcmp(char, "\\b")
+            if (isBackSpace == -92) {
+                print("Backspace was pressed")
+            } else {
+                if self.tagsField.text!.prefix(1) != "#" {
+                    self.tagsField.text = "#" + self.tagsField.text!
+                }
+            }
+        }
+        print("DidChangeText")
        }
 
        tagsField.onDidChangeHeightTo = { _, height in

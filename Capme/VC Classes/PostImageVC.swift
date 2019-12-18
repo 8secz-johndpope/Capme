@@ -50,6 +50,7 @@ class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigati
             
         } else if self.addActionOutlet.titleLabel?.text == "REVIEW" {
             print("Reviewing...")
+            self.performSegue(withIdentifier: "showReview", sender: nil)
         }
     }
     

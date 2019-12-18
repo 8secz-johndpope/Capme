@@ -12,7 +12,6 @@ import Parse
 
 class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    
     @IBOutlet weak var tableView: UITableView!
 
     override func viewDidLoad() {

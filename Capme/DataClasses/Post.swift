@@ -15,4 +15,5 @@ class Post {
     var tags = [String]()
     var description = String()
     var image = UIImage()
+    var location = String()
 }
