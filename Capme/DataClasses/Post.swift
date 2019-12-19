@@ -8,12 +8,38 @@
 
 import Foundation
 import UIKit
+import Parse
 
 class Post {
     
     var keywords = [String]()
     var tags = [String]()
     var description = String()
-    var image = UIImage()
+    var images = [UIImage]()
     var location = String()
+    
+    func savePost() {
+        let post = PFObject(className: "Post")
+        post["keywords"] = self.keywords
+        post["tags"] = self.tags
+        post["description"] = self.description
+        // TODO figure out how to store multiple images (s3?)
+        post["location"] = self.location
+        post["sender"] = PFUser.current()!
+        
+        if let imageData = DataModel.newPost.images[0].jpegData(compressionQuality: 1.00) {
+            let file = PFFileObject(name: "img.png", data: imageData)
+            post["image"] = file
+        }
+        
+        post.saveInBackground { (success, error) in
+            if error == nil {
+                print("Success: Saved the new post")
+            }
+        }
+        if self === DataModel.newPost {
+            DataModel.newPost = Post()
+        }
+        
+    }
 }

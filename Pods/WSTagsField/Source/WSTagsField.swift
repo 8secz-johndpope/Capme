@@ -451,7 +451,7 @@ open class WSTagsField: UIScrollView {
 
     @discardableResult
     open func tokenizeTextFieldText() -> WSTag? {
-        var text = self.textField.text?.trimmingCharacters(in: CharacterSet.whitespaces) ?? ""
+        let text = self.textField.text?.trimmingCharacters(in: CharacterSet.whitespaces) ?? ""
         if text.isEmpty == false && (onVerifyTag?(self, text) ?? true) {
             let tag = WSTag(text)
             addTag(tag)

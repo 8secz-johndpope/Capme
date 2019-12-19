@@ -16,6 +16,9 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         self.performSegue(withIdentifier: "showCreate", sender: nil)
     }
     
+    @IBAction func discoverUnwind(segue: UIStoryboardSegue) {
+    }
+    
     override func viewDidLoad() {
         setupUI()
     }

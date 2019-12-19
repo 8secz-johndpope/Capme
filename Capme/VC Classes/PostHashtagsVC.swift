@@ -15,7 +15,11 @@ class PostHashtagsVC: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var mainLabel: UILabel!
     @IBOutlet weak var textfield: UITextField!
     @IBOutlet weak var underlineLabel: UILabel!
+    @IBOutlet weak var reviewOutlet: UIButton!
     
+    @IBAction func reviewAction(_ sender: Any) {
+        self.performSegue(withIdentifier: "showReview", sender: nil)
+    }
     fileprivate let tagsField = WSTagsField()
     
     override func viewDidLoad() {
@@ -61,10 +65,21 @@ extension PostHashtagsVC {
         // Events
        tagsField.onDidAddTag = { field, tag in
            print("DidAddTag", tag.text)
+           DataModel.newPost.tags.append(tag.text)
        }
 
        tagsField.onDidRemoveTag = { field, tag in
-           print("DidRemoveTag", tag.text)
+            print("DidRemoveTag", tag.text)
+            var removeIndex = -1
+            for (index, element) in  DataModel.newPost.tags.enumerated() {
+                print("Item \(index): \(element)")
+                if element == tag.text {
+                    removeIndex = index
+                }
+            }
+            if removeIndex != -1 {
+                DataModel.newPost.tags.remove(at: removeIndex)
+            }
        }
 
        tagsField.onDidChangeText = { _, text in

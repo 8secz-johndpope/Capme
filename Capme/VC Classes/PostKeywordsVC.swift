@@ -69,13 +69,24 @@ extension PostKeywordsVC {
     fileprivate func textFieldEvents() {
         
         // Events
-       tagsField.onDidAddTag = { field, tag in
-           print("DidAddTag", tag.text)
-       }
+        tagsField.onDidAddTag = { field, tag in
+            print("DidAddTag", tag.text)
+            DataModel.newPost.keywords.append(tag.text)
+        }
 
-       tagsField.onDidRemoveTag = { field, tag in
-           print("DidRemoveTag", tag.text)
-       }
+        tagsField.onDidRemoveTag = { field, tag in
+             print("DidRemoveTag", tag.text)
+            var removeIndex = -1
+            for (index, element) in  DataModel.newPost.keywords.enumerated() {
+                print("Item \(index): \(element)")
+                if element == tag.text {
+                    removeIndex = index
+                }
+            }
+            if removeIndex != -1 {
+                DataModel.newPost.keywords.remove(at: removeIndex)
+            }
+        }
 
        tagsField.onDidChangeText = { _, text in
            print("DidChangeText")
@@ -87,6 +98,7 @@ extension PostKeywordsVC {
        }
 
        tagsField.onValidateTag = { tag, tags in
+        
            // custom validations, called before tag is added to tags list
            return tag.text != "#" && !tags.contains(where: { $0.text.uppercased() == tag.text.uppercased() })
         }

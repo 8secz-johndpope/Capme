@@ -12,17 +12,33 @@ import UIKit
 import Foundation
 import UIKit
 import SCLAlertView
+import TLPhotoPicker
+import ATGMediaBrowser
 
-class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, TLPhotosPickerViewControllerDelegate, MediaBrowserViewControllerDataSource {
     
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var addActionOutlet: UIButton!
+    
     @IBAction func addImageAction(_ sender: Any) {
-        imageViewSelected(fromAction: true)
+        let viewController = TLPhotosPickerViewController()
+        viewController.delegate = self
+        //configure.nibSet = (nibName: "CustomCell_Instagram", bundle: Bundle.main) // If you want use your custom cell..
+        self.present(viewController, animated: true, completion: nil)
+        //imageViewSelected(fromAction: true)
+    }
+    
+    var selectedAssets = [TLPHAsset]()
+    
+    override func viewDidLoad() {
+        print("In AddImageVC")
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
+        imageView.isUserInteractionEnabled = true
+        imageView.addGestureRecognizer(tapGestureRecognizer)
     }
     
     func imageViewSelected(fromAction: Bool) {
-        if self.addActionOutlet.titleLabel?.text == "ADD IMAGE" || !fromAction {
+        if self.addActionOutlet.titleLabel?.text == "PHOTO LIBRARY" || !fromAction {
             print("trying to add image")
             let imagePicker = UIImagePickerController()
             imagePicker.delegate = self
@@ -37,12 +53,6 @@ class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigati
             alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { _ in
                 imagePicker.sourceType = .photoLibrary
                 self.present(imagePicker, animated: true, completion: nil)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Default", style: .default, handler: { _ in
-                //DataModel.newProperty.image = UIImage(named: "cityBackground")!
-                self.addActionOutlet.setTitle("REVIEW", for: .normal)
-                self.imageView.image = UIImage(named: "cityBackground")
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -64,16 +74,11 @@ class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigati
         dismiss(animated:true, completion: nil)
     }
     
-    override func viewDidLoad() {
-        print("In AddImageVC")
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
-        imageView.isUserInteractionEnabled = true
-        imageView.addGestureRecognizer(tapGestureRecognizer)
-    }
-    
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
     {
-        imageViewSelected(fromAction: false)
+        let mediaBrowser = MediaBrowserViewController(dataSource: self)
+        present(mediaBrowser, animated: true, completion: nil)
+        //imageViewSelected(fromAction: false)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -81,6 +86,32 @@ class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigati
             print("Segue: AddImageVC -> PropertyDetailsVC")
             
         }
+    }
+}
+
+extension PostImageVC {
+    
+    func dismissPhotoPicker(withTLPHAssets: [TLPHAsset]) {
+        // use selected order, fullresolution image
+        if withTLPHAssets.count > 0 {
+            self.selectedAssets = withTLPHAssets
+            if let images = withTLPHAssets.map({ $0.fullResolutionImage }) as? [UIImage] {
+                self.imageView.image = images[0]
+                DataModel.newPost.images = images
+            }
+        }
+    }
+    
+    func numberOfItems(in mediaBrowser: MediaBrowserViewController) -> Int {
+        self.selectedAssets.count
+        // return number of images to be shown
+    }
+
+    func mediaBrowser(_ mediaBrowser: MediaBrowserViewController, imageAt index: Int, completion: @escaping MediaBrowserViewControllerDataSource.CompletionBlock) {
+        
+        // Fetch the required image here. Pass it to the completion
+        // block along with the index, zoom scale, and error if any.
+        completion(index, selectedAssets[index].fullResolutionImage, ZoomScale.default, nil)
     }
 }
 

@@ -24,7 +24,8 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     @IBOutlet weak var editNameAddressOutlet: UIButton!
     
     @IBAction func doneAction(_ sender: Any) {
-        self.performSegue(withIdentifier: "propertiesUnwind", sender: nil)
+        DataModel.newPost.savePost()
+        self.performSegue(withIdentifier: "discoverUnwind", sender: nil)
     }
     
     @IBAction func editNameAddressAction(_ sender: Any) {
@@ -39,7 +40,6 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     var originalValue = ""
     
     var tableViewFields = [["Price", "Square footage liveable", "Property Type"]]
-    var attributeNames = [["Price", "Square footage liveable", "Property Type"]]
     
     var sectionHeaders = ["Details", "Address & Cost", "Size"]
     
@@ -69,7 +69,7 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         self.tableView.layer.masksToBounds = true
         
         // image view
-        self.postImageView.image = post.image
+        self.postImageView.image = post.images[0]
         self.postImageView.backgroundColor = UIColor.white
         
         /*// name / address labels
@@ -86,17 +86,51 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         // table view
         tableView.tableFooterView = UIView()
         
-        let keywordsString = DataModel.newPost.keywords.joined(separator: ",")
-        let hashtagsString = DataModel.newPost.tags.joined(separator: ",")
-        self.tableViewFields[0][0] = "Keywords: " + keywordsString
-        self.tableViewFields[0][1] = "Hashtags: " + hashtagsString
-        self.tableViewFields[0][2] = "Location: " + DataModel.newPost.location
-        self.tableView.delegate = self
-        self.tableView.dataSource = self
-        self.tableView.reloadData()
+        
+        if DataModel.newPost.keywords.count > 1 {
+            print("more than 1 keyword")
+            let keywordsString = DataModel.newPost.keywords.joined(separator: ", ")
+            print(keywordsString.last)
+            print(keywordsString)
+            if keywordsString.last == " " {
+                print("made it here")
+                self.tableViewFields[0][0] = "Keywords: " + keywordsString.dropLast(2)
+            } else {
+                self.tableViewFields[0][0] = "Keywords: " + keywordsString
+            }
+        } else if DataModel.newPost.keywords.count == 1 {
+            self.tableViewFields[0][0] = "Keywords: " + DataModel.newPost.keywords[0]
+        } else {
+            self.tableViewFields[0].remove(at: 0)
+        }
+        
+        if DataModel.newPost.tags.count > 1 {
+            let hashtagsString = DataModel.newPost.tags.joined(separator: ", ")
+            if hashtagsString.last == " " {
+                self.tableViewFields[0][1] = "Hashtags: " + hashtagsString.dropLast(2)
+            } else {
+                self.tableViewFields[0][1] = "Hashtags: " + hashtagsString
+            }
+        } else if DataModel.newPost.tags.count == 1 {
+            self.tableViewFields[0][1] = "Hashtags: " + DataModel.newPost.tags[0]
+        } else {
+            self.tableViewFields[0].remove(at: 1)
+        }
+        
+        if DataModel.newPost.location != "" {
+            self.tableViewFields[0][2] = "Location: " + DataModel.newPost.location
+        } else {
+            self.tableViewFields[0].remove(at: 2)
+        }
+        
+        if self.tableViewFields[0].count == 0 {
+            self.tableView.isHidden = true
+        } else {
+            self.tableView.delegate = self
+            self.tableView.dataSource = self
+            self.tableView.reloadData()
+        }
     }
-    
-    
     
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
     {
@@ -119,23 +153,8 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
             self.present(imagePicker, animated: true, completion: nil)
         }))
         
-        alert.addAction(UIAlertAction(title: "Default", style: .default, handler: { _ in
-            self.postImageView.image = UIImage(named: "cityBackground")
-        }))
-        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         present(alert, animated: true)
-    }
-    
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let img = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-            DataModel.newPost.image = img
-            self.postImageView.image = img
-        } else if let img = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-            DataModel.newPost.image = img
-            self.postImageView.image = img
-        }
-        dismiss(animated:true, completion: nil)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

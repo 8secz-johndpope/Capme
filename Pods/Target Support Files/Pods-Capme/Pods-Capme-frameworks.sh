@@ -161,22 +161,26 @@ strip_invalid_archs() {
 
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
+  install_framework "${BUILT_PRODUCTS_DIR}/ATGMediaBrowser/ATGMediaBrowser.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/DropDown/DropDown.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/FloatingPanel/FloatingPanel.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Parse/Parse.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/SCLAlertView/SCLAlertView.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/SimpleAnimation/SimpleAnimation.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/TLPhotoPicker/TLPhotoPicker.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/WLEmptyState/WLEmptyState.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/WSTagsField/WSTagsField.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
+  install_framework "${BUILT_PRODUCTS_DIR}/ATGMediaBrowser/ATGMediaBrowser.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/DropDown/DropDown.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/FloatingPanel/FloatingPanel.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Parse/Parse.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/SCLAlertView/SCLAlertView.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/SimpleAnimation/SimpleAnimation.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/TLPhotoPicker/TLPhotoPicker.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/WLEmptyState/WLEmptyState.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/WSTagsField/WSTagsField.framework"
 fi
