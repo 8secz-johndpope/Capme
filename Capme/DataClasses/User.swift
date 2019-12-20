@@ -20,9 +20,12 @@ class User {
     var profilePic: UIImage?
     
     var requestSender: PFUser?
-    var requestReciever: PFUser?
+    var requestreceiver: PFUser?
     
     var users = [User]()
+    
+    // For friend selection
+    var isSelected = false
     
     init() {
         self.objectId = ""

@@ -39,7 +39,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     let fpc = FloatingPanelController()
     
     override func viewWillDisappear(_ animated: Bool) {
-        if DataModel.recievedRequests.count > 0 {
+        if DataModel.receivedRequests.count > 0 {
             fpc.hide(animated: true) {
                 self.fpc.dismiss(animated: true) {}
             }
@@ -55,8 +55,8 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         
         // Cannot Friend these object ids
         restrictedIds = DataModel.friends.map { $0.objectId! }
-        print("recieved", DataModel.recievedRequests.map { $0.objectId! })
-        restrictedIds.append(contentsOf: DataModel.recievedRequests.map { $0.objectId! })
+        print("received", DataModel.receivedRequests.map { $0.objectId! })
+        restrictedIds.append(contentsOf: DataModel.receivedRequests.map { $0.objectId! })
         
         segmentControl.delegate = self
         // Hide the navigation bar line
@@ -93,7 +93,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.tableView.tableFooterView = UIView()
         
         // Show Floating Requests Panel
-        if DataModel.recievedRequests.count > 0 {
+        if DataModel.receivedRequests.count > 0 {
             if DataModel.requestsVC.status != "" {
                 fpc.set(contentViewController: DataModel.requestsVC)
                 fpc.isRemovalInteractionEnabled = true
@@ -103,7 +103,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
             } else {
                 let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
                 let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
-                tempVC.recievedRequests = DataModel.recievedRequests
+                tempVC.receivedRequests = DataModel.receivedRequests
                 tempVC.view.layer.cornerRadius = 10.0
                 tempVC.view.layer.masksToBounds = true
                 fpc.set(contentViewController: tempVC)
@@ -118,7 +118,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     @objc func selectedImage(sender:UIButton) {
         print("seletced an image")
-        self.selectedUser = DataModel.recievedRequests[sender.tag]
+        self.selectedUser = DataModel.receivedRequests[sender.tag]
         self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
     }
     
@@ -207,7 +207,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         if index == 0 {
             self.searchController.searchBar.isHidden = true
             self.searchController.searchBar.resignFirstResponder()
-            if DataModel.recievedRequests.count > 0 {
+            if DataModel.receivedRequests.count > 0 {
                 self.fpc.dismiss(animated: true) {
                     self.present(self.fpc, animated: true, completion: nil)
                 }
@@ -216,7 +216,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
             self.searchController.searchBar.isHidden = false
             self.searchController.searchBar.becomeFirstResponder()
             // Hide the floating panel.
-            if DataModel.recievedRequests.count > 0 {
+            if DataModel.receivedRequests.count > 0 {
                 fpc.hide(animated: true) {
                     self.fpc.dismiss(animated: true) {
                         

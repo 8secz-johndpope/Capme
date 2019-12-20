@@ -17,6 +17,15 @@ class Post {
     var description = String()
     var images = [UIImage]()
     var location = String()
+    var chosenFriendIds = [String]()
+    var releaseDate = Date()
+    
+    func isValid() -> Bool {
+        print("checking valid", self.images.count > 0 && self.description.count > 9)
+        print(self.images.count)
+        print(self.description.count)
+        return self.images.count > 0 && self.description.count > 9
+    }
     
     func savePost() {
         let post = PFObject(className: "Post")
@@ -26,6 +35,7 @@ class Post {
         // TODO figure out how to store multiple images (s3?)
         post["location"] = self.location
         post["sender"] = PFUser.current()!
+        post["recipients"] = self.chosenFriendIds
         
         if let imageData = DataModel.newPost.images[0].jpegData(compressionQuality: 1.00) {
             let file = PFFileObject(name: "img.png", data: imageData)

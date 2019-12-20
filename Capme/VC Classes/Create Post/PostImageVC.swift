@@ -8,24 +8,33 @@
 
 import Foundation
 import UIKit
-
-import Foundation
-import UIKit
 import SCLAlertView
 import TLPhotoPicker
 import ATGMediaBrowser
+import SCLAlertView
 
 class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, TLPhotosPickerViewControllerDelegate, MediaBrowserViewControllerDataSource {
     
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var addActionOutlet: UIButton!
+    @IBOutlet weak var reviewOutlet: UIButton!
+    @IBOutlet weak var addImageOutlet: UIButton!
+    
+    
+    @IBAction func reviewAction(_ sender: Any) {
+        if DataModel.newPost.isValid() {
+            self.performSegue(withIdentifier: "showReview", sender: nil)
+        } else {
+            let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+            let alert = SCLAlertView(appearance: appearance)
+            alert.showInfo("Notice", subTitle: "Your post requires an image and a description that is at least 10 characters long", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+        }
+    }
     
     @IBAction func addImageAction(_ sender: Any) {
         let viewController = TLPhotosPickerViewController()
         viewController.delegate = self
-        //configure.nibSet = (nibName: "CustomCell_Instagram", bundle: Bundle.main) // If you want use your custom cell..
         self.present(viewController, animated: true, completion: nil)
-        //imageViewSelected(fromAction: true)
     }
     
     var selectedAssets = [TLPHAsset]()
@@ -98,6 +107,9 @@ extension PostImageVC {
             if let images = withTLPHAssets.map({ $0.fullResolutionImage }) as? [UIImage] {
                 self.imageView.image = images[0]
                 DataModel.newPost.images = images
+                if DataModel.newPost.isValid() {
+                    self.addImageOutlet.isHidden = false
+                }
             }
         }
     }

@@ -12,7 +12,7 @@ import UIKit
 class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     
-    var recievedRequests = [User]()
+    var receivedRequests = [User]()
     var status = ""
     var selectedUser = User()
     var friendsRef = FriendsVC()
@@ -45,17 +45,17 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        DataModel.recievedRequests.count
+        DataModel.receivedRequests.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! RequestCollectionViewCell
-        cell.profilePicImageView.image = DataModel.recievedRequests[indexPath.row].profilePic
-        cell.usernameLabel.text = DataModel.recievedRequests[indexPath.row].username
-        cell.removeOutlet.accessibilityLabel =  DataModel.recievedRequests[indexPath.row].objectId
-        cell.acceptOutlet.accessibilityLabel =  DataModel.recievedRequests[indexPath.row].objectId
-        print(DataModel.recievedRequests[indexPath.row].requestId!)
-        cell.requestId = DataModel.recievedRequests[indexPath.row].requestId!
+        cell.profilePicImageView.image = DataModel.receivedRequests[indexPath.row].profilePic
+        cell.usernameLabel.text = DataModel.receivedRequests[indexPath.row].username
+        cell.removeOutlet.accessibilityLabel =  DataModel.receivedRequests[indexPath.row].objectId
+        cell.acceptOutlet.accessibilityLabel =  DataModel.receivedRequests[indexPath.row].objectId
+        print(DataModel.receivedRequests[indexPath.row].requestId!)
+        cell.requestId = DataModel.receivedRequests[indexPath.row].requestId!
         cell.acceptOutlet.layer.cornerRadius = 8
         cell.acceptOutlet.layer.masksToBounds = true
         cell.removeOutlet.layer.cornerRadius = 8
@@ -73,13 +73,13 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     
     @objc func removeRequest(sender:UIButton) {
         let index = sender.tag
-        DataModel.recievedRequests.remove(at: index)
+        DataModel.receivedRequests.remove(at: index)
         self.collectionView.reloadData()
     }
     
     @objc func acceptRequest(sender:UIButton) {
         let index = sender.tag
-        let newFriend = DataModel.recievedRequests.remove(at: index)
+        let newFriend = DataModel.receivedRequests.remove(at: index)
         DataModel.friends.insert(newFriend, at: 0)
         self.collectionView.reloadData()
         friendsRef.tableView.reloadData()

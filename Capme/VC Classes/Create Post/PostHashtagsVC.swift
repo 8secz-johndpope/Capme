@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import WSTagsField
+import SCLAlertView
 
 class PostHashtagsVC: UIViewController, UITextFieldDelegate {
     
@@ -18,7 +19,13 @@ class PostHashtagsVC: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var reviewOutlet: UIButton!
     
     @IBAction func reviewAction(_ sender: Any) {
-        self.performSegue(withIdentifier: "showReview", sender: nil)
+        if DataModel.newPost.isValid() {
+            self.performSegue(withIdentifier: "showReview", sender: nil)
+        } else {
+            let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+            let alert = SCLAlertView(appearance: appearance)
+            alert.showInfo("Notice", subTitle: "Your post requires an image and a description that is at least 10 characters long", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+        }
     }
     fileprivate let tagsField = WSTagsField()
     

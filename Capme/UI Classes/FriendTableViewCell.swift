@@ -12,6 +12,7 @@ import Parse
 
 class FriendTableViewCell: UITableViewCell {
     
+    @IBOutlet weak var checkMark: UIImageView!
     @IBOutlet weak var profilePicImageView: UIImageView!
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var addFriendOutlet: UIButton!

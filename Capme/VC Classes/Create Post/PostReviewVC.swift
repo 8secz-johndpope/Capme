@@ -14,7 +14,6 @@ import SimpleAnimation
 
 class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-
     @IBOutlet weak var postImageView: UIImageView!
     
     @IBOutlet weak var doneOutlet: UIButton!
@@ -39,7 +38,7 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     var fromCreate = false
     var originalValue = ""
     
-    var tableViewFields = [["Price", "Square footage liveable", "Property Type"]]
+    var tableViewFields = [[]]
     
     var sectionHeaders = ["Details", "Address & Cost", "Size"]
     
@@ -58,78 +57,59 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     }
     
     func setupUI() {
-        let post = DataModel.newPost
         
+        // Table View UI
+        self.tableView.layer.cornerRadius = 3
+        self.tableView.layer.masksToBounds = true
+        self.tableView.tableFooterView = UIView()
         lowerShadowLabel.layer.shadowPath = UIBezierPath(rect: lowerShadowLabel.bounds).cgPath
         lowerShadowLabel.layer.shadowRadius = 3
         lowerShadowLabel.layer.shadowOffset = .zero
         lowerShadowLabel.layer.shadowOpacity = 0.8
         
-        self.tableView.layer.cornerRadius = 3
-        self.tableView.layer.masksToBounds = true
+        // Image View
+        let post = DataModel.newPost
+        if post.images.count > 0 {
+            self.postImageView.image = post.images[0]
+            self.postImageView.backgroundColor = UIColor.white
+        }
         
-        // image view
-        self.postImageView.image = post.images[0]
-        self.postImageView.backgroundColor = UIColor.white
-        
-        /*// name / address labels
-        let nameTap = UITapGestureRecognizer(target: self, action:#selector(nameTapped(sender:)))
-        self.nameLabel.addGestureRecognizer(nameTap)
-        self.nameLabel.isUserInteractionEnabled = true
-        self.editNameAddressOutlet.isHidden = true
-        
-        let addressTap = UITapGestureRecognizer(target: self, action:#selector(addressTapped(sender:)))
-        //self.addressLabel.text = property.address
-        self.addressLabel.addGestureRecognizer(addressTap)
-        self.addressLabel.isUserInteractionEnabled = true*/
-        
-        // table view
-        tableView.tableFooterView = UIView()
-        
-        
+        // Cleaning the tableview data
         if DataModel.newPost.keywords.count > 1 {
             print("more than 1 keyword")
             let keywordsString = DataModel.newPost.keywords.joined(separator: ", ")
-            print(keywordsString.last)
-            print(keywordsString)
             if keywordsString.last == " " {
-                print("made it here")
-                self.tableViewFields[0][0] = "Keywords: " + keywordsString.dropLast(2)
-            } else {
-                self.tableViewFields[0][0] = "Keywords: " + keywordsString
+                self.tableViewFields[0].append("Keywords: " + keywordsString.dropLast(2))
+            } else { self.tableViewFields[0].append(self.tableViewFields[0][0] = "Keywords: " + keywordsString)
             }
         } else if DataModel.newPost.keywords.count == 1 {
-            self.tableViewFields[0][0] = "Keywords: " + DataModel.newPost.keywords[0]
-        } else {
-            self.tableViewFields[0].remove(at: 0)
+            self.tableViewFields[0].append("Keywords: " + DataModel.newPost.keywords[0])
         }
         
         if DataModel.newPost.tags.count > 1 {
             let hashtagsString = DataModel.newPost.tags.joined(separator: ", ")
             if hashtagsString.last == " " {
-                self.tableViewFields[0][1] = "Hashtags: " + hashtagsString.dropLast(2)
+                self.tableViewFields[0].append("Hashtags: " + hashtagsString.dropLast(2))
             } else {
-                self.tableViewFields[0][1] = "Hashtags: " + hashtagsString
+                self.tableViewFields[0].append("Hashtags: " + hashtagsString)
             }
         } else if DataModel.newPost.tags.count == 1 {
             self.tableViewFields[0][1] = "Hashtags: " + DataModel.newPost.tags[0]
-        } else {
-            self.tableViewFields[0].remove(at: 1)
         }
         
         if DataModel.newPost.location != "" {
-            self.tableViewFields[0][2] = "Location: " + DataModel.newPost.location
-        } else {
-            self.tableViewFields[0].remove(at: 2)
+            self.tableViewFields[0].append("Location: " + DataModel.newPost.location)
         }
         
         if self.tableViewFields[0].count == 0 {
             self.tableView.isHidden = true
+            self.lowerShadowLabel.isHidden = true
         } else {
             self.tableView.delegate = self
             self.tableView.dataSource = self
             self.tableView.reloadData()
         }
+        
     }
     
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
@@ -161,7 +141,7 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         let cell = UITableViewCell()
         cell.selectionStyle = .none
         cell.textLabel?.textColor = UIColor.darkGray
-        cell.textLabel?.text = tableViewFields[indexPath.section][indexPath.row]
+        cell.textLabel?.text = (tableViewFields[indexPath.section][indexPath.row] as! String)
         return cell
     }
     
@@ -173,12 +153,11 @@ class PostReviewVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         return tableViewFields.count
     }
     
-    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = UITableViewCell()
         header.textLabel!.text = sectionHeaders[section]
         header.backgroundColor = self.navigationController?.navigationBar.barTintColor
-        header.textLabel?.textColor = #colorLiteral(red: 0.9882352941, green: 0.8196078431, blue: 0.1647058824, alpha: 1)
+        header.textLabel?.textColor = UIColor.white
         header.textLabel?.font = UIFont.boldSystemFont(ofSize: 18.0)
         return header
     }

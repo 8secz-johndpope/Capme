@@ -9,6 +9,7 @@
 import UIKit
 import Parse
 import WLEmptyState
+import DropDown
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -52,6 +53,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Empty State
         WLEmptyState.configure()
+        
+        DropDown.startListeningToKeyboard()
         
         return true
     }

@@ -38,7 +38,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         DataModel.friends = [User]()
         DataModel.users = [User]()
         DataModel.sentRequests = [User]()
-        DataModel.recievedRequests = [User]()
+        DataModel.receivedRequests = [User]()
     }
     
     override func viewDidLoad() {
@@ -98,21 +98,23 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         query.includeKey("sender")
         let requestRef = FriendRequest()
         requestRef.getRequests(query: query) { (queriedRequests) in
-            print("Recieved this many requests:", queriedRequests.count)
+            print("received this many requests:", queriedRequests.count)
             for request in queriedRequests {
                 if request.status == "accepted" {
-                    if request.reciever.objectId == PFUser.current()!.objectId {
+                    if request.receiver.objectId == PFUser.current()!.objectId {
+                        print("appended a friend!1")
                         DataModel.friends.append(request.sender)
                     } else if request.sender.objectId == PFUser.current()!.objectId {
-                        DataModel.friends.append(request.reciever)
+                        print("appended a friend!2")
+                        DataModel.friends.append(request.receiver)
                     }
                 } else if request.status == "pending" {
-                    if request.reciever.objectId == PFUser.current()!.objectId! {
+                    if request.receiver.objectId == PFUser.current()!.objectId! {
                         request.sender.requestId = request.objectId
-                        DataModel.recievedRequests.append(request.sender)
+                        DataModel.receivedRequests.append(request.sender)
                     } else if request.sender.objectId == PFUser.current()!.objectId! {
                         
-                        DataModel.sentRequests.append(request.reciever)
+                        DataModel.sentRequests.append(request.receiver)
                     }
                 }
                 if request === queriedRequests.last {

@@ -14,7 +14,7 @@ class FriendRequest {
     
     var status: String!
     var sender: User!
-    var reciever: User!
+    var receiver: User!
     var objectId: String!
     var updatedAt: Date!
     
@@ -45,7 +45,7 @@ class FriendRequest {
                                     image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                         if error == nil  {
                                             if let finalimage = UIImage(data: imageData!) {
-                                                request.reciever = User(user: recipient, image: finalimage)
+                                                request.receiver = User(user: recipient, image: finalimage)
                                                 self.requests.append(request)
                                                 if self.requests.count == objects?.count {
                                                     print(self.requests.count)
@@ -55,7 +55,7 @@ class FriendRequest {
                                         }
                                     }
                                 } else {
-                                    request.reciever = User(user: recipient, image: UIImage(named: "defaultProfilePic")!)
+                                    request.receiver = User(user: recipient, image: UIImage(named: "defaultProfilePic")!)
                                     self.requests.append(request)
                                     if self.requests.count == objects?.count {
                                         print(self.requests.count)
@@ -64,7 +64,7 @@ class FriendRequest {
                                 }
                             }
                         } else {
-                            request.reciever = User(user: PFUser.current()!, image: DataModel.profilePic)
+                            request.receiver = User(user: PFUser.current()!, image: DataModel.profilePic)
                             if let image = sender.object(forKey: "profilePic") as? PFFileObject {
                                 image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                     if error == nil  {
