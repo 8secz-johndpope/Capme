@@ -39,6 +39,27 @@ class User {
         self.profilePic = image
     }
     
+    init(user: PFUser, completion: @escaping (_ result: User)->()) {
+        self.objectId = user.objectId!
+        self.username = user.username!
+        if let image = user["profilePic"] as? PFFileObject {
+            image.getDataInBackground {
+                (imageData:Data?, error:Error?) -> Void in
+                print("fetching the user1")
+                if error == nil  {
+                    if let finalimage = UIImage(data: imageData!) {
+                        self.profilePic = finalimage
+                        completion(self)
+                    }
+                }
+            }
+        } else {
+            print("fetching the user2")
+            self.profilePic = UIImage(named: "defaultProfilePic")
+            completion(self)
+        }
+    }
+    
     func getUsers(query: PFQuery<PFObject>, completion: @escaping (_ result: [User])->()) {
         query.findObjectsInBackground {
             (objects:[PFObject]?, error:Error?) -> Void in

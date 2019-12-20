@@ -20,7 +20,6 @@ class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigati
     @IBOutlet weak var reviewOutlet: UIButton!
     @IBOutlet weak var addImageOutlet: UIButton!
     
-    
     @IBAction func reviewAction(_ sender: Any) {
         if DataModel.newPost.isValid() {
             self.performSegue(withIdentifier: "showReview", sender: nil)
@@ -108,7 +107,8 @@ extension PostImageVC {
                 self.imageView.image = images[0]
                 DataModel.newPost.images = images
                 if DataModel.newPost.isValid() {
-                    self.addImageOutlet.isHidden = false
+                    self.addImageOutlet.isHidden = true
+                    self.reviewOutlet.isHidden = false
                 }
             }
         }

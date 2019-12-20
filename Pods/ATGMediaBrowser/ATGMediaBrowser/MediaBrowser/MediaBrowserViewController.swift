@@ -352,7 +352,6 @@ public class MediaBrowserViewController: UIViewController {
 
     /// Invoking this method reloads the contents media browser.
     public func reloadContentViews() {
-
         numMediaItems = dataSource?.numberOfItems(in: self) ?? 0
         if shouldShowPageControl {
             pageControl.numberOfPages = numMediaItems
@@ -474,7 +473,6 @@ extension MediaBrowserViewController {
             visualEffectContentView.topAnchor.constraint(equalTo: visualEffectContainer.topAnchor),
             visualEffectContentView.bottomAnchor.constraint(equalTo: visualEffectContainer.bottomAnchor)
         ])
-
         visualEffectContainer.addSubview(visualEffectView)
         visualEffectView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -486,7 +484,6 @@ extension MediaBrowserViewController {
     }
 
     private func populateContentViews() {
-
         view.addSubview(mediaContainerView)
         mediaContainerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -529,7 +526,6 @@ extension MediaBrowserViewController {
     }
 
     private func addCloseButton() {
-
         view.addSubview(closeButton)
         dataSource?.mediaBrowser(self, updateCloseButton: closeButton)
 
@@ -876,7 +872,6 @@ extension MediaBrowserViewController {
     }
 
     private func sourceImage() -> UIImage? {
-
         return mediaView(at: 1)?.image
     }
 

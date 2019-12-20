@@ -13,7 +13,9 @@ class MessageTableViewCell: UITableViewCell {
     
     @IBOutlet weak var profilePicImageView: UIImageView!
     @IBOutlet weak var usernameLabel: UILabel!
-    @IBOutlet weak var messagetextLabel: UILabel!
+    @IBOutlet weak var messageTextLabel: UILabel!
+    @IBOutlet weak var composeImageView: UIImageView!
+    
     
     
 }

@@ -53,6 +53,8 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
     @IBAction func calendarCancelAction(_ sender: Any) {
         self.calendarTextfield.text = ""
         self.calendarCancelOutlet.isHidden = true
+        calendarDropDown.dataSource = days
+        self.calendarDropDown.show()
     }
     
     @IBAction func cancelAction(_ sender: Any) {
@@ -70,6 +72,7 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
     var currentTextfield = ""
     
     var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    var dayDates = [String : Date]()
     
     override func viewDidLoad() {
         setupUI()
@@ -101,6 +104,24 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         self.locationBackground.layer.masksToBounds = true
         
         // Calendar Textfield
+        var weekdayDates = [String : Date]()
+        var weekdays = ["Today"]
+        var today = Date().endOfDay
+        if (today.hours(from: Date()) < 4) {
+            weekdays[0] = "Tomorrow"
+            today = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        }
+        weekdayDates[weekdays[0]] = today
+        for i in 1...6 {
+            let date = Calendar.current.date(byAdding: .day, value: i, to: today)
+            let weekday = getWeekDay(date: date!)
+            weekdays.append(weekday)
+            weekdayDates[weekday] = date!
+        }
+        print(weekdays)
+        self.days = weekdays
+        self.dayDates = weekdayDates
+        
         self.calendarTextfield.tintColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
         self.calendarTextfield.delegate = self
         self.calendarTextfield.textColor = .lightGray
@@ -109,23 +130,26 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         self.calendarTextfield.addTarget(self, action: #selector(PostDescriptionVC.textFieldDidChange(_:)), for: UIControl.Event.editingChanged)
         self.calendarTextfield.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 30, height: self.calendarTextfield.frame.height))
         self.calendarTextfield.leftViewMode = .always
-        
-        
+        self.setupCalendarDropDown()
+    }
+    
+    func getWeekDay(date: Date)-> String {
+          let dateFormatter = DateFormatter()
+          dateFormatter.dateFormat = "EEEE"
+          let weekDay = dateFormatter.string(from: date)
+          return weekDay
     }
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        print("began editing")
         if textField == self.calendarTextfield {
             self.currentTextfield = "calendar"
-            self.setupCalendarDropDown()
+            print("custom single tap")
+            calendarDropDown.dataSource = days
+            self.calendarDropDown.show()
         } else if textField == self.locationTextfield {
             self.currentTextfield = "location"
         }
         return true
-    }
-    
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -195,26 +219,27 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
                 print("filtered", filtered)
                 calendarDropDown.dataSource = filtered
                 calendarDropDown.show()
-                
             }
         }
     }
     
     func setupCalendarDropDown() {
         calendarDropDown.anchorView = self.calendarTextfield
-        //calendarDropDown.bottomOffset = CGPoint(x: 0, y:(calendarDropDown.anchorView?.plainView.bounds.height)!)
+        calendarDropDown.bottomOffset = CGPoint(x: 0, y:(calendarDropDown.anchorView?.plainView.bounds.height)!)
+        calendarDropDown.width = self.locationDropDown.width
         calendarDropDown.dataSource = days
-        calendarDropDown.width = self.calendarDropDown.frame.width
-        calendarDropDown.show()
         calendarDropDown.selectionAction = { [unowned self] (index: Int, item: String) in
             self.calendarCancelOutlet.isHidden = false
             self.calendarTextfield.textColor = UIColor.black
             self.calendarTextfield.text = item
-            // TODO change this to be dynamic
-            DataModel.newPost.releaseDate = Date()
+            for (key,value) in self.dayDates {
+                if key == self.calendarTextfield.text {
+                    print("Date association with \(key) selected")
+                    DataModel.newPost.releaseDateDict = [key : value]
+                }
+            }
             let startPosition = self.calendarTextfield.position(from: self.calendarTextfield.beginningOfDocument, offset: 0)
             let endPosition = self.calendarTextfield.position(from: self.calendarTextfield.beginningOfDocument, offset: 0)
-
             if startPosition != nil && endPosition != nil {
                 self.calendarTextfield.selectedTextRange = self.calendarTextfield.textRange(from: startPosition!, to: endPosition!)
             }
