@@ -29,6 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Remove requests from the collection view
     
     /* BACK LOG */
+    // Add blur to the image when the user presses "More..." (recieved image)
     // Friends (Search) shrink tableview to be the height of the keyboard
     // Change the settings alert view tint color
     // Corner radius of the Requests Floating Panel

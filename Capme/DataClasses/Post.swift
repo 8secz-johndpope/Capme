@@ -53,6 +53,9 @@ class Post {
                                     User(user: object["sender"] as! PFUser) { (user) in
                                         post.description = object["description"] as! String
                                         post.sender = user
+                                        let releaseDate = object["releaseDate"] as! Date
+                                        let releaseDateString = (object["releaseDate"] as! Date).getWeekDay()
+                                        post.releaseDateDict = [releaseDateString : releaseDate]
                                         post.images.append(finalimage)
                                         post.location = object["location"] as! String
                                         post.tags = object["tags"] as! [String]

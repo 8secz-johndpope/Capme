@@ -15,5 +15,4 @@ class DiscoverTableViewCell: UITableViewCell {
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var mainImageView: UIImageView!
     
-    
 }

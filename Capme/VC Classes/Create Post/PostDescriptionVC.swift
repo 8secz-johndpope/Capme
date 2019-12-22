@@ -114,14 +114,13 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         weekdayDates[weekdays[0]] = today
         for i in 1...6 {
             let date = Calendar.current.date(byAdding: .day, value: i, to: today)
-            let weekday = getWeekDay(date: date!)
+            let weekday = date!.getWeekDay()
             weekdays.append(weekday)
             weekdayDates[weekday] = date!
         }
         print(weekdays)
         self.days = weekdays
         self.dayDates = weekdayDates
-        
         self.calendarTextfield.tintColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
         self.calendarTextfield.delegate = self
         self.calendarTextfield.textColor = .lightGray
@@ -131,13 +130,6 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         self.calendarTextfield.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 30, height: self.calendarTextfield.frame.height))
         self.calendarTextfield.leftViewMode = .always
         self.setupCalendarDropDown()
-    }
-    
-    func getWeekDay(date: Date)-> String {
-          let dateFormatter = DateFormatter()
-          dateFormatter.dateFormat = "EEEE"
-          let weekDay = dateFormatter.string(from: date)
-          return weekDay
     }
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {

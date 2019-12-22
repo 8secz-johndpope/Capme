@@ -11,5 +11,9 @@ import UIKit
 
 class PostDetailsLowerView: UIView {
     
-
+    @IBOutlet weak var usernameLabel: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
+    @IBOutlet weak var descriptionTextView: UITextView!
+    @IBOutlet weak var topView: UIView!
+    @IBOutlet weak var bottomView: UIView!
 }
