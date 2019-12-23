@@ -21,6 +21,8 @@ class Post {
     var chosenFriendIds = [String]()
     var releaseDateDict = [String : Date]()
     var isViewed = false
+    var objectId = String()
+    var captions = [Caption]()
     
     var posts = [Post]()
     
@@ -51,6 +53,7 @@ class Post {
                             if error == nil  {
                                 if let finalimage = UIImage(data: imageData!) {
                                     User(user: object["sender"] as! PFUser) { (user) in
+                                        post.objectId = object.objectId!
                                         post.description = object["description"] as! String
                                         post.sender = user
                                         let releaseDate = object["releaseDate"] as! Date
@@ -60,6 +63,11 @@ class Post {
                                         post.location = object["location"] as! String
                                         post.tags = object["tags"] as! [String]
                                         post.keywords = object["keywords"] as! [String]
+                                        
+                                        if let jsonCaptions = object["captions"] as? [String] {
+                                            post.captions = self.convert(captions: jsonCaptions)
+                                        }
+                                        
                                         self.posts.append(post)
                                         if self.posts.count == objects?.count {
                                             completion(self.posts)
@@ -84,12 +92,11 @@ class Post {
         post["sender"] = PFUser.current()!
         post["recipients"] = self.chosenFriendIds
         post["releaseDate"] = self.releaseDateDict[releaseDateDict.keys.first!]
-        
+        post["captions"] = []
         if let imageData = DataModel.newPost.images[0].jpegData(compressionQuality: 1.00) {
             let file = PFFileObject(name: "img.png", data: imageData)
             post["image"] = file
         }
-        
         post.saveInBackground { (success, error) in
             if error == nil {
                 print("Success: Saved the new post")
@@ -98,6 +105,31 @@ class Post {
         if self === DataModel.newPost {
             DataModel.newPost = Post()
         }
+    }
+    
+    func saveNewCaption(caption: String) {
+        let post = PFObject(withoutDataWithClassName: "Post", objectId: self.objectId)
+        post.addUniqueObject(caption, forKey: "captions")
+        post.saveInBackground { (success, error) in
+            if error == nil {
+                print("Success: Saved the new caption")
+            }
+        }
+    }
+    
+    func convert(captions: [String]) -> [Caption] {
+        var result = [Caption]()
+        let jsonDecoder = JSONDecoder()
         
+        for caption in captions {
+            do {
+                let convertedCaption = try jsonDecoder.decode(Caption.self, from: caption.data(using: .utf8)!)
+                print(convertedCaption, "Convert")
+                result.append(convertedCaption)
+            } catch {
+                print("could not convert the caption")
+            }
+        }
+        return result
     }
 }

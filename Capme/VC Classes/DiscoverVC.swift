@@ -49,11 +49,72 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         cell.mainImageView.image = self.posts[indexPath.row].images[0]
         cell.usernameLabel.text = self.posts[indexPath.row].sender.username
         cell.senderProfilePic.image = self.posts[indexPath.row].sender.profilePic
+        cell.firstCaptionView.favoriteButtonOutlet.accessibilityLabel = "1"
+        cell.secondCaptionView.favoriteButtonOutlet.accessibilityLabel = "2"
+        cell.thirdCaptionView.favoriteButtonOutlet.accessibilityLabel = "3"
+        
+        cell.firstCaptionView.favoriteAction = { [unowned self] in
+            self.posts[indexPath.row].captions[0].isCurrentUserFavorite = true
+            self.tableView.reloadData()
+        }
+        
+        cell.secondCaptionView.favoriteAction = { [unowned self] in
+            self.posts[indexPath.row].captions[1].isCurrentUserFavorite = true
+            self.tableView.reloadData()
+        }
+        
+        cell.thirdCaptionView.favoriteAction = { [unowned self] in
+            self.posts[indexPath.row].captions[2].isCurrentUserFavorite = true
+            self.tableView.reloadData()
+        }
+        
+        print(self.posts[indexPath.row].captions.count)
+        
+        if self.posts[indexPath.row].captions.count > 0 {
+            let caption = self.posts[indexPath.row].captions[0]
+            cell.firstCaptionView.usernameButton.setTitle(caption.username, for: .normal)
+            cell.firstCaptionView.captionLabel.text = caption.captionText
+            if self.posts[indexPath.row].captions[0].isCurrentUserFavorite {
+                cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
+                cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
+            }
+        }
+        
+        if self.posts[indexPath.row].captions.count > 1 {
+            let caption = self.posts[indexPath.row].captions[1]
+            cell.secondCaptionView.usernameButton.setTitle(caption.username, for: .normal)
+            cell.secondCaptionView.captionLabel.text = caption.captionText
+            if self.posts[indexPath.row].captions[1].isCurrentUserFavorite {
+                cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
+                cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
+            }
+        }
+        
+        if self.posts[indexPath.row].captions.count > 2 {
+            let caption = self.posts[indexPath.row].captions[1]
+            cell.thirdCaptionView.usernameButton.setTitle(caption.username, for: .normal)
+            cell.thirdCaptionView.captionLabel.text = caption.captionText
+            if self.posts[indexPath.row].captions[2].isCurrentUserFavorite {
+                cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
+                cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
+            }
+        }
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 290.0
+        if self.posts[indexPath.row].captions.count == 1 {
+            return 344.0
+        } else if self.posts[indexPath.row].captions.count == 2 {
+            return 398.0
+        } else if self.posts[indexPath.row].captions.count == 2 {
+            return 452.0
+        }
+        return 0.0
     }
     
     

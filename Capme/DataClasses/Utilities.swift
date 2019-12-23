@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import ATGMediaBrowser
 
 
 extension UIViewController {
@@ -50,6 +51,19 @@ extension Bluring where Self: UIView {
         effectView.alpha = alpha
 
         self.addSubview(effectView)
+    }
+}
+
+extension Encodable {
+    var convertToString: String? {
+        let jsonEncoder = JSONEncoder()
+        jsonEncoder.outputFormatting = .prettyPrinted
+        do {
+            let jsonData = try jsonEncoder.encode(self)
+            return String(data: jsonData, encoding: .utf8)
+        } catch {
+            return nil
+        }
     }
 }
 

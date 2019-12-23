@@ -15,4 +15,12 @@ class DiscoverTableViewCell: UITableViewCell {
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var mainImageView: UIImageView!
     
+    @IBOutlet weak var firstCaptionView: CaptionView!
+    @IBOutlet weak var secondCaptionView: CaptionView!
+    @IBOutlet weak var thirdCaptionView: CaptionView!
+
+    
+    
+    
+    
 }

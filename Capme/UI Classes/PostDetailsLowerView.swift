@@ -16,4 +16,7 @@ class PostDetailsLowerView: UIView {
     @IBOutlet weak var descriptionTextView: UITextView!
     @IBOutlet weak var topView: UIView!
     @IBOutlet weak var bottomView: UIView!
+    @IBOutlet weak var captionTextView: UITextView!
+    @IBOutlet weak var addCaptionOutlet: UIButton!
+    
 }

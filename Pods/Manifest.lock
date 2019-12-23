@@ -9,6 +9,7 @@ PODS:
     - Bolts/Tasks (~> 1.9)
   - SCLAlertView (0.8)
   - SimpleAnimation (0.4.2)
+  - SwiftyJSON (5.0.0)
   - TLPhotoPicker (2.0.7)
   - WLEmptyState (3.1.0)
   - WSTagsField (5.2.0)
@@ -20,6 +21,7 @@ DEPENDENCIES:
   - Parse
   - SCLAlertView
   - SimpleAnimation
+  - SwiftyJSON
   - TLPhotoPicker
   - WLEmptyState
   - WSTagsField
@@ -33,6 +35,7 @@ SPEC REPOS:
     - Parse
     - SCLAlertView
     - SimpleAnimation
+    - SwiftyJSON
     - TLPhotoPicker
     - WLEmptyState
     - WSTagsField
@@ -45,10 +48,11 @@ SPEC CHECKSUMS:
   Parse: c1ad2a04d2cab2b54b6fb7da05f741abf2cf57d1
   SCLAlertView: 6a77bb2edfc65e04dbe57725546cb4107a506b85
   SimpleAnimation: 5430010b9548f392e7459290acce01c9ceba7171
+  SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TLPhotoPicker: 04e4ef38b31ee51388058c3e1e7bbdbd79614cef
   WLEmptyState: 2bbb3970f62c0b9252029d34a8f74cb3d436eeea
   WSTagsField: d57a287fd552934db1d93a85d38abbf74b067d6a
 
-PODFILE CHECKSUM: 698adcff13e48aa64e9cf66ab1a2e3c761d71980
+PODFILE CHECKSUM: 14af7e5b6aa139c9b341a3aee829a64e684eae7f
 
 COCOAPODS: 1.8.3

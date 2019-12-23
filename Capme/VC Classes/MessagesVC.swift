@@ -17,11 +17,33 @@ import ATGMediaBrowser
 // 3) Increase the size of the content view
 // 4) Show less should shrink
 
-class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, UIGestureRecognizerDelegate {
+class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
+    
+    @IBAction func addCaptionAction(_ sender: Any) {
+        print("Adding a caption")
+        self.lowerView.addCaptionOutlet.isHidden = true
+        self.lowerView.captionTextView.isHidden = false
+        self.sendNewCaptionOutlet.isHidden = false
+        self.lowerView.captionTextView.becomeFirstResponder()
+    }
     
     @IBOutlet weak var selectedPostLowerView: PostDetailsLowerView!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var sendNewCaptionOutlet: UIButton!
+    
+    @IBAction func sendNewCaptionAction(_ sender: Any) {
+        let newCaption = Caption()
+        newCaption.captionText = self.lowerView.captionTextView.text
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        newCaption.creationDate = formatter.string(from: Date())
+        newCaption.username = PFUser.current()!.username!
+        newCaption.userId = PFUser.current()!.objectId!
+        newCaption.favoritesCount = 0
+        newCaption.isCurrentUserFavorite = false
+        self.selectedPost.saveNewCaption(caption: newCaption.convertToJSON())
+    }
     
     var mediaBrowser: MediaBrowserViewController!
     var posts = [Post]()
@@ -30,6 +52,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     let textView = ReadMoreTextView()
     var originalTextFieldHeight: CGFloat = 0.0
     var translatioDistance: CGFloat = 0.0
+    var fromDismiss = false
     var blurView = UIImageView()
 
     override func viewDidLoad() {
@@ -37,7 +60,19 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func setupUI() {
+        
+        // Lower View
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         self.lowerView = selectedPostLowerView
+        self.lowerView.captionTextView.delegate = self
+        self.lowerView.captionTextView.layer.masksToBounds = true
+        self.lowerView.captionTextView.layer.cornerRadius = 10
+        self.lowerView.captionTextView.isHidden = true
+        self.sendNewCaptionOutlet.isHidden = true
+        self.lowerView.captionTextView.tintColor = UIColor.white
+        
+        // Table View
         self.tableView.delegate = self
         self.tableView.dataSource = self
         let postRef = Post()
@@ -79,6 +114,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.fromDismiss = true
         self.posts[indexPath.row].isViewed = true
         self.tableView.reloadData()
         self.selectedPost = self.posts[indexPath.row]
@@ -127,7 +163,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 self.textView.transform = scaledAndTranslatedTransform
             }, completion: {
                 (value: Bool) in
-                self.textView.backgroundColor = UIColor.clear
                 let tempView = self.lowerView.bottomView
                 self.lowerView.bottomView.removeFromSuperview()
                 self.lowerView.addSubview(tempView!)
@@ -140,7 +175,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let screenHeight = screenSize.height
             let originalTransform = self.textView.transform
             let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.00)
-                    
             
             self.translatioDistance = textView.frame.height - self.lowerView.topView.frame.maxY + 30
             
@@ -149,12 +183,8 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             UIView.animate(withDuration: 0.3, animations: {
                 self.lowerView.topView.transform = scaledAndTranslatedTransform
                 self.textView.transform = scaledAndTranslatedTransform
-                //self.textView.transform = scaledAndTranslatedTransform
             })
-            //self.textView.frame.origin.y = screenHeight - self.textView.frame.height
         }
-        
-        print(self.textView.text, "new text")
     }
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
@@ -173,5 +203,52 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         return 80.0
     }
     
+     func textViewDidBeginEditing(_ textView: UITextView) {
+         if textView.textColor == UIColor.systemGray {
+             textView.text = nil
+             textView.textColor = UIColor.black
+         }
+     }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        if !textView.text.isEmpty && textView.textColor != UIColor.systemGray {
+            self.sendNewCaptionOutlet.setImage(UIImage(named: "sendActive"), for: .normal)
+        } else {
+            self.sendNewCaptionOutlet.setImage(UIImage(named: "sendInactive"), for: .normal)
+        }
+    }
+     
+     func textViewDidEndEditing(_ textView: UITextView) {
+         if textView.text.isEmpty {
+             textView.text = "Add a caption..."
+             textView.textColor = UIColor.systemGray
+            self.sendNewCaptionOutlet.setImage(UIImage(named: "sendInactive"), for: .normal)
+         }
+     }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        print("text", text)
+        if text == "\n" {
+            print("should close...?")
+            self.lowerView.captionTextView.resignFirstResponder()
+            return false
+        }
+        return true
+    }
+    
+    @objc func keyboardWillShow(notification: Notification) {
+        print("keyboard is showing")
+        guard let userInfo = notification.userInfo else {return}
+        guard let keyboardSize = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {return}
+        print("made it this far")
+        let keyboardFrame = keyboardSize.cgRectValue
+        self.lowerView.frame.origin.y -= keyboardFrame.height
+     }
+
+    @objc func keyboardWillHide(notification: Notification){
+        let keyboardSize = (notification.userInfo?  [UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        let keyboardHeight = keyboardSize?.height
+         self.lowerView.frame.origin.y += keyboardHeight!
+    }
     
 }

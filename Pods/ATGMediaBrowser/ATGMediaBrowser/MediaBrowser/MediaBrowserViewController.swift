@@ -103,6 +103,7 @@ extension MediaBrowserViewControllerDelegate {
     public func mediaBrowser(_ mediaBrowser: MediaBrowserViewController, didChangeFocusTo index: Int) {}
 }
 
+
 public class MediaBrowserViewController: UIViewController {
 
     // MARK: - Exposed Enumerations
