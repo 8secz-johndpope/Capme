@@ -58,7 +58,7 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
     }
     
     @IBAction func cancelAction(_ sender: Any) {
-        self.calendarTextfield.text = ""
+        self.locationTextfield.text = ""
         self.cancelOutlet.isHidden = true
     }
     
@@ -222,6 +222,8 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         calendarDropDown.dataSource = days
         calendarDropDown.selectionAction = { [unowned self] (index: Int, item: String) in
             self.calendarCancelOutlet.isHidden = false
+            let newPosition = self.calendarTextfield.endOfDocument
+            self.calendarTextfield.selectedTextRange = self.calendarTextfield.textRange(from: newPosition, to: newPosition)
             self.calendarTextfield.textColor = UIColor.black
             self.calendarTextfield.text = item
             for (key,value) in self.dayDates {
@@ -230,10 +232,10 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
                     DataModel.newPost.releaseDateDict = [key : value]
                 }
             }
-            let startPosition = self.calendarTextfield.position(from: self.calendarTextfield.beginningOfDocument, offset: 0)
-            let endPosition = self.calendarTextfield.position(from: self.calendarTextfield.beginningOfDocument, offset: 0)
-            if startPosition != nil && endPosition != nil {
-                self.calendarTextfield.selectedTextRange = self.calendarTextfield.textRange(from: startPosition!, to: endPosition!)
+            
+            let endPosition = self.calendarTextfield.position(from: self.calendarTextfield.endOfDocument, offset: 0)
+            if endPosition != nil {
+                self.calendarTextfield.selectedTextRange = self.calendarTextfield.textRange(from: endPosition!, to: endPosition!)
             }
         }
         
@@ -250,11 +252,11 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
             self.locationTextfield.textColor = UIColor.black
             self.locationTextfield.text = item
             DataModel.newPost.location = item
-            let startPosition = self.locationTextfield.position(from: self.locationTextfield.beginningOfDocument, offset: 0)
-            let endPosition = self.locationTextfield.position(from: self.locationTextfield.beginningOfDocument, offset: 0)
+            
+            let endPosition = self.locationTextfield.position(from: self.locationTextfield.endOfDocument, offset: 0)
 
-            if startPosition != nil && endPosition != nil {
-                self.locationTextfield.selectedTextRange = self.locationTextfield.textRange(from: startPosition!, to: endPosition!)
+            if endPosition != nil {
+                self.locationTextfield.selectedTextRange = self.locationTextfield.textRange(from: endPosition!, to: endPosition!)
             }
         }
     }

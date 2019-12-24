@@ -80,7 +80,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         shadowLabel.layer.shadowOffset = .zero
         shadowLabel.layer.shadowOpacity = 0.8
         
-        
+        // Profile Picture Image View
         self.profilePicImageView.layer.borderWidth = 3.0
         self.profilePicImageView.layer.borderColor = UIColor.white.cgColor
         self.profilePicImageView.layer.cornerRadius = self.profilePicImageView.frame.height/2

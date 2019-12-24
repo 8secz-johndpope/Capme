@@ -106,7 +106,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             cell.profilePicImageView.layer.borderColor = CGColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
             cell.usernameLabel.font = UIFont.boldSystemFont(ofSize: 17.0)
             cell.usernameLabel.textColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
-            cell.messageTextLabel.frame.origin = CGPoint(x: cell.messageTextLabel.frame.origin.x + 30, y: cell.messageTextLabel.frame.origin.y)
+            cell.messageTextLabel.frame.origin = CGPoint(x: 110, y: cell.messageTextLabel.frame.origin.y)
             cell.composeImageView.isHidden = false
         }
         cell.selectionStyle = .none
@@ -155,7 +155,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let screenSize = UIScreen.main.bounds
             let screenHeight = screenSize.height
             let originalTransform = self.textView.transform
-            let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.00)
+            let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.0)
             let scaledAndTranslatedTransform = scaledTransform.translatedBy(x: 0.0, y: self.translatioDistance)
             self.blurView.isHidden = true
             UIView.animate(withDuration: 0.3, animations: {

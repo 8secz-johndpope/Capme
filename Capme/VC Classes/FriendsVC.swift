@@ -275,6 +275,4 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
             targetVC.fromSelectedUser = true
         }
     }
-    
-    
 }

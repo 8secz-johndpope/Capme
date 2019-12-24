@@ -145,6 +145,34 @@ extension NSLayoutManager {
 
 extension Date {
     
+    func timeAgo() -> String {
+        let minute = 60
+        let hour = 60 * minute
+        let day = 24 * hour
+        let week = 7 * day
+        
+        let secondsAgo = Int(Date().timeIntervalSince(self))
+        
+        var result = ""
+        if secondsAgo < minute {
+            result =  "\(secondsAgo) seconds ago"
+        } else if secondsAgo < hour {
+            result = "\(secondsAgo / 60) minutes ago"
+        } else if secondsAgo < day {
+            result = "\(secondsAgo / 60 / 60) hours ago"
+        } else if secondsAgo < week {
+            result = "\(secondsAgo / 60 / 60 / 24) days ago"
+        } else {
+            result = "\(secondsAgo / 60 / 60 / 24 / 7) weeks ago"
+        }
+        if result.first == "1" {
+            if let lastIndex = result.lastIndex(of: "s") {
+                result.remove(at: lastIndex)
+            }
+        }
+        return result
+    }
+    
     func getWeekDay() -> String {
           let dateFormatter = DateFormatter()
           dateFormatter.dateFormat = "EEEE"

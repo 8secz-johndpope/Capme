@@ -10,6 +10,8 @@ import UIKit
 import Parse
 import WLEmptyState
 import DropDown
+import Reachability
+import SCLAlertView
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,24 +23,57 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //*Filter users (Search) by username
     //*Logout alert view color
     //*Floating panel crashes when it attempts to present on null
+    //*Remove requests from the collection view
+    //*Capture friends, requests, and users data in DataModel to make VCs more dynamic
+    //*Friends (Search) shrink tableview to be the height of the keyboard
+    //*Change the settings alert view tint color
+    //*Wifi alert view
+    //*Update the caption json favorite count
+    //*Discover Item separator
+    //*Fix Add Location textfield drop down
+    //*Discover Loading Indicator
     
     /* IN PROGRESS */
-    // Capture friends, requests, and users data in DataModel to make VCs more dynamic
-    // Add contact picker to send invite to use the app
-    // Wifi alert view
-    // Remove requests from the collection view
+    
     
     /* BACK LOG */
+    // Incorporate tags in discover item details
+    // Add contact picker to send invite to use the app
     // Add blur to the image when the user presses "More..." (recieved image)
-    // Friends (Search) shrink tableview to be the height of the keyboard
-    // Change the settings alert view tint color
     // Corner radius of the Requests Floating Panel
     // Request deletion animation
     // Center odd requests in the collection view
     // Remove the intermediate floating panel (equivalent to the size of the nav bar)
+    // Use ML and public insta webscrape to find good captions
+    
+    let reachability = try! Reachability()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        reachability.whenReachable = { reachability in
+            if reachability.connection == .wifi {
+                print("Reachable via WiFi")
+            } else {
+                print("Reachable via Cellular")
+            }
+        }
+        reachability.whenUnreachable = { _ in
+            print("Not reachable")
+        }
+
+        do {
+            try reachability.startNotifier()
+        } catch {
+            print("Unable to start notifier")
+        }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(reachabilityChanged(note:)), name: .reachabilityChanged, object: reachability)
+        do {
+          try reachability.startNotifier()
+        } catch {
+          print("could not start reachability notifier")
+        }
         
         //Configure Parse client
         let configuration = ParseClientConfiguration {
@@ -58,6 +93,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         DropDown.startListeningToKeyboard()
         
         return true
+    }
+    
+    @objc func reachabilityChanged(note: Notification) {
+        let reachability = note.object as! Reachability
+        switch reachability.connection {
+            case .wifi:
+                print("Reachable via WiFi")
+            case .cellular:
+                print("Reachable via Cellular")
+            case .unavailable:
+              print("Network not reachable")
+              let alertViewIcon = UIImage(named: "noWifi")
+              let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+              let alert = SCLAlertView(appearance: appearance)
+              alert.showInfo("Notice", subTitle: "You must connect to a wifi network", closeButtonTitle: "Done", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: alertViewIcon, animationStyle: .topToBottom)
+            case .none:
+              print("none case")
+        }
     }
 
     // MARK: UISceneSession Lifecycle
