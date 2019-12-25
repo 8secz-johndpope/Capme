@@ -23,6 +23,7 @@ class Post {
     var isViewed = false
     var objectId = String()
     var captions = [Caption]()
+    var releaseDate = Date()
     
     var posts = [Post]()
     
@@ -35,6 +36,7 @@ class Post {
     }
     
     func getPosts(query: PFQuery<PFObject>, completion: @escaping (_ result: [Post])->()) {
+        let captionRef = Caption()
         query.findObjectsInBackground {
             (objects:[PFObject]?, error:Error?) -> Void in
             if let error = error {
@@ -65,7 +67,11 @@ class Post {
                                         post.keywords = object["keywords"] as! [String]
                                         
                                         if let jsonCaptions = object["captions"] as? [String] {
-                                            post.captions = self.convert(captions: jsonCaptions)
+                                            print(jsonCaptions)
+                                            post.captions = captionRef.sortByCreatedAt(captionsToSort: self.convert(captions: jsonCaptions))
+                                            for caption in post.captions {
+                                                print("caption user", caption.username)
+                                            }
                                         }
                                         
                                         self.posts.append(post)
@@ -131,5 +137,9 @@ class Post {
             }
         }
         return result
+    }
+    
+    func sortByReleaseDate(postsToSort: [Post]) -> [Post] {
+        return postsToSort.sorted(by: { $0.releaseDate > $1.releaseDate })
     }
 }

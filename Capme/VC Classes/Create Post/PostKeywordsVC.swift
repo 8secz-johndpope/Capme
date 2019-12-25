@@ -40,7 +40,6 @@ class PostKeywordsVC: UIViewController, UITextFieldDelegate {
         self.textfield.tintColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
         tagsField.frame = CGRect(x: 15.0, y: self.mainLabel.frame.maxY + 60.0, width: (self.view.frame.width - 60.0), height: 20.0)
         
-        
         self.textfield.isHidden = true
         tagsField.spaceBetweenLines = 5.0
         tagsField.spaceBetweenTags = 10.0

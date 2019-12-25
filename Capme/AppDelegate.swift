@@ -32,12 +32,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //*Discover Item separator
     //*Fix Add Location textfield drop down
     //*Discover Loading Indicator
+    //*Sort posts by release date
+    //*Sort captions by date when the user has not chosen a favorite
+    //*Handle favorite and unfavorite action from the details
+    //*Sort captions by favorites count (once the favorites are shown)
+    //*Unwind when user sends a caption
     
     /* IN PROGRESS */
+    //5Incorporate tags in messages item details
     
+    /* BACK LOG (minor) */
+    // When I send an image I want captioned, it should automatically go to the newsfeed.
+    // The first view should say pending responses, and give me the option to make it public earlier than the release date.
     
-    /* BACK LOG */
-    // Incorporate tags in discover item details
     // Add contact picker to send invite to use the app
     // Add blur to the image when the user presses "More..." (recieved image)
     // Corner radius of the Requests Floating Panel
@@ -45,6 +52,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Center odd requests in the collection view
     // Remove the intermediate floating panel (equivalent to the size of the nav bar)
     // Use ML and public insta webscrape to find good captions
+    
+    /* BACK LOG (major) */
+    //3AWS S3
+    //2Inspiration View for Captioners
+    //4Messaging
+    //1Push Notifications
+    
+    /* QUESTIONS */
+    // Should we support videos?
+    // Which image processing library should we use?
+    // How to deliver exploitable images content?
     
     let reachability = try! Reachability()
     

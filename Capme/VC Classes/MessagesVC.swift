@@ -11,12 +11,6 @@ import UIKit
 import Parse
 import ATGMediaBrowser
 
-// Handle Large Descriptions
-// 1) Add gesture recognizer to the textview
-// 2) Shift the text view (bottom should be right above the separator label)
-// 3) Increase the size of the content view
-// 4) Show less should shrink
-
 class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
     
@@ -28,9 +22,17 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.lowerView.captionTextView.becomeFirstResponder()
     }
     
+    @IBOutlet weak var inspirationOutlet: UIButton!
     @IBOutlet weak var selectedPostLowerView: PostDetailsLowerView!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var sendNewCaptionOutlet: UIButton!
+    
+    
+    @IBAction func inspirationAction(_ sender: Any) {
+        self.mediaBrowser.dismiss(animated: false) {
+            self.performSegue(withIdentifier: "showInspiration", sender: nil)
+        }
+    }
     
     @IBAction func sendNewCaptionAction(_ sender: Any) {
         let newCaption = Caption()
@@ -43,6 +45,11 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         newCaption.favoritesCount = 0
         newCaption.isCurrentUserFavorite = false
         self.selectedPost.saveNewCaption(caption: newCaption.convertToJSON())
+        self.lowerView.captionTextView.text = ""
+        self.lowerView.captionTextView.resignFirstResponder()
+        self.mediaBrowser.dismiss(animated: false) {
+            print("dismissed media browser")
+        }
     }
     
     var mediaBrowser: MediaBrowserViewController!
@@ -71,6 +78,13 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.lowerView.captionTextView.isHidden = true
         self.sendNewCaptionOutlet.isHidden = true
         self.lowerView.captionTextView.tintColor = UIColor.white
+        
+        // Inspiration Outlet
+        self.inspirationOutlet.layer.borderWidth = 2.0
+        self.inspirationOutlet.layer.borderColor = UIColor.white.cgColor
+        self.inspirationOutlet.contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 8.0, bottom: 0.0, right: 8.0)
+        self.inspirationOutlet.layer.cornerRadius = self.inspirationOutlet.frame.height/2
+        self.inspirationOutlet.layer.masksToBounds = true
         
         // Table View
         self.tableView.delegate = self
@@ -119,6 +133,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.tableView.reloadData()
         self.selectedPost = self.posts[indexPath.row]
         mediaBrowser = MediaBrowserViewController(dataSource: self)
+        
         self.lowerView.descriptionTextView.text = self.selectedPost.description
         self.lowerView.descriptionTextView.isHidden = true
         
@@ -139,10 +154,12 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.originalTextFieldHeight = textView.frame.height
         print("new height", textView.frame.height)
         self.lowerView.addSubview(textView)
-        //self.lowerView.descriptionTextView.adjustUITextViewHeight()
+        
         self.lowerView.usernameLabel.text = self.selectedPost.sender.username
         self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
-        
+    
+        self.inspirationOutlet.isHidden = false
+        mediaBrowser.view.addSubview(self.inspirationOutlet)
         mediaBrowser.view.addSubview(self.lowerView)
         present(mediaBrowser, animated: true, completion: nil)
     }

@@ -52,7 +52,7 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
         postRef.getPosts(query: query) { (queriedPosts) in
-            self.posts = queriedPosts
+            self.posts = postRef.sortByReleaseDate(postsToSort: queriedPosts)
             self.tableView.reloadData()
         }
     }
@@ -85,18 +85,19 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("selected the cell")
         self.selectedPost = self.posts[indexPath.row]
         mediaBrowser = MediaBrowserViewController(dataSource: self)
         present(mediaBrowser, animated: true, completion: nil)
         let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-        let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
-        tempVC.receivedRequests = DataModel.receivedRequests
+        let tempVC : CaptionsVC = mainStoryboard.instantiateViewController(withIdentifier: "captionsVC") as! CaptionsVC
+        tempVC.discoverRef = self
+        tempVC.postId = self.posts[indexPath.row].objectId
+        tempVC.mediaBrowserRef = mediaBrowser
+        tempVC.captions = self.posts[indexPath.row].captions
         tempVC.view.layer.cornerRadius = 10.0
         tempVC.view.layer.masksToBounds = true
         fpc.set(contentViewController: tempVC)
-        tempVC.status = "active"
-        DataModel.requestsVC = tempVC
+        DataModel.captionsVC = tempVC
         fpc.isRemovalInteractionEnabled = true
         mediaBrowser.present(fpc, animated: true, completion: nil)
     }
@@ -259,7 +260,7 @@ extension DiscoverVC {
         
         if self.posts[indexPath.row].captions.count > 1 {
             let caption = self.posts[indexPath.row].captions[1]
-            cell.firstCaptionView.favoritesCountLabel.text = String(describing: caption.favoritesCount)
+            cell.secondCaptionView.favoritesCountLabel.text = String(describing: caption.favoritesCount)
             cell.secondCaptionView.usernameButton.setTitle(caption.username, for: .normal)
             cell.secondCaptionView.captionLabel.text = caption.captionText
             if self.posts[indexPath.row].captions.count == 2 {
@@ -268,8 +269,8 @@ extension DiscoverVC {
         }
         
         if self.posts[indexPath.row].captions.count > 2 {
-            let caption = self.posts[indexPath.row].captions[1]
-            cell.firstCaptionView.favoritesCountLabel.text = String(describing: caption.favoritesCount)
+            let caption = self.posts[indexPath.row].captions[2]
+            cell.thirdCaptionView.favoritesCountLabel.text = String(describing: caption.favoritesCount)
             cell.thirdCaptionView.usernameButton.setTitle(caption.username, for: .normal)
             cell.thirdCaptionView.captionLabel.text = caption.captionText
         }

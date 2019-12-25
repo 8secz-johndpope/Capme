@@ -63,4 +63,14 @@ class Caption: Codable {
             }
         }
     }
+    
+    func sortByCreatedAt(captionsToSort: [Caption]) -> [Caption] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return captionsToSort.sorted(by: { formatter.date(from: $0.creationDate)! < formatter.date(from: $1.creationDate)! })
+    }
+    
+    func sortByFavoritesCount(captionsToSort: [Caption]) -> [Caption] {
+        return captionsToSort.sorted(by: { $0.favoritesCount > $1.favoritesCount })
+    }
 }
