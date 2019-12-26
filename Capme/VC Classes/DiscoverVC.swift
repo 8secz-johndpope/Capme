@@ -12,15 +12,21 @@ import Parse
 import NVActivityIndicatorView
 import ATGMediaBrowser
 import FloatingPanel
+import WLEmptyState
 
-class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource {
+class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, WLEmptyStateDelegate, WLEmptyStateDataSource {
     
     @IBOutlet weak var tableView: UITableView!
     @IBAction func postAction(_ sender: Any) {
         self.performSegue(withIdentifier: "showCreate", sender: nil)
     }
     
-    @IBAction func discoverUnwind(segue: UIStoryboardSegue) {}
+    @IBAction func discoverUnwind(segue: UIStoryboardSegue) {
+        if segue.identifier == "discoverUnwind" {
+            print("Created new caption")
+            self.tableView.reloadData()
+        }
+    }
     
     var posts = [Post]()
     var selectedUser = User()
@@ -52,6 +58,10 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
         postRef.getPosts(query: query) { (queriedPosts) in
+            if queriedPosts.count == 0 {
+                self.tableView.backgroundColor = UIColor.white
+                self.tableView.emptyStateDataSource = self
+            }
             self.posts = postRef.sortByReleaseDate(postsToSort: queriedPosts)
             self.tableView.reloadData()
         }
@@ -103,11 +113,13 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if self.posts[indexPath.row].captions.count == 1 {
+        if self.posts[indexPath.row].captions.count == 0 {
+            return 294.0
+        } else if self.posts[indexPath.row].captions.count == 1 {
             return 347.0
         } else if self.posts[indexPath.row].captions.count == 2 {
             return 401.0
-        } else if self.posts[indexPath.row].captions.count == 3 {
+        } else if self.posts[indexPath.row].captions.count >= 3 {
             return 454.0
         }
         return 0.0
@@ -143,13 +155,25 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let targetVC = segue.destination as! ProfileVC
             targetVC.selectedUser = self.selectedUser
             targetVC.fromSelectedUser = true
-            
         }
     }
     
 }
 
 extension DiscoverVC {
+    
+    func saveFavorite(indexPathRow: Int, captionNumber: Int) {
+        if DataModel.favoritedPosts[self.posts[indexPathRow].objectId] == self.posts[indexPathRow].captions[captionNumber].username + "*" + self.posts[indexPathRow].captions[captionNumber].captionText {
+            DataModel.favoritedPosts.removeValue(forKey: self.posts[indexPathRow].objectId)
+        }
+        DataModel.favoritedPosts[self.posts[indexPathRow].objectId] = self.posts[indexPathRow].captions[captionNumber].username + "*" + self.posts[indexPathRow].captions[captionNumber].captionText
+        print("check here", DataModel.favoritedPosts)
+    }
+    
+    func unsaveFavorite(indexPathRow: Int, captionNumber: Int) {
+        DataModel.favoritedPosts.removeValue(forKey: self.posts[indexPathRow].objectId)
+        print("removed", DataModel.favoritedPosts)
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! DiscoverTableViewCell
@@ -189,10 +213,13 @@ extension DiscoverVC {
                     self.posts[indexPath.row].captions[2].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
                 }
                 
+                
+                self.saveFavorite(indexPathRow: indexPath.row, captionNumber: 0)
                 self.posts[indexPath.row].captions[0].becameFavorite(captions: currentPostCaptions, username: currentPostCaptions[0].username, captionText: currentPostCaptions[0].captionText, postId: self.posts[indexPath.row].objectId)
                 self.tableView.reloadData()
             } else {
                 print("should not see this")
+                self.unsaveFavorite(indexPathRow: indexPath.row, captionNumber: 0)
                 cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 self.posts[indexPath.row].captions[0].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[0].username, captionText: currentPostCaptions[0].captionText, postId: self.posts[indexPath.row].objectId)
                 
@@ -213,10 +240,12 @@ extension DiscoverVC {
                     self.posts[indexPath.row].captions[2].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
                 }
                 
+                self.saveFavorite(indexPathRow: indexPath.row, captionNumber: 1)
                 self.posts[indexPath.row].captions[1].becameFavorite(captions: currentPostCaptions, username: currentPostCaptions[1].username, captionText: currentPostCaptions[1].captionText, postId: self.posts[indexPath.row].objectId)
                 self.tableView.reloadData()
             } else {
                 print("should not see this")
+                self.unsaveFavorite(indexPathRow: indexPath.row, captionNumber: 1)
                 cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 self.posts[indexPath.row].captions[1].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[1].username, captionText: currentPostCaptions[1].captionText, postId: self.posts[indexPath.row].objectId)
             }
@@ -236,13 +265,23 @@ extension DiscoverVC {
                     self.posts[indexPath.row].captions[1].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[1].username, captionText: currentPostCaptions[1].captionText, postId: self.posts[indexPath.row].objectId)
                 }
                 
+                self.saveFavorite(indexPathRow: indexPath.row, captionNumber: 2)
                 self.posts[indexPath.row].captions[2].becameFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
                 self.tableView.reloadData()
             } else {
                 print("should not see this")
+                self.unsaveFavorite(indexPathRow: indexPath.row, captionNumber: 2)
                 cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 self.posts[indexPath.row].captions[2].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
             }
+        }
+        
+        if self.posts[indexPath.row].captions.count == 0 {
+            cell.firstCaptionView.isHidden = true
+            cell.dateLabel.text = "Pending Captions"
+        } else {
+            cell.firstCaptionView.isHidden = false
+            cell.dateLabel.text = self.posts[indexPath.row].releaseDateDict[self.posts[indexPath.row].releaseDateDict.keys.first!]!.timeAgo()
         }
         
         if self.posts[indexPath.row].captions.count > 0 {
@@ -264,6 +303,8 @@ extension DiscoverVC {
             cell.secondCaptionView.usernameButton.setTitle(caption.username, for: .normal)
             cell.secondCaptionView.captionLabel.text = caption.captionText
             if self.posts[indexPath.row].captions.count == 2 {
+                print("shoudl be gabo", caption.username)
+                cell.secondCaptionView.isHidden = false
                 cell.thirdCaptionView.isHidden = true
             }
         }
@@ -273,8 +314,38 @@ extension DiscoverVC {
             cell.thirdCaptionView.favoritesCountLabel.text = String(describing: caption.favoritesCount)
             cell.thirdCaptionView.usernameButton.setTitle(caption.username, for: .normal)
             cell.thirdCaptionView.captionLabel.text = caption.captionText
+            cell.secondCaptionView.isHidden = false
+            cell.thirdCaptionView.isHidden = false
+        }
+        
+        if DataModel.favoritedPosts.keys.contains(self.posts[indexPath.row].objectId) {
+            print(self.posts[indexPath.row].objectId, "already been favorited", self.posts[indexPath.row].captions[0].username + "*" + self.posts[indexPath.row].captions[0].captionText)
+            if self.posts[indexPath.row].captions[0].username + "*" + self.posts[indexPath.row].captions[0].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]  {
+                cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+            } else if self.posts[indexPath.row].captions[1].username + "*" + self.posts[indexPath.row].captions[1].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]   {
+                cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+            } else if self.posts[indexPath.row].captions[2].username + "*" + self.posts[indexPath.row].captions[2].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]   {
+                cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+            }
+            self.showFavorites(cell: cell)
         }
         
         return cell
+    }
+    
+    func imageForEmptyDataSet() -> UIImage? {
+        return UIImage(named: "friendsEmpty")
+    }
+    
+    func titleForEmptyDataSet() -> NSAttributedString {
+        let title = NSAttributedString(string: "Grow your captioning network!", attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .headline), NSAttributedString.Key.foregroundColor: UIColor.init(cgColor: #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))])
+        return title
+    }
+    
+    func descriptionForEmptyDataSet() -> NSAttributedString {
+        let description = "Go to your profile and more friends to see more content"
+        
+        let title = NSAttributedString(string: description, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1), NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+        return title
     }
 }

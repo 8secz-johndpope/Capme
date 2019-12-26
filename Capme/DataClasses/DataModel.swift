@@ -25,6 +25,8 @@ struct DataModel {
     
     static var newPost = Post()
     
+    static var favoritedPosts = [String: String]()
+    
     
 }
     

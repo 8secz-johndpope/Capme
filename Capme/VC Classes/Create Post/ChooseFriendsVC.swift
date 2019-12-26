@@ -71,4 +71,15 @@ class ChooseFriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSou
         }
         self.tableView.reloadData()
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "discoverUnwind" {
+            let targetVC = segue.destination as! DiscoverVC
+            
+            let newPost = DataModel.newPost
+            
+            targetVC.posts.insert(newPost, at: 0)
+            DataModel.newPost = Post()
+        }
+    }
 }

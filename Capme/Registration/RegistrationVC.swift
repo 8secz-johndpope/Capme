@@ -35,6 +35,8 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
         }
     }
     
+    
+    
     @IBAction func registrationUnwind(segue: UIStoryboardSegue) {
     }
     
@@ -68,14 +70,19 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
     var fromLogout = false
     
     override func viewDidAppear(_ animated: Bool) {
+        print("should not see this ")
         if PFUser.current() != nil {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let vc = storyboard.instantiateViewController(withIdentifier: "TabBarController") as! UITabBarController
+            vc.modalPresentationStyle = .fullScreen
+            self.present(vc,
+             animated: false)
             if let image = PFUser.current()!["profilePic"] as? PFFileObject {
                 image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                     if error == nil  {
                         if let finalimage = UIImage(data: imageData!) {
                             DataModel.profilePic = finalimage
                         }
-                        self.performSegue(withIdentifier: "showTabBar", sender: nil)
                     }
                 }
             }

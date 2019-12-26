@@ -29,7 +29,22 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         setupUI()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        // TODO this could potentially be dangerous
+        discoverRef.tableView.reloadData()
+    }
+    
     func setupUI() {
+        
+        if DataModel.favoritedPosts.keys.contains(postId) {
+            for (index, element) in captions.enumerated() {
+                print("Item \(index): \(element)")
+                if  element.username + "*" + element.captionText == DataModel.favoritedPosts[postId] {
+                    favoriteIndex = index
+                }
+            }
+        }
+        
         if (self.tableView.contentSize.height < tableView.frame.size.height) {
             self.tableView.isScrollEnabled = false
          } else {
@@ -57,14 +72,29 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
     }
     
+    func saveFavorite(username: String, captionText: String) {
+        if DataModel.favoritedPosts[postId] == username + "*" + captionText {
+            DataModel.favoritedPosts.removeValue(forKey: postId)
+        }
+        DataModel.favoritedPosts[postId] = username + "*" + captionText
+        print("check here", DataModel.favoritedPosts)
+    }
+    
+    func unsaveFavorite(username: String, captionText: String) {
+        DataModel.favoritedPosts.removeValue(forKey: postId)
+        print("removed", DataModel.favoritedPosts)
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt  indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! CaptionTableViewCell
         cell.selectionStyle = .none
         cell.textView.text = self.captions[indexPath.row].captionText
         cell.usernameOutlet.setTitle(self.captions[indexPath.row].username, for: .normal)
         cell.textView.sizeToFit()
+
         
         if self.favoriteIndex > -1 { // Favorited
+            self.saveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
             cell.favoritesCountLabel.isHidden = false
             cell.favoriteOutlet.transform = CGAffineTransform(translationX: 0, y: -5)
             
@@ -78,10 +108,12 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
             }
         } else if self.favoriteIndex == -1 { // Unfavorited current
+            self.unsaveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
             cell.favoritesCountLabel.isHidden = true
             cell.favoriteOutlet.transform = CGAffineTransform(translationX: 0, y: 5)
             cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
         } else if self.favoriteIndex == -2 { // Untouched
+            self.saveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
             cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
         }
         

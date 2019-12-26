@@ -48,6 +48,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     override func viewDidLoad() {
         setupUI()
+        
         self.queryUsers()
     }
     
@@ -91,6 +92,11 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.segmentHeight = self.segmentControl.frame.height
         self.tableViewHeight = self.tableView.frame.height
         self.tableView.tableFooterView = UIView()
+        
+        if DataModel.friends.count == 0 {
+            self.changeToIndex(index: 1)
+            self.segmentControl.setIndex(index: 1)
+        }
         
         // Show Floating Requests Panel
         if DataModel.receivedRequests.count > 0 {

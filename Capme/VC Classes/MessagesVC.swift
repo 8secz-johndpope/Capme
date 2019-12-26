@@ -10,8 +10,9 @@ import Foundation
 import UIKit
 import Parse
 import ATGMediaBrowser
+import WLEmptyState
 
-class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
+class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, UIGestureRecognizerDelegate, UITextViewDelegate, WLEmptyStateDataSource, WLEmptyStateDelegate {
     
     
     @IBAction func addCaptionAction(_ sender: Any) {
@@ -87,6 +88,10 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.inspirationOutlet.layer.masksToBounds = true
         
         // Table View
+        if self.posts.count == 0 {
+            self.tableView.emptyStateDataSource = self
+        }
+        
         self.tableView.delegate = self
         self.tableView.dataSource = self
         let postRef = Post()
@@ -168,9 +173,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let lastChar = self.textView.text.last!
         if lastChar == "s" { // Show less
             self.textView.showLessText()
-            //self.textView.adjustUITextViewHeight()
-            let screenSize = UIScreen.main.bounds
-            let screenHeight = screenSize.height
             let originalTransform = self.textView.transform
             let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.0)
             let scaledAndTranslatedTransform = scaledTransform.translatedBy(x: 0.0, y: self.translatioDistance)
@@ -268,4 +270,26 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
          self.lowerView.frame.origin.y += keyboardHeight!
     }
     
+    func imageForEmptyDataSet() -> UIImage? {
+        return UIImage(named: "envelopeEmpty")
+    }
+    
+    func titleForEmptyDataSet() -> NSAttributedString {
+        let title = NSAttributedString(string: "You have no messages", attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .headline), NSAttributedString.Key.foregroundColor: UIColor.init(cgColor: #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))])
+        return title
+    }
+    
+    func descriptionForEmptyDataSet() -> NSAttributedString {
+        let description = "Select the button in the top right corner of your screen to create and send a new message"
+        
+        let title = NSAttributedString(string: description, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1), NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+        return title
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showInspiration" {
+            let targetVC = segue.destination as! InspirationVC
+            targetVC.selectedPost = self.selectedPost
+        }
+    }
 }

@@ -37,12 +37,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //*Handle favorite and unfavorite action from the details
     //*Sort captions by favorites count (once the favorites are shown)
     //*Unwind when user sends a caption
+    //*Incorporate tags in messages item details
+    //*Query friends from entry / By pass login
+    //*When I send an image I want captioned, it should automatically go to the newsfeed.
+    //*All null table views should have empty states
     
     /* IN PROGRESS */
-    //5Incorporate tags in messages item details
+    //5Media Browser Dismissal
+    //4Favoriting between media browser and discover vc
     
     /* BACK LOG (minor) */
-    // When I send an image I want captioned, it should automatically go to the newsfeed.
     // The first view should say pending responses, and give me the option to make it public earlier than the release date.
     
     // Add contact picker to send invite to use the app
@@ -58,12 +62,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //2Inspiration View for Captioners
     //4Messaging
     //1Push Notifications
+    //5Core data
     
     /* QUESTIONS */
     // Should we support videos?
     // Which image processing library should we use?
     // How to deliver exploitable images content?
     
+    var window: UIWindow?
     let reachability = try! Reachability()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -101,6 +107,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         Parse.initialize(with: configuration)
         
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = UIStoryboard(name: "LaunchScreen", bundle: nil).instantiateInitialViewController()
+        window?.makeKeyAndVisible()
+
+        
         UINavigationBar.appearance().barTintColor = UIColor.darkGray
         UINavigationBar.appearance().tintColor = UIColor(red: 252/255, green: 209/255, blue: 42/255, alpha: 1)
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor(red: 252/255, green: 209/255, blue: 42/255, alpha: 1)]
@@ -109,6 +120,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         WLEmptyState.configure()
         
         DropDown.startListeningToKeyboard()
+        
+        self.chooseInitialVC()
         
         return true
     }
@@ -130,21 +143,60 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
               print("none case")
         }
     }
-
-    // MARK: UISceneSession Lifecycle
-
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+    
+    func chooseInitialVC() {
+        if PFUser.current() != nil {
+            self.queryFriends()
+        } else {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let initialViewController = storyboard.instantiateViewController(withIdentifier: "LoginSignUpVC")
+            self.window?.rootViewController = initialViewController
+            self.window?.makeKeyAndVisible()
+        }
     }
-
-    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+    
+    func queryFriends() {
+        var predicates: [NSPredicate] = []
+        predicates.append(NSPredicate(format: "recipient = %@", PFUser.current()!))
+        predicates.append(NSPredicate(format: "sender = %@", PFUser.current()!))
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+        
+        let query = PFQuery(className: "FriendRequest", predicate: predicate)
+        query.includeKey("recipient")
+        query.includeKey("sender")
+        let requestRef = FriendRequest()
+        requestRef.getRequests(query: query) { (queriedRequests) in
+            print("received this many requests:", queriedRequests.count)
+            if queriedRequests.count == 0 {
+                /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let initialViewController = storyboard.instantiateViewController(withIdentifier: "TabBarController")
+                self.window?.rootViewController = initialViewController
+                self.window?.makeKeyAndVisible()*/
+            }
+            for request in queriedRequests {
+                if request.status == "accepted" {
+                    if request.receiver.objectId == PFUser.current()!.objectId {
+                        DataModel.friends.append(request.sender)
+                    } else if request.sender.objectId == PFUser.current()!.objectId {
+                        DataModel.friends.append(request.receiver)
+                    }
+                } else if request.status == "pending" {
+                    if request.receiver.objectId == PFUser.current()!.objectId! {
+                        request.sender.requestId = request.objectId
+                        DataModel.receivedRequests.append(request.sender)
+                    } else if request.sender.objectId == PFUser.current()!.objectId! {
+                        DataModel.sentRequests.append(request.receiver)
+                    }
+                }
+                if request === queriedRequests.last {
+                    print("getting here!")
+                    /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    let initialViewController = storyboard.instantiateViewController(withIdentifier: "TabBarController")
+                    self.window?.rootViewController = initialViewController
+                    self.window?.makeKeyAndVisible()*/
+                }
+            }
+        }
     }
-
-
 }
 

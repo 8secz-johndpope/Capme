@@ -69,8 +69,9 @@ class Post {
                                         if let jsonCaptions = object["captions"] as? [String] {
                                             print(jsonCaptions)
                                             post.captions = captionRef.sortByCreatedAt(captionsToSort: self.convert(captions: jsonCaptions))
+                                            print("CHECK HERE", post.captions.count, post.description)
                                             for caption in post.captions {
-                                                print("caption user", caption.username)
+                                                print(caption.captionText)
                                             }
                                         }
                                         
@@ -99,6 +100,7 @@ class Post {
         post["recipients"] = self.chosenFriendIds
         post["releaseDate"] = self.releaseDateDict[releaseDateDict.keys.first!]
         post["captions"] = []
+        self.sender = User(user: PFUser.current()!, image: DataModel.profilePic)
         if let imageData = DataModel.newPost.images[0].jpegData(compressionQuality: 1.00) {
             let file = PFFileObject(name: "img.png", data: imageData)
             post["image"] = file
@@ -107,9 +109,6 @@ class Post {
             if error == nil {
                 print("Success: Saved the new post")
             }
-        }
-        if self === DataModel.newPost {
-            DataModel.newPost = Post()
         }
     }
     

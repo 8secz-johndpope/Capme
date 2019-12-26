@@ -43,7 +43,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     override func viewDidLoad() {
         setupUI()
-        self.queryFriends()
+        //self.queryFriends()
     }
     
     func setupUI() {
@@ -79,6 +79,13 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         shadowLabel.layer.shadowRadius = 3
         shadowLabel.layer.shadowOffset = .zero
         shadowLabel.layer.shadowOpacity = 0.8
+        if DataModel.friends.count == 0 {
+            self.collectionViewCounts[2] = "+"
+        } else {
+            self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
+        }
+        
+        self.collectionView.reloadData()
         
         // Profile Picture Image View
         self.profilePicImageView.layer.borderWidth = 3.0
