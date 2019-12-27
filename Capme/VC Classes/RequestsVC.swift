@@ -26,13 +26,17 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     func setupUI() {
         
         // Collection View
-        //Define Layout here
         let screenSize = UIScreen.main.bounds
         let screenWidth = screenSize.width
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         let inset = (screenWidth - 200.0)/3
         layout.sectionInset = UIEdgeInsets(top: 0, left: 30.0, bottom: 0, right: 30.0)
+        
+        if DataModel.receivedRequests.count == 1 { // Center the item if there is only one
+            layout.sectionInset = UIEdgeInsets(top: 0, left: (screenWidth - 125.0)/2, bottom: 0, right: (screenWidth - 125.0)/2)
+        }
+        
         layout.itemSize = CGSize(width: 125.0, height: collectionView.frame.height)
         layout.minimumInteritemSpacing = inset
         layout.minimumLineSpacing = 60.0

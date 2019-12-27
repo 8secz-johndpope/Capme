@@ -62,6 +62,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var translatioDistance: CGFloat = 0.0
     var fromDismiss = false
     var blurView = UIImageView()
+    var inspirationButton = UIButton()
 
     override func viewDidLoad() {
         setupUI()
@@ -86,6 +87,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.inspirationOutlet.contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 8.0, bottom: 0.0, right: 8.0)
         self.inspirationOutlet.layer.cornerRadius = self.inspirationOutlet.frame.height/2
         self.inspirationOutlet.layer.masksToBounds = true
+        self.inspirationButton = self.inspirationOutlet
         
         // Table View
         if self.posts.count == 0 {
@@ -163,8 +165,8 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.lowerView.usernameLabel.text = self.selectedPost.sender.username
         self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
     
-        self.inspirationOutlet.isHidden = false
-        mediaBrowser.view.addSubview(self.inspirationOutlet)
+        self.inspirationButton.isHidden = false
+        mediaBrowser.view.addSubview(self.inspirationButton)
         mediaBrowser.view.addSubview(self.lowerView)
         present(mediaBrowser, animated: true, completion: nil)
     }

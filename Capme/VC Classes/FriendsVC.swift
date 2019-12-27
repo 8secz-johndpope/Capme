@@ -99,13 +99,12 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         }
         
         // Show Floating Requests Panel
+        fpc.delegate = self
         if DataModel.receivedRequests.count > 0 {
             if DataModel.requestsVC.status != "" {
                 fpc.set(contentViewController: DataModel.requestsVC)
                 fpc.isRemovalInteractionEnabled = true
-                print("crashing here?")
                 self.present(fpc, animated: true, completion: nil)
-                print("after")
             } else {
                 let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
                 let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
@@ -120,6 +119,10 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
                 self.present(fpc, animated: true, completion: nil)
             }
         }
+    }
+    
+    func floatingPanel(_ vc: FloatingPanelController, layoutFor newCollection: UITraitCollection) -> FloatingPanelLayout? {
+        return RequestsFloatingPanelLayout()
     }
     
     @objc func selectedImage(sender:UIButton) {
@@ -279,6 +282,21 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
             let targetVC = segue.destination as! ProfileVC
             targetVC.selectedUser = self.selectedUser
             targetVC.fromSelectedUser = true
+        }
+    }
+}
+
+class RequestsFloatingPanelLayout: FloatingPanelLayout {
+    public var initialPosition: FloatingPanelPosition {
+        return .half
+    }
+
+    public func insetFor(position: FloatingPanelPosition) -> CGFloat? {
+        switch position {
+            case .full: return 18.0
+            case .half: return 262.0
+            case .tip: return nil
+            case .hidden: return nil
         }
     }
 }

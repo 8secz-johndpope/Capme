@@ -72,6 +72,7 @@
 /* Begin PBXFileReference section */
 		663D93E4504B6F8D1C68F8FF /* Pods_Capme.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Capme.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		70B2B02633719DADC0106CBA /* Pods-Capme.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Capme.release.xcconfig"; path = "Target Support Files/Pods-Capme/Pods-Capme.release.xcconfig"; sourceTree = "<group>"; };
+		8C136AF723B598CB00DF6451 /* Capme.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Capme.entitlements; sourceTree = "<group>"; };
 		8C14B97F23A5966200C4FA58 /* Capme.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capme.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8C14B98223A5966200C4FA58 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8C14B98423A5966200C4FA58 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -180,6 +181,7 @@
 		8C14B98123A5966200C4FA58 /* Capme */ = {
 			isa = PBXGroup;
 			children = (
+				8C136AF723B598CB00DF6451 /* Capme.entitlements */,
 				8C14B98223A5966200C4FA58 /* AppDelegate.swift */,
 				8C1E71B423A84F5B006352E2 /* UI Classes */,
 				8C3EFE2823A867C400039B01 /* VC Classes */,
@@ -751,6 +753,7 @@
 			baseConfigurationReference = F17E8551F081399E2D0BFF69 /* Pods-Capme.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Capme/Capme.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PEB6PV8M5G;
 				INFOPLIST_FILE = Capme/Info.plist;
@@ -770,6 +773,7 @@
 			baseConfigurationReference = 70B2B02633719DADC0106CBA /* Pods-Capme.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Capme/Capme.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PEB6PV8M5G;
 				INFOPLIST_FILE = Capme/Info.plist;

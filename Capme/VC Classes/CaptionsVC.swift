@@ -94,7 +94,6 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
         
         if self.favoriteIndex > -1 { // Favorited
-            self.saveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
             cell.favoritesCountLabel.isHidden = false
             cell.favoriteOutlet.transform = CGAffineTransform(translationX: 0, y: -5)
             
@@ -108,12 +107,10 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
             }
         } else if self.favoriteIndex == -1 { // Unfavorited current
-            self.unsaveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
             cell.favoritesCountLabel.isHidden = true
             cell.favoriteOutlet.transform = CGAffineTransform(translationX: 0, y: 5)
             cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
         } else if self.favoriteIndex == -2 { // Untouched
-            self.saveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
             cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
         }
         
@@ -123,6 +120,7 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
         cell.favoriteAction = { [unowned self] in
             if cell.favoriteOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                self.unsaveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
                 //cell.favoriteOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 self.captions[indexPath.row].unFavorite(captions: self.captions, username: self.captions[indexPath.row].username, captionText: self.captions[indexPath.row].captionText, postId: self.postId)
                 //self.captions[indexPath.row].favoritesCount -= 1
@@ -133,6 +131,7 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 self.tableView.reloadData()
             } else {
                 //cell.favoriteOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                self.saveFavorite(username: cell.usernameOutlet.titleLabel!.text!, captionText: cell.textView.text)
                 self.captions[indexPath.row].becameFavorite(captions: self.captions, username: self.captions[indexPath.row].username, captionText: self.captions[indexPath.row].captionText, postId: self.postId)
                 //self.captions[indexPath.row].favoritesCount += 1
                 cell.favoritesCountLabel.text = String(describing: self.captions[indexPath.row].favoritesCount)

@@ -23,6 +23,7 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
     @IBOutlet weak var locationBackground: UILabel!
     @IBOutlet weak var reviewOutlet: UIButton!
     @IBOutlet weak var calendarBackground: UILabel!
+    @IBOutlet weak var addTimeOutlet: UIButton!
     
     @IBAction func reviewAction(_ sender: Any) {
         if DataModel.newPost.isValid() && self.textView.textColor != UIColor.lightGray {
@@ -33,6 +34,45 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
             alert.showInfo("Notice", subTitle: "Your post requires an image and a description that is at least 10 characters long", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
         }
     }
+    
+    @IBAction func addTimeAction(_ sender: Any) {
+        
+        let datePicker: UIDatePicker = UIDatePicker()
+        datePicker.tintColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
+        //datePicker.timeZone = NSTimeZone.local
+        datePicker.datePickerMode = .time
+        datePicker.minuteInterval = 5
+        datePicker.frame = CGRect(x: 0, y: 100, width: 270, height: 100)
+        if DataModel.newPost.releaseDateDict.keys.first! == "Today" {
+            print("got to this minimum date shite")
+            //let components = Calendar.current.dateComponents([.hour, .minute], from:Date())
+            datePicker.minimumDate = Date()
+        }
+        
+        let alertController = UIAlertController(title: "Choose Time on \(self.calendarTextfield.text!)", message: "The recipients of your post have until the end of the day you have chosen. You can pick an earlier time below:\n\n\n\n\n\n\n\n", preferredStyle: .alert)
+        
+        alertController.view.addSubview(datePicker)
+        let selectAction = UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: { _ in
+            print("Selected Date: \(datePicker.date)")
+            let date = datePicker.date
+            let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+            let hour = components.hour!
+            let minute = components.minute!
+            
+            let upDatedDate = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: DataModel.newPost.releaseDateDict[DataModel.newPost.releaseDateDict.keys.first!]!)
+            self.addTimeOutlet.setTitle("  " + String(describing: hour) + ":" + String(describing: minute), for: .normal)
+            
+            print("Selected Date: \(upDatedDate)")
+        
+            
+        })
+        alertController.view.tintColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
+        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel, handler: nil)
+        alertController.addAction(selectAction)
+        alertController.addAction(cancelAction)
+        present(alertController, animated: true, completion:{})
+    }
+    
     
     @IBAction func locationAction(_ sender: Any) {
         if self.locationTextfield.isFirstResponder {
@@ -63,6 +103,7 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
     }
     
     // Address Completer Fields
+    var datePicker:UIDatePicker = UIDatePicker()
     let locationDropDown = DropDown()
     let calendarDropDown = DropDown()
     var locations = [String]()
@@ -202,7 +243,15 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
                 }
             }
         } else if textField == self.calendarTextfield {
+            
             if let text = textField.text {
+                if days.contains(text) {
+                    self.calendarCancelOutlet.isHidden = false
+                    self.addTimeOutlet.isHidden = false
+                } else if text.count == 0 {
+                    self.calendarCancelOutlet.isHidden = true
+                    self.addTimeOutlet.isHidden = true
+                }
                 print("text changed to", text)
                 let pattern = "\\b" + NSRegularExpression.escapedPattern(for: text)
                 let filtered = days.filter {
@@ -222,6 +271,7 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         calendarDropDown.dataSource = days
         calendarDropDown.selectionAction = { [unowned self] (index: Int, item: String) in
             self.calendarCancelOutlet.isHidden = false
+            self.addTimeOutlet.isHidden = false
             let newPosition = self.calendarTextfield.endOfDocument
             self.calendarTextfield.selectedTextRange = self.calendarTextfield.textRange(from: newPosition, to: newPosition)
             self.calendarTextfield.textColor = UIColor.black

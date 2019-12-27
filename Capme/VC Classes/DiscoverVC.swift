@@ -167,7 +167,6 @@ extension DiscoverVC {
             DataModel.favoritedPosts.removeValue(forKey: self.posts[indexPathRow].objectId)
         }
         DataModel.favoritedPosts[self.posts[indexPathRow].objectId] = self.posts[indexPathRow].captions[captionNumber].username + "*" + self.posts[indexPathRow].captions[captionNumber].captionText
-        print("check here", DataModel.favoritedPosts)
     }
     
     func unsaveFavorite(indexPathRow: Int, captionNumber: Int) {
@@ -178,9 +177,9 @@ extension DiscoverVC {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! DiscoverTableViewCell
         cell.mainImageView.image = self.posts[indexPath.row].images[0]
-        cell.usernameLabel.text = self.posts[indexPath.row].sender.username
+        cell.usernameOutlet.setTitle(self.posts[indexPath.row].sender.username, for: .normal)
+        cell.profilePicOutlet.setImage(self.posts[indexPath.row].sender.profilePic, for: .normal)
         cell.dateLabel.text = self.posts[indexPath.row].releaseDateDict[self.posts[indexPath.row].releaseDateDict.keys.first!]!.timeAgo()
-        cell.senderProfilePic.image = self.posts[indexPath.row].sender.profilePic
         cell.firstCaptionView.favoriteButtonOutlet.accessibilityLabel = "1"
         cell.secondCaptionView.favoriteButtonOutlet.accessibilityLabel = "2"
         cell.thirdCaptionView.favoriteButtonOutlet.accessibilityLabel = "3"
@@ -198,6 +197,14 @@ extension DiscoverVC {
         }
         
         let currentPostCaptions = self.posts[indexPath.row].captions
+        
+        cell.profilePicAction = { [unowned self] in
+            self.getSelectedUser(userId: self.posts[indexPath.row].sender.objectId)
+        }
+        
+        cell.senderUsernameAction = { [unowned self] in
+            self.getSelectedUser(userId: self.posts[indexPath.row].sender.objectId)
+        }
         
         cell.firstCaptionView.favoriteAction = { [unowned self] in
             if cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "unfilledStar")) {
@@ -303,7 +310,6 @@ extension DiscoverVC {
             cell.secondCaptionView.usernameButton.setTitle(caption.username, for: .normal)
             cell.secondCaptionView.captionLabel.text = caption.captionText
             if self.posts[indexPath.row].captions.count == 2 {
-                print("shoudl be gabo", caption.username)
                 cell.secondCaptionView.isHidden = false
                 cell.thirdCaptionView.isHidden = true
             }
@@ -319,7 +325,6 @@ extension DiscoverVC {
         }
         
         if DataModel.favoritedPosts.keys.contains(self.posts[indexPath.row].objectId) {
-            print(self.posts[indexPath.row].objectId, "already been favorited", self.posts[indexPath.row].captions[0].username + "*" + self.posts[indexPath.row].captions[0].captionText)
             if self.posts[indexPath.row].captions[0].username + "*" + self.posts[indexPath.row].captions[0].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]  {
                 cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
             } else if self.posts[indexPath.row].captions[1].username + "*" + self.posts[indexPath.row].captions[1].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]   {

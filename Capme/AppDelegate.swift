@@ -12,6 +12,7 @@ import WLEmptyState
 import DropDown
 import Reachability
 import SCLAlertView
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -41,28 +42,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //*Query friends from entry / By pass login
     //*When I send an image I want captioned, it should automatically go to the newsfeed.
     //*All null table views should have empty states
+    //*Favoriting between media browser and discover vc
     
     /* IN PROGRESS */
-    //5Media Browser Dismissal
-    //4Favoriting between media browser and discover vc
+    //
     
     /* BACK LOG (minor) */
-    // The first view should say pending responses, and give me the option to make it public earlier than the release date.
-    
     // Add contact picker to send invite to use the app
     // Add blur to the image when the user presses "More..." (recieved image)
     // Corner radius of the Requests Floating Panel
     // Request deletion animation
-    // Center odd requests in the collection view
-    // Remove the intermediate floating panel (equivalent to the size of the nav bar)
     // Use ML and public insta webscrape to find good captions
+    //5Media Browser Dismissal
+    // Add time to release textfield (clock item and text next to the cancel button)
+    //1Edit Release date
+    //2Center odd requests in the collection view
     
     /* BACK LOG (major) */
-    //3AWS S3
+    //5AWS S3
     //2Inspiration View for Captioners
     //4Messaging
-    //1Push Notifications
-    //5Core data
+    //1Push Notifications (Current)
+    //3Core data
     
     /* QUESTIONS */
     // Should we support videos?
@@ -74,6 +75,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        registerForPushNotifications()
         
         reachability.whenReachable = { reachability in
             if reachability.connection == .wifi {
@@ -124,6 +127,60 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.chooseInitialVC()
         
         return true
+    }
+    
+    func getNotificationSettings() {
+      UNUserNotificationCenter.current().getNotificationSettings { settings in
+        print("Notification settings: \(settings)")
+        guard settings.authorizationStatus == .authorized else { return }
+        DispatchQueue.main.async {
+          UIApplication.shared.registerForRemoteNotifications()
+        }
+      }
+    }
+    
+    func registerForPushNotifications() {
+      UNUserNotificationCenter.current() // 1
+        .requestAuthorization(options: [.alert, .sound, .badge]) { // 2
+          granted, error in
+          print("Permission granted: \(granted)") // 3
+            guard granted else { return }
+            self.getNotificationSettings()
+      }
+    }
+    
+    func application(
+      _ application: UIApplication,
+      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+      let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+      let token = tokenParts.joined()
+      print("Device Token: \(token)")
+        createInstallationOnParse(deviceTokenData: deviceToken)
+    }
+    
+    func createInstallationOnParse(deviceTokenData:Data){
+        if let installation = PFInstallation.current(){
+            installation.setDeviceTokenFrom(deviceTokenData)
+            installation.saveInBackground {
+                (success: Bool, error: Error?) in
+                if (success) {
+                    print("You have successfully saved your push installation to Back4App!")
+                } else {
+                    if let myError = error{
+                        print("Error saving parse installation \(myError.localizedDescription)")
+                    }else{
+                        print("Uknown error")
+                    }
+                }
+            }
+        }
+    }
+    
+    func application(
+      _ application: UIApplication,
+      didFailToRegisterForRemoteNotificationsWithError error: Error) {
+      print("Failed to register: \(error)")
     }
     
     @objc func reachabilityChanged(note: Notification) {
@@ -189,7 +246,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     }
                 }
                 if request === queriedRequests.last {
-                    print("getting here!")
                     /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
                     let initialViewController = storyboard.instantiateViewController(withIdentifier: "TabBarController")
                     self.window?.rootViewController = initialViewController

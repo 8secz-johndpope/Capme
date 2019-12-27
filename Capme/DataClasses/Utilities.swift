@@ -157,23 +157,43 @@ extension Date {
         let day = 24 * hour
         let week = 7 * day
         
-        let secondsAgo = Int(Date().timeIntervalSince(self))
-        
+        var secondsAgo = Int(Date().timeIntervalSince(self))
         var result = ""
-        if secondsAgo < minute {
-            result =  "\(secondsAgo) seconds ago"
-        } else if secondsAgo < hour {
-            result = "\(secondsAgo / 60) minutes ago"
-        } else if secondsAgo < day {
-            result = "\(secondsAgo / 60 / 60) hours ago"
-        } else if secondsAgo < week {
-            result = "\(secondsAgo / 60 / 60 / 24) days ago"
+        
+        if secondsAgo < 0 {
+            secondsAgo = secondsAgo * -1
+            if secondsAgo < minute {
+                result =  "In \(secondsAgo) seconds"
+            } else if secondsAgo < hour {
+                result = "In \(secondsAgo / 60) minutes"
+            } else if secondsAgo < day {
+                result = "In \(secondsAgo / 60 / 60) hours"
+            } else if secondsAgo < week {
+                result = "In \(secondsAgo / 60 / 60 / 24) days"
+            } else {
+                result = "In \(secondsAgo / 60 / 60 / 24 / 7) weeks"
+            }
+            if result.contains("In 1 ") {
+                if let lastIndex = result.lastIndex(of: "s") {
+                    result.remove(at: lastIndex)
+                }
+            }
         } else {
-            result = "\(secondsAgo / 60 / 60 / 24 / 7) weeks ago"
-        }
-        if result.first == "1" {
-            if let lastIndex = result.lastIndex(of: "s") {
-                result.remove(at: lastIndex)
+            if secondsAgo < minute {
+                result =  "\(secondsAgo) seconds ago"
+            } else if secondsAgo < hour {
+                result = "\(secondsAgo / 60) minutes ago"
+            } else if secondsAgo < day {
+                result = "\(secondsAgo / 60 / 60) hours ago"
+            } else if secondsAgo < week {
+                result = "\(secondsAgo / 60 / 60 / 24) days ago"
+            } else {
+                result = "\(secondsAgo / 60 / 60 / 24 / 7) weeks ago"
+            }
+            if result.first == "1" {
+                if let lastIndex = result.lastIndex(of: "s") {
+                    result.remove(at: lastIndex)
+                }
             }
         }
         return result
