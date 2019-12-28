@@ -13,9 +13,10 @@ import DropDown
 import Reachability
 import SCLAlertView
 import UserNotifications
+import ATGMediaBrowser
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
     /* COMPLETE */
     //*Registration
@@ -45,7 +46,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //*Favoriting between media browser and discover vc
     
     /* IN PROGRESS */
-    //
+    //*Remote Push
+    // Local Push
+    // Badge increment and clear
+    // Open to specified location
     
     /* BACK LOG (minor) */
     // Add contact picker to send invite to use the app
@@ -72,9 +76,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     let reachability = try! Reachability()
+    private var observer: NSObjectProtocol?
+    
+    deinit {
+        if let observer = observer {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        UNUserNotificationCenter.current().delegate = self
+        observer = NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [unowned self] notification in
+            // do whatever you want when the app is brought back to the foreground
+            UIApplication.shared.applicationIconBadgeNumber = 0
+        }
         
         registerForPushNotifications()
         
@@ -129,6 +145,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
+    {
+        completionHandler([.alert, .badge, .sound])
+        print("will present")
+        if let identifier = notification.request.content.userInfo["identifier"] as? String {
+            if identifier == "friendRequest" {
+                if let tabBarController =  DataModel.tabBarController {
+                    if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
+                        let value = Int(badgeValue) {
+                        tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
+                    } else {
+                        tabBarController.tabBar.items?[2].badgeValue = "1"
+                    }
+                }
+            } else if identifier == "favoritedCaption" {
+                if let tabBarController =  DataModel.tabBarController {
+                    if let badgeValue = tabBarController.tabBar.items?[0].badgeValue,
+                        let value = Int(badgeValue) {
+                        tabBarController.tabBar.items?[0].badgeValue = String(value + 1)
+                    } else {
+                        tabBarController.tabBar.items?[0].badgeValue = "1"
+                    }
+                }
+            } else if identifier == "captionRequest" {
+                if let tabBarController =  DataModel.tabBarController {
+                    if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                        let value = Int(badgeValue) {
+                        tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                    } else {
+                        tabBarController.tabBar.items?[1].badgeValue = "1"
+                    }
+                }
+            }
+        }
+    }
+    
     func getNotificationSettings() {
       UNUserNotificationCenter.current().getNotificationSettings { settings in
         print("Notification settings: \(settings)")
@@ -149,19 +201,104 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       }
     }
     
-    func application(
-      _ application: UIApplication,
-      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
-    ) {
-      let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-      let token = tokenParts.joined()
-      print("Device Token: \(token)")
-        createInstallationOnParse(deviceTokenData: deviceToken)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        print("right before")
+        
+        // Continue here... dismiss the controller and then also check if the fpc from friends is causing the crash
+        self.window?.rootViewController?.dismiss(animated: false, completion: {
+            print("dismissed!!")
+        })
+        if let mediaController = self.window?.rootViewController as? DiscoverVC {
+            print("DISCOVER IS CURRENTLY PRESENTED")
+            mediaController.fpc.dismiss(animated: false) {
+                
+            }
+            
+            /* Try this too
+            mediaController.dismiss(animated: false) {
+                print()
+            }*/
+            
+        }
+        // TODO app crashes when post is being created and I try to programmatically open friend requests (or when viewing a post)
+        let userInfo = response.notification.request.content.userInfo
+        if let identifier = userInfo["identifier"] as? String {
+            print("This is the identifier:", identifier)
+            if identifier == "friendRequest" {
+                if let tabBarController = DataModel.tabBarController {
+                    if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
+                        let value = Int(badgeValue) {
+                        tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
+                    } else {
+                        tabBarController.tabBar.items?[2].badgeValue = "1"
+                    }
+                    tabBarController.selectedIndex = 2
+                    let navController = tabBarController.viewControllers![2] as! UINavigationController
+                    let profileVC = navController.viewControllers[0] as! ProfileVC
+                    profileVC.performSegue(withIdentifier: "showFriends", sender: nil)
+                } else {
+                    DataModel.pushId = identifier
+                }
+            } else if identifier == "favoritedCaption" {
+                if let tabBarController =  DataModel.tabBarController {
+                    if let badgeValue = tabBarController.tabBar.items?[0].badgeValue,
+                        let value = Int(badgeValue) {
+                        tabBarController.tabBar.items?[0].badgeValue = String(value + 1)
+                    } else {
+                        tabBarController.tabBar.items?[0].badgeValue = "1"
+                    }
+                    print("show discover")
+                    tabBarController.selectedIndex = 0
+                }
+                
+                //let discoverVC = storyboard.instantiateViewController(withIdentifier: "discoverVC") as! DiscoverVC
+                //self.window?.rootViewController = discoverVC
+            } else if identifier == "captionRequest" {
+                if let tabBarController =  DataModel.tabBarController {
+                    if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                        let value = Int(badgeValue) {
+                        tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                    } else {
+                        tabBarController.tabBar.items?[1].badgeValue = "1"
+                    }
+                } else {
+                    DataModel.pushId = identifier
+                }
+            }
+        }
+
+        completionHandler()
     }
     
-    func createInstallationOnParse(deviceTokenData:Data){
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        print("Received a push")
+        /*if (application.applicationState == .background) {
+            print("Received a push while the app in background")
+        } else {
+            print("Received a push while the app is foreground")
+        }*/
+        if (application.applicationState == .inactive || application.applicationState == .background) {
+            // go to screen relevant to Notification content
+            print("background")
+        } else {
+            // App is in UIApplicationStateActive (running in foreground)
+            print("foreground")
+        
+        }
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+        let token = tokenParts.joined()
+        print("Device Token: \(token)")
+        DataModel.deviceToken = deviceToken
+        //createInstallationOnParse(deviceTokenData: deviceToken)
+    }
+    
+    func createInstallationOnParse(deviceTokenData:Data) {
         if let installation = PFInstallation.current(){
             installation.setDeviceTokenFrom(deviceTokenData)
+            installation.setObject(PFUser.current()!, forKey: "user")
             installation.saveInBackground {
                 (success: Bool, error: Error?) in
                 if (success) {

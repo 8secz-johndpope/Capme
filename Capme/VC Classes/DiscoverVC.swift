@@ -40,6 +40,23 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         setupUI()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        self.tabBarController?.viewControllers?[0].tabBarItem.badgeValue = nil
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if DataModel.pushId == "friendRequest" {
+            DataModel.pushId = ""
+            self.tabBarController?.selectedIndex = 2
+            let navController = self.tabBarController?.viewControllers![2] as! UINavigationController
+            let profileVC = navController.viewControllers[0] as! ProfileVC
+            profileVC.performSegue(withIdentifier: "showFriends", sender: nil)
+        } else if DataModel.pushId == "captionRequest" {
+            DataModel.pushId = ""
+            self.tabBarController?.selectedIndex = 1
+        }
+    }
+    
     func setupUI() {
         
         // Refresh Controller
@@ -65,6 +82,9 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             self.posts = postRef.sortByReleaseDate(postsToSort: queriedPosts)
             self.tableView.reloadData()
         }
+        
+        DataModel.tabBarController = tabBarController!
+        
     }
     
     @objc func startRefresh(sender:AnyObject) {
@@ -167,6 +187,18 @@ extension DiscoverVC {
             DataModel.favoritedPosts.removeValue(forKey: self.posts[indexPathRow].objectId)
         }
         DataModel.favoritedPosts[self.posts[indexPathRow].objectId] = self.posts[indexPathRow].captions[captionNumber].username + "*" + self.posts[indexPathRow].captions[captionNumber].captionText
+        
+        // TODO add logic to determine if sending a push is really necessary (time elapsed and favorite still is true)
+        // Don't send a push if the user has recieved a ton recently
+        print("favorited Caption ID!")
+        PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.posts[indexPathRow].captions[captionNumber].userId], "title": "", "message": "\(PFUser.current()!.username!) favorited your caption", "identifier" : "favoritedCaption"]) {
+            (response, error) in
+            if error == nil {
+                print("Success: Pushed the notification for favoritedCaption")
+            } else {
+                print(error?.localizedDescription, "Cloud Code Push Error")
+            }
+        }
     }
     
     func unsaveFavorite(indexPathRow: Int, captionNumber: Int) {

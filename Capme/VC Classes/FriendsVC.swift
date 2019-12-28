@@ -46,6 +46,10 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
+    }
+    
     override func viewDidLoad() {
         setupUI()
         
@@ -53,6 +57,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     }
     
     func setupUI() {
+        
         
         // Cannot Friend these object ids
         restrictedIds = DataModel.friends.map { $0.objectId! }
@@ -79,6 +84,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         searchController.searchBar.isHidden = true
         searchController.searchBar.autocapitalizationType = .none
         
+        
         // Table View
         if DataModel.friends.count == 0 && self.searchController.searchBar.isHidden  { // Show empty set
             self.tableView.emptyStateDataSource = self
@@ -93,15 +99,23 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.tableViewHeight = self.tableView.frame.height
         self.tableView.tableFooterView = UIView()
         
+        print("THIS FAR")
+        
+        fpc.delegate = self
+        
         if DataModel.friends.count == 0 {
             self.changeToIndex(index: 1)
             self.segmentControl.setIndex(index: 1)
         }
         
+        print("made it here now")
+        
         // Show Floating Requests Panel
-        fpc.delegate = self
+        
+        
         if DataModel.receivedRequests.count > 0 {
             if DataModel.requestsVC.status != "" {
+                
                 fpc.set(contentViewController: DataModel.requestsVC)
                 fpc.isRemovalInteractionEnabled = true
                 self.present(fpc, animated: true, completion: nil)
@@ -213,10 +227,12 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     }
     
     func changeToIndex(index: Int) {
+        
         if index == 0 {
             self.searchController.searchBar.isHidden = true
             self.searchController.searchBar.resignFirstResponder()
             if DataModel.receivedRequests.count > 0 {
+                print("test1")
                 self.fpc.dismiss(animated: true) {
                     self.present(self.fpc, animated: true, completion: nil)
                 }
@@ -226,14 +242,16 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
             self.searchController.searchBar.becomeFirstResponder()
             // Hide the floating panel.
             if DataModel.receivedRequests.count > 0 {
-                fpc.hide(animated: true) {
+                print("test2")
+                // TODO crashes here
+                self.fpc.hide(animated: false) {
                     self.fpc.dismiss(animated: true) {
-                        
+                        //self.fpc.view.removeFromSuperview()
+                        //self.fpc.removeFromParent()
                     }
-                    
-                    //self.fpc.view.removeFromSuperview()
-                    //self.fpc.removeFromParent()
                 }
+                
+                
             }
             
         }

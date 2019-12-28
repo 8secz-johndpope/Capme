@@ -214,7 +214,7 @@
         <!--DiscoverVC-->
         <scene sceneID="anc-i5-AsP">
             <objects>
-                <viewController id="cfB-dr-iwY" customClass="DiscoverVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="discoverVC" id="cfB-dr-iwY" customClass="DiscoverVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="aBe-gX-dZN">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -694,7 +694,7 @@
             <objects>
                 <viewController id="Jef-Fh-kHj" customClass="ProfileVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="M5D-ne-S07">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hVA-7m-QR1">
@@ -864,9 +864,9 @@
         <!--Friends-->
         <scene sceneID="Svz-aT-N1k">
             <objects>
-                <viewController id="Bnp-sy-rHa" customClass="FriendsVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="friendsVC" id="Bnp-sy-rHa" customClass="FriendsVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="KhA-eH-Nf6">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="p50-VA-LDV">
@@ -2134,7 +2134,8 @@
         <image name="unfilledStar" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
+        <segue reference="AWp-gT-avC"/>
         <segue reference="qc1-x0-RXH"/>
-        <segue reference="Joi-rc-ffS"/>
+        <segue reference="lKN-8b-Okq"/>
     </inferredMetricsTieBreakers>
 </document>

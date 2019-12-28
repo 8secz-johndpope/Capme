@@ -25,7 +25,13 @@ struct DataModel {
     
     static var newPost = Post()
     
+    static var deviceToken = Data()
+    
     static var favoritedPosts = [String: String]()
+    
+    // Handle Push
+    static var tabBarController: UITabBarController?
+    static var pushId = ""
     
     
 }

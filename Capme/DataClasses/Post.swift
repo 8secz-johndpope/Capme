@@ -67,12 +67,7 @@ class Post {
                                         post.keywords = object["keywords"] as! [String]
                                         
                                         if let jsonCaptions = object["captions"] as? [String] {
-                                            print(jsonCaptions)
                                             post.captions = captionRef.sortByCreatedAt(captionsToSort: self.convert(captions: jsonCaptions))
-                                            print("CHECK HERE", post.captions.count, post.description)
-                                            for caption in post.captions {
-                                                print(caption.captionText)
-                                            }
                                         }
                                         
                                         self.posts.append(post)
@@ -108,6 +103,15 @@ class Post {
         post.saveInBackground { (success, error) in
             if error == nil {
                 print("Success: Saved the new post")
+                print(self.chosenFriendIds)
+                PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": self.chosenFriendIds, "title": PFUser.current()?.username!, "message": self.description, "identifier" : "captionRequest"]) {
+                    (response, error) in
+                    if error == nil {
+                        print(response, "response")
+                    } else {
+                        print(error?.localizedDescription, "Cloud Code Push Error")
+                    }
+                }
             }
         }
     }

@@ -133,6 +133,7 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                     print("Success: Registered User \(user.username!)")
                     self.usernameTextField.text = ""
                     self.passwordTextField.text = ""
+                    self.createInstallationOnParse(deviceTokenData: DataModel.deviceToken)
                     //self.setupAdminStatus()
                     self.performSegue(withIdentifier: "showTabBar", sender: nil)
                 } else {
@@ -149,6 +150,25 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
             self.present(signUpErrorAlertView, animated: true, completion: nil)
         }
 
+    }
+    
+    func createInstallationOnParse(deviceTokenData:Data) {
+        if let installation = PFInstallation.current(){
+            installation.setDeviceTokenFrom(deviceTokenData)
+            installation.setObject(PFUser.current()!, forKey: "user")
+            installation.saveInBackground {
+                (success: Bool, error: Error?) in
+                if (success) {
+                    print("You have successfully saved your push installation to Back4App!")
+                } else {
+                    if let myError = error{
+                        print("Error saving parse installation \(myError.localizedDescription)")
+                    }else{
+                        print("Uknown error")
+                    }
+                }
+            }
+        }
     }
     
     func login() {
@@ -168,8 +188,7 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                         }
                     }
                 }
-                
-                
+                self.createInstallationOnParse(deviceTokenData: DataModel.deviceToken)
                 self.performSegue(withIdentifier: "showTabBar", sender: nil)
             } else {
                 // No, User Doesn't Exist

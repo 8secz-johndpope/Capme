@@ -68,6 +68,10 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         setupUI()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        self.tabBarController?.viewControllers?[1].tabBarItem.badgeValue = nil
+    }
+    
     func setupUI() {
         
         // Lower View
