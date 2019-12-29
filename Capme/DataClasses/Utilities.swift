@@ -23,6 +23,14 @@ extension UIViewController {
     }
 }
 
+extension UIRefreshControl {
+    func programaticallyBeginRefreshing(in tableView: UITableView) {
+        beginRefreshing()
+        let offsetPoint = CGPoint.init(x: 0, y: -frame.size.height)
+        tableView.setContentOffset(offsetPoint, animated: true)
+    }
+}
+
 extension UINavigationController {
     func hideLine() {
         navigationBar.shadowImage = UIImage()

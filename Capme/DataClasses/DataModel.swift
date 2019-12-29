@@ -33,6 +33,11 @@ struct DataModel {
     static var tabBarController: UITabBarController?
     static var pushId = ""
     
+    // Messages
+    static var messages = [Post]()
+    static var newMessage: Post?
+    static var receivedMessage = false
+    static var newMessageId = ""
     
 }
     

@@ -35,6 +35,45 @@ class Post {
         return self.images.count > 0 && self.description.count > 9 && possibleDays.contains(releaseDateDict.keys.first!)
     }
     
+    func getPostWithObjectId(id: String, completion: @escaping (_ result: Post)->()) {
+        let captionRef = Caption()
+        let query = PFQuery(className: "Post")
+        query.includeKey("sender")
+        query.whereKey("objectId", equalTo: id)
+        query.getFirstObjectInBackground { (object, error) in
+            if let object = object {
+                let post = Post()
+                if let image = object["image"] as? PFFileObject {
+                    image.getDataInBackground {
+                        (imageData:Data?, error:Error?) -> Void in
+                        if error == nil  {
+                            if let finalimage = UIImage(data: imageData!) {
+                                User(user: object["sender"] as! PFUser) { (user) in
+                                    post.objectId = object.objectId!
+                                    post.description = object["description"] as! String
+                                    post.sender = user
+                                    let releaseDate = object["releaseDate"] as! Date
+                                    let releaseDateString = (object["releaseDate"] as! Date).getWeekDay()
+                                    post.releaseDateDict = [releaseDateString : releaseDate]
+                                    post.images.append(finalimage)
+                                    post.location = object["location"] as! String
+                                    post.tags = object["tags"] as! [String]
+                                    post.keywords = object["keywords"] as! [String]
+                                    print(post.sender.username, "sender username!")
+                                    if let jsonCaptions = object["captions"] as? [String] {
+                                        post.captions = captionRef.sortByCreatedAt(captionsToSort: self.convert(captions: jsonCaptions))
+                                    }
+                                    print("got to the completion", post.objectId)
+                                    completion(post)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     func getPosts(query: PFQuery<PFObject>, completion: @escaping (_ result: [Post])->()) {
         let captionRef = Caption()
         query.findObjectsInBackground {
@@ -104,7 +143,7 @@ class Post {
             if error == nil {
                 print("Success: Saved the new post")
                 print(self.chosenFriendIds)
-                PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": self.chosenFriendIds, "title": PFUser.current()?.username!, "message": self.description, "identifier" : "captionRequest"]) {
+                PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": self.chosenFriendIds, "title": PFUser.current()?.username!, "message": self.description, "identifier" : "captionRequest", "objectId" : post.objectId]) {
                     (response, error) in
                     if error == nil {
                         print(response, "response")

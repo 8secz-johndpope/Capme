@@ -44,14 +44,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*When I send an image I want captioned, it should automatically go to the newsfeed.
     //*All null table views should have empty states
     //*Favoriting between media browser and discover vc
+    //*Local Push Sends
+    //*Remote Push Sends
+    //*Badge increment and clear
+    //*Open to specified location
+    //*Message Push Scenarios
     
     /* IN PROGRESS */
-    //*Remote Push
-    // Local Push
-    // Badge increment and clear
-    // Open to specified location
+    // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
+    // Messages push scenarios
+    // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages (TODO))
+    // From background - app selected (app is closed*, app is resting in background on discover*, app is resting in background on messages*)
+    // From background - (TODO) notification selected (app is closed, app is resting in background on discover, app is resting in background on messages)
     
     /* BACK LOG (minor) */
+    // No friends no message to
+    // Time didnt display properly
+    // Remove request until only one left, center remaining
     // Add contact picker to send invite to use the app
     // Add blur to the image when the user presses "More..." (recieved image)
     // Corner radius of the Requests Floating Panel
@@ -149,14 +158,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     {
         completionHandler([.alert, .badge, .sound])
         print("will present")
+        
         if let identifier = notification.request.content.userInfo["identifier"] as? String {
             if identifier == "friendRequest" {
-                if let tabBarController =  DataModel.tabBarController {
-                    if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
-                        let value = Int(badgeValue) {
-                        tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
-                    } else {
-                        tabBarController.tabBar.items?[2].badgeValue = "1"
+                let friendRequestRef = FriendRequest()
+                print(notification.request.content.userInfo["objectId"] as! String, "Object Id!!!")
+                friendRequestRef.getRequestWithId(id: notification.request.content.userInfo["objectId"] as! String) { (request) in
+                    print("made it this far and:")
+                    print(request.receiver.objectId!)
+                    if request.receiver.objectId == PFUser.current()!.objectId! {
+                        request.sender.requestId = request.objectId
+                        DataModel.receivedRequests.insert(request.sender, at: 0)
+                        if let tabBarController =  DataModel.tabBarController {
+                            if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
+                                let value = Int(badgeValue) {
+                                tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
+                            } else {
+                                tabBarController.tabBar.items?[2].badgeValue = "1"
+                            }
+                        }
                     }
                 }
             } else if identifier == "favoritedCaption" {
@@ -169,13 +189,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     }
                 }
             } else if identifier == "captionRequest" {
+                
                 if let tabBarController =  DataModel.tabBarController {
+                    DataModel.newMessageId = notification.request.content.userInfo["objectId"] as! String
                     if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
                         let value = Int(badgeValue) {
                         tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
                     } else {
                         tabBarController.tabBar.items?[1].badgeValue = "1"
                     }
+                } else {
+                    DataModel.pushId = identifier
                 }
             }
         }
@@ -208,24 +232,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.window?.rootViewController?.dismiss(animated: false, completion: {
             print("dismissed!!")
         })
-        if let mediaController = self.window?.rootViewController as? DiscoverVC {
-            print("DISCOVER IS CURRENTLY PRESENTED")
-            mediaController.fpc.dismiss(animated: false) {
-                
-            }
-            
-            /* Try this too
-            mediaController.dismiss(animated: false) {
-                print()
-            }*/
-            
-        }
+        
         // TODO app crashes when post is being created and I try to programmatically open friend requests (or when viewing a post)
         let userInfo = response.notification.request.content.userInfo
         if let identifier = userInfo["identifier"] as? String {
             print("This is the identifier:", identifier)
             if identifier == "friendRequest" {
                 if let tabBarController = DataModel.tabBarController {
+                    
+                    let friendRequestRef = FriendRequest()
+                    print(userInfo["objectId"] as! String, "Object Id!!!")
+                    friendRequestRef.getRequestWithId(id: userInfo["objectId"] as! String) { (request) in
+                        if request.receiver.objectId == PFUser.current()!.objectId! {
+                            request.sender.requestId = request.objectId
+                            DataModel.receivedRequests.insert(request.sender, at: 0)
+                            if let tabBarController =  DataModel.tabBarController {
+                                if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
+                                    let value = Int(badgeValue) {
+                                    tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
+                                } else {
+                                    tabBarController.tabBar.items?[2].badgeValue = "1"
+                                }
+                            }
+                        }
+                    }
+                    
                     if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
                         let value = Int(badgeValue) {
                         tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
@@ -254,7 +285,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 //let discoverVC = storyboard.instantiateViewController(withIdentifier: "discoverVC") as! DiscoverVC
                 //self.window?.rootViewController = discoverVC
             } else if identifier == "captionRequest" {
+                
+                
                 if let tabBarController =  DataModel.tabBarController {
+                    DataModel.newMessageId = userInfo["objectId"] as! String
+                    tabBarController.selectedIndex = 1
                     if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
                         let value = Int(badgeValue) {
                         tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
@@ -262,8 +297,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                         tabBarController.tabBar.items?[1].badgeValue = "1"
                     }
                 } else {
+                    DataModel.newMessageId = userInfo["objectId"] as! String
                     DataModel.pushId = identifier
                 }
+                
+                // 1 show messages vc
+                // 2 show tableview reloading
+                // 3 call get post with objectId from message vc ref below
+                // 4 Insert the message at the top of the tableview once the message has been received
+                // Continue... Open to the actual flow picture
+                /*let postRef = Post()
+                postRef.getPostWithObjectId(id: userInfo["objectId"] as! String) { (post) in
+                    DataModel.newMessage = post
+                    if let tabBarController =  DataModel.tabBarController {
+                        tabBarController.selectedIndex = 1
+                        if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                            let value = Int(badgeValue) {
+                            tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                        } else {
+                            tabBarController.tabBar.items?[1].badgeValue = "1"
+                        }
+                    } else {
+                        DataModel.pushId = identifier
+                    }
+                }*/
+                
             }
         }
 
@@ -292,7 +350,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let token = tokenParts.joined()
         print("Device Token: \(token)")
         DataModel.deviceToken = deviceToken
-        //createInstallationOnParse(deviceTokenData: deviceToken)
     }
     
     func createInstallationOnParse(deviceTokenData:Data) {

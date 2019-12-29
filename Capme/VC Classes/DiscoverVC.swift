@@ -191,7 +191,7 @@ extension DiscoverVC {
         // TODO add logic to determine if sending a push is really necessary (time elapsed and favorite still is true)
         // Don't send a push if the user has recieved a ton recently
         print("favorited Caption ID!")
-        PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.posts[indexPathRow].captions[captionNumber].userId], "title": "", "message": "\(PFUser.current()!.username!) favorited your caption", "identifier" : "favoritedCaption"]) {
+        PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.posts[indexPathRow].captions[captionNumber].userId], "title": "", "message": "\(PFUser.current()!.username!) favorited your caption", "identifier" : "favoritedCaption", "objectId" : self.posts[indexPathRow].objectId]) {
             (response, error) in
             if error == nil {
                 print("Success: Pushed the notification for favoritedCaption")

@@ -35,7 +35,7 @@ class FriendTableViewCell: UITableViewCell {
                 if error == nil {
                     print("Success: Saved the new friend request")
                     self.addFriendOutlet.setTitle("Pending...", for: .normal)
-                    PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [addFriendButton.accessibilityLabel!], "title": PFUser.current()?.username!, "message": "Check out your new friend request!", "identifier" : "friendRequest"]) {
+                    PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [addFriendButton.accessibilityLabel!], "title": PFUser.current()?.username!, "message": "Check out your new friend request!", "identifier" : "friendRequest", "objectId" : Request.objectId]) {
                         (response, error) in
                         if error == nil {
                             print("Success: Sent a push notification for a new friend request")

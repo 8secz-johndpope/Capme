@@ -20,6 +20,39 @@ class FriendRequest {
     
     var requests = [FriendRequest]()
     
+    func getRequestWithId(id: String, completion: @escaping (_ result: FriendRequest)->()) {
+        let query = PFQuery(className: "FriendRequest")
+        query.includeKey("recipient")
+        query.includeKey("sender")
+        query.whereKey("objectId", equalTo: id)
+        print("before get")
+        query.getFirstObjectInBackground { (object, error) in
+            if error == nil {
+                print("error")
+                if let object = object {
+                    print("object")
+                    let request = FriendRequest()
+                    request.objectId = object.objectId!
+                    request.status = (object["status"] as! String)
+                    request.updatedAt = object.updatedAt!
+                    if let sender = object["sender"] as? PFUser {
+                        if let image = sender.object(forKey: "profilePic") as? PFFileObject {
+                            image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                                if error == nil  {
+                                    if let finalimage = UIImage(data: imageData!) {
+                                        request.sender = User(user: sender, image: finalimage)
+                                        request.receiver = User(user: PFUser.current()!, image: UIImage(named: "defaultProfilePic")!)
+                                        completion(request)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     func getRequests(query: PFQuery<PFObject>, completion: @escaping (_ result: [FriendRequest])->()) {
         query.findObjectsInBackground {
             (objects:[PFObject]?, error:Error?) -> Void in

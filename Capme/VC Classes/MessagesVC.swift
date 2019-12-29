@@ -54,7 +54,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     var mediaBrowser: MediaBrowserViewController!
-    var posts = [Post]()
     var selectedPost = Post()
     var lowerView = PostDetailsLowerView()
     let textView = ReadMoreTextView()
@@ -63,6 +62,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var fromDismiss = false
     var blurView = UIImageView()
     var inspirationButton = UIButton()
+    let refreshControl = UIRefreshControl()
 
     override func viewDidLoad() {
         setupUI()
@@ -70,9 +70,21 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     override func viewDidAppear(_ animated: Bool) {
         self.tabBarController?.viewControllers?[1].tabBarItem.badgeValue = nil
+         getPostWithId()
+    }
+    
+    fileprivate  func addObservers() {
+        print("showing the refresh now!")
+        NotificationCenter.default.addObserver(self, selector: #selector(getPostWithId), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    fileprivate  func removeObservers() {
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     func setupUI() {
+        
+        addObservers()
         
         // Lower View
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -94,8 +106,8 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.inspirationButton = self.inspirationOutlet
         
         // Table View
-        if self.posts.count == 0 {
-            self.tableView.emptyStateDataSource = self
+        if DataModel.messages.count == 0 {
+            //self.tableView.emptyStateDataSource = self
         }
         
         self.tableView.delegate = self
@@ -104,23 +116,45 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let query = PFQuery(className: "Post")
         query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
+        // This might crash, may need to unwrap
+        
+        query.whereKey("objectId", notContainedIn: DataModel.messages.map( { $0.objectId }))
+        print("getting posts...", DataModel.newMessageId, DataModel.messages.map( { $0.objectId }))
         postRef.getPosts(query: query) { (queriedPosts) in
-            self.posts = queriedPosts
+            print(DataModel.messages.count, "count of messages before queried posts")
+            for post in queriedPosts {
+                if post.objectId == DataModel.newMessageId {
+                    print("insert here2")
+                    DataModel.messages.insert(post, at: 0)
+                    self.refreshControl.endRefreshing()
+                } else {
+                    if !DataModel.messages.map( { $0.objectId }).contains(post.objectId) {
+                        DataModel.messages.append(post)
+                    }
+                }
+            }
             self.tableView.reloadData()
         }
+        
+        // Refresh Controller
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
+        refreshControl.attributedTitle = NSAttributedString(string: "Searching for new posts...", attributes: attributes)
+        refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
+        refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
+        self.tableView.addSubview(refreshControl)
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.posts.count
+        return DataModel.messages.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! MessageTableViewCell
-        cell.messageTextLabel.text = self.posts[indexPath.row].description
-        cell.usernameLabel.text = self.posts[indexPath.row].sender.username
-        cell.profilePicImageView.image = self.posts[indexPath.row].sender.profilePic
-        if self.posts[indexPath.row].isViewed {
+        cell.messageTextLabel.text = DataModel.messages[indexPath.row].description
+        cell.usernameLabel.text = DataModel.messages[indexPath.row].sender.username
+        cell.profilePicImageView.image = DataModel.messages[indexPath.row].sender.profilePic
+        if DataModel.messages[indexPath.row].isViewed {
             cell.composeImageView.isHidden = true
             cell.messageTextLabel.frame.origin = CGPoint(x: 80, y: cell.messageTextLabel.frame.origin.y)
             cell.profilePicImageView.layer.borderWidth = 0.0
@@ -140,9 +174,9 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.fromDismiss = true
-        self.posts[indexPath.row].isViewed = true
+        DataModel.messages[indexPath.row].isViewed = true
         self.tableView.reloadData()
-        self.selectedPost = self.posts[indexPath.row]
+        self.selectedPost = DataModel.messages[indexPath.row]
         mediaBrowser = MediaBrowserViewController(dataSource: self)
         
         self.lowerView.descriptionTextView.text = self.selectedPost.description
@@ -290,6 +324,38 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         
         let title = NSAttributedString(string: description, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1), NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         return title
+    }
+    
+    @objc func getPostWithId() {
+        print("attempting to refresh...", DataModel.newMessageId)
+        tabBarController!.tabBar.items?[1].badgeValue = nil
+        if DataModel.newMessageId != "" {
+            self.refreshControl.programaticallyBeginRefreshing(in: self.tableView)
+            let postRef = Post()
+            postRef.getPostWithObjectId(id: DataModel.newMessageId) { (post) in
+                print("completed", post)
+                if !DataModel.messages.map( {$0.objectId}).contains(post.objectId) {
+                    print("inserting new message")
+                    DataModel.messages.insert(post, at: 0)
+                    self.tableView.reloadData()
+                    self.refreshControl.endRefreshing()
+                    DataModel.newMessageId = ""
+                }
+            }
+        } else {
+            Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(endRefresh), userInfo: nil, repeats: false)
+        }
+        
+    }
+    
+    @objc func startRefresh(sender:AnyObject) {
+        print("Refreshing...")
+        getPostWithId()
+    }
+    
+    @objc func endRefresh() {
+        print("End Refreshing...")
+        self.refreshControl.endRefreshing()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
