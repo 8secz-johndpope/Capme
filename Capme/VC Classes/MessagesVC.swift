@@ -73,7 +73,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
          getPostWithId()
     }
     
-    fileprivate  func addObservers() {
+    fileprivate func addObservers() {
         print("showing the refresh now!")
         NotificationCenter.default.addObserver(self, selector: #selector(getPostWithId), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
@@ -83,7 +83,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func setupUI() {
-        
+    
         addObservers()
         
         // Lower View
@@ -105,49 +105,53 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.inspirationOutlet.layer.masksToBounds = true
         self.inspirationButton = self.inspirationOutlet
         
-        // Table View
-        if DataModel.messages.count == 0 {
-            //self.tableView.emptyStateDataSource = self
-        }
+        // Refresh Controller
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
+        refreshControl.attributedTitle = NSAttributedString(string: "Searching for new posts...", attributes: attributes)
+        refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
+        refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
+        self.refreshControl.programaticallyBeginRefreshing(in: self.tableView)
         
+        // Table View
         self.tableView.delegate = self
         self.tableView.dataSource = self
         let postRef = Post()
         let query = PFQuery(className: "Post")
         query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
-        // This might crash, may need to unwrap
-        
         query.whereKey("objectId", notContainedIn: DataModel.messages.map( { $0.objectId }))
         print("getting posts...", DataModel.newMessageId, DataModel.messages.map( { $0.objectId }))
+        
         postRef.getPosts(query: query) { (queriedPosts) in
             print(DataModel.messages.count, "count of messages before queried posts")
+            
             for post in queriedPosts {
                 if post.objectId == DataModel.newMessageId {
                     print("insert here2")
                     DataModel.messages.insert(post, at: 0)
-                    self.refreshControl.endRefreshing()
                 } else {
                     if !DataModel.messages.map( { $0.objectId }).contains(post.objectId) {
                         DataModel.messages.append(post)
                     }
                 }
+                if post === queriedPosts.last {
+                    DataModel.messages = postRef.sortByCreatedAt(postsToSort: DataModel.messages)
+                    self.tableView.reloadData()
+                    self.refreshControl.endRefreshing()
+                }
             }
-            self.tableView.reloadData()
+            if DataModel.messages.count == 0 && queriedPosts.count == 0 {
+                self.refreshControl.endRefreshing()
+                self.tableView.emptyStateDataSource = self
+                self.tableView.reloadData()
+            }
         }
-        
-        // Refresh Controller
-        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
-        refreshControl.attributedTitle = NSAttributedString(string: "Searching for new posts...", attributes: attributes)
-        refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
-        refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
-        self.tableView.addSubview(refreshControl)
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return DataModel.messages.count
     }
-    
+     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! MessageTableViewCell

@@ -53,9 +53,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     /* IN PROGRESS */
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
-    // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages (TODO))
-    // From background - app selected (app is closed*, app is resting in background on discover*, app is resting in background on messages*)
-    // From background - (TODO) notification selected (app is closed, app is resting in background on discover, app is resting in background on messages)
+    // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages *)
+    // From background - notification selected (app is closed*, app is resting in background on discover*, app is resting in background on messages*)
+    // From background - (TODO) app selected (app is closed, app is resting in background on discover, app is resting in background on messages)
     
     /* BACK LOG (minor) */
     // No friends no message to
@@ -162,13 +162,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let identifier = notification.request.content.userInfo["identifier"] as? String {
             if identifier == "friendRequest" {
                 let friendRequestRef = FriendRequest()
-                print(notification.request.content.userInfo["objectId"] as! String, "Object Id!!!")
+                
+                
                 friendRequestRef.getRequestWithId(id: notification.request.content.userInfo["objectId"] as! String) { (request) in
-                    print("made it this far and:")
-                    print(request.receiver.objectId!)
                     if request.receiver.objectId == PFUser.current()!.objectId! {
                         request.sender.requestId = request.objectId
+                        print("insert 1")
                         DataModel.receivedRequests.insert(request.sender, at: 0)
+                        
                         if let tabBarController =  DataModel.tabBarController {
                             if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
                                 let value = Int(badgeValue) {
@@ -226,7 +227,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("right before")
+        print("did receive")
         
         // Continue here... dismiss the controller and then also check if the fpc from friends is causing the crash
         self.window?.rootViewController?.dismiss(animated: false, completion: {
@@ -245,8 +246,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     friendRequestRef.getRequestWithId(id: userInfo["objectId"] as! String) { (request) in
                         if request.receiver.objectId == PFUser.current()!.objectId! {
                             request.sender.requestId = request.objectId
+                            print("insert 2")
                             DataModel.receivedRequests.insert(request.sender, at: 0)
                             if let tabBarController =  DataModel.tabBarController {
+                                tabBarController.selectedIndex = 2
                                 if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
                                     let value = Int(badgeValue) {
                                     tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
@@ -254,19 +257,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                                     tabBarController.tabBar.items?[2].badgeValue = "1"
                                 }
                             }
+                            let navController = tabBarController.viewControllers![2] as! UINavigationController
+                            let profileVC = navController.viewControllers[0] as! ProfileVC
+                            profileVC.performSegue(withIdentifier: "showFriends", sender: nil)
                         }
                     }
                     
-                    if let badgeValue = tabBarController.tabBar.items?[2].badgeValue,
-                        let value = Int(badgeValue) {
-                        tabBarController.tabBar.items?[2].badgeValue = String(value + 1)
-                    } else {
-                        tabBarController.tabBar.items?[2].badgeValue = "1"
-                    }
-                    tabBarController.selectedIndex = 2
-                    let navController = tabBarController.viewControllers![2] as! UINavigationController
-                    let profileVC = navController.viewControllers[0] as! ProfileVC
-                    profileVC.performSegue(withIdentifier: "showFriends", sender: nil)
+                    
                 } else {
                     DataModel.pushId = identifier
                 }
@@ -286,15 +283,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 //self.window?.rootViewController = discoverVC
             } else if identifier == "captionRequest" {
                 
-                
-                if let tabBarController =  DataModel.tabBarController {
+                if let tabBarController = DataModel.tabBarController {
                     DataModel.newMessageId = userInfo["objectId"] as! String
-                    tabBarController.selectedIndex = 1
-                    if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
-                        let value = Int(badgeValue) {
-                        tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                    if tabBarController.selectedIndex != 1 {
+                        tabBarController.selectedIndex = 1
+                        if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                            let value = Int(badgeValue) {
+                            tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                        } else {
+                            tabBarController.tabBar.items?[1].badgeValue = "1"
+                        }
                     } else {
-                        tabBarController.tabBar.items?[1].badgeValue = "1"
+                        print("print0")
+                        if let messagesVC = UIApplication.getTopViewController() as? MessagesVC {
+                            print(type(of: messagesVC))
+                            messagesVC.getPostWithId()
+                            print("this is the top vc")
+                        }
+                        
                     }
                 } else {
                     DataModel.newMessageId = userInfo["objectId"] as! String
@@ -335,12 +341,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         } else {
             print("Received a push while the app is foreground")
         }*/
-        if (application.applicationState == .inactive || application.applicationState == .background) {
-            // go to screen relevant to Notification content
-            print("background")
+        
+        if let identifier = userInfo["identifier"] as? String {
+            if identifier == "captionRequest" {
+                let nav = window?.rootViewController as! UINavigationController
+                DataModel.pushId = identifier
+            }
+        }
+        
+        if (application.applicationState == .inactive) {
+            // App was in closed state
+            
         } else {
-            // App is in UIApplicationStateActive (running in foreground)
-            print("foreground")
         
         }
     }

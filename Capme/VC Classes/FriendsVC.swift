@@ -11,15 +11,31 @@ import UIKit
 import Parse
 import WLEmptyState
 import FloatingPanel
+import SCLAlertView
 
 class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating, SlidingSegmentedControlDelegate, WLEmptyStateDataSource, FloatingPanelControllerDelegate {
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var requestOutlet: UIBarButtonItem!
     
     @IBOutlet weak var segmentControl: SlidingSegmentedControl! {
         didSet {
             segmentControl.setButtonTitles(buttonTitles: segmentedTitles, initialIndex: 0)
         }
+    }
+    
+    @IBAction func requestAction(_ sender: Any) {
+        print("show requests")
+        if DataModel.receivedRequests.count > 0 {
+            fpc.show(animated: true) {
+                print("should have shown")
+            }
+        } else {
+            let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+            let alert = SCLAlertView(appearance: appearance)
+            alert.showInfo("Notice", subTitle: "You do not have any friend requests pending", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+        }
+        
     }
     
     let searchController = UISearchController(searchResultsController: nil)
@@ -35,6 +51,8 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     var selectedUser = User()
     
     var restrictedIds = [String]()
+    var restrictedOutletTemp = UIBarButtonItem()
+    let refreshControl = UIRefreshControl()
     
     let fpc = FloatingPanelController()
     
@@ -47,12 +65,14 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        if self.navigationItem.rightBarButtonItem != nil {
+            self.restrictedOutletTemp = self.navigationItem.rightBarButtonItem!
+        }
         self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
     }
     
     override func viewDidLoad() {
         setupUI()
-        
         self.queryUsers()
     }
     
@@ -84,7 +104,6 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         searchController.searchBar.isHidden = true
         searchController.searchBar.autocapitalizationType = .none
         
-        
         // Table View
         if DataModel.friends.count == 0 && self.searchController.searchBar.isHidden  { // Show empty set
             self.tableView.emptyStateDataSource = self
@@ -99,38 +118,55 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.tableViewHeight = self.tableView.frame.height
         self.tableView.tableFooterView = UIView()
         
-        print("THIS FAR")
-        
+        // Refresh Controller
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
+        refreshControl.attributedTitle = NSAttributedString(string: "Searching for new friend requests...", attributes: attributes)
+        refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
+        refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
+        self.tableView.addSubview(refreshControl)
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
+        DataModel.requestsVC = controller
+        fpc.set(contentViewController: DataModel.requestsVC)
         fpc.delegate = self
+        print("right before")
+        self.present(self.fpc, animated: DataModel.receivedRequests.count > 0, completion: {
+            if DataModel.receivedRequests.count == 0 {
+                self.fpc.show(animated: false) {
+                    self.fpc.hide(animated: false) {
+                        self.fpc.dismiss(animated: true) {
+                            print("dismissed empty fpc")
+                            
+                        }
+                    }
+                }
+            }
+        })
+        print("right after")
         
-        if DataModel.friends.count == 0 {
+        if DataModel.friends.count == 0 && DataModel.receivedRequests.count == 0 {
             self.changeToIndex(index: 1)
             self.segmentControl.setIndex(index: 1)
         }
         
-        print("made it here now")
-        
-        // Show Floating Requests Panel
-        
-        
+    
         if DataModel.receivedRequests.count > 0 {
-            if DataModel.requestsVC.status != "" {
-                
-                fpc.set(contentViewController: DataModel.requestsVC)
-                fpc.isRemovalInteractionEnabled = true
-                self.present(fpc, animated: true, completion: nil)
-            } else {
-                let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-                let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
-                tempVC.receivedRequests = DataModel.receivedRequests
-                tempVC.view.layer.cornerRadius = 10.0
-                tempVC.view.layer.masksToBounds = true
-                fpc.set(contentViewController: tempVC)
-                tempVC.status = "active"
-                tempVC.friendsRef = self
-                DataModel.requestsVC = tempVC
-                fpc.isRemovalInteractionEnabled = true
-                self.present(fpc, animated: true, completion: nil)
+            if let requestVC = DataModel.requestsVC {
+                if requestVC.status != "" {
+                    
+                    fpc.isRemovalInteractionEnabled = true
+                    //self.present(fpc, animated: true, completion: nil)
+                } else {
+                    let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+                    let tempVC : RequestsVC = mainStoryboard.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
+                    tempVC.receivedRequests = DataModel.receivedRequests
+                    tempVC.view.layer.cornerRadius = 10.0
+                    tempVC.view.layer.masksToBounds = true
+                    tempVC.status = "active"
+                    tempVC.friendsRef = self
+                    DataModel.requestsVC = tempVC
+                    fpc.isRemovalInteractionEnabled = true
+                    //self.present(fpc, animated: true, completion: nil)
+                }
             }
         }
     }
@@ -229,6 +265,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     func changeToIndex(index: Int) {
         
         if index == 0 {
+            self.navigationItem.rightBarButtonItem = self.restrictedOutletTemp
             self.searchController.searchBar.isHidden = true
             self.searchController.searchBar.resignFirstResponder()
             if DataModel.receivedRequests.count > 0 {
@@ -238,20 +275,19 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
                 }
             }
         } else if index == 1 {
+            self.restrictedOutletTemp = self.navigationItem.rightBarButtonItem!
+            self.navigationItem.rightBarButtonItem = nil
             self.searchController.searchBar.isHidden = false
             self.searchController.searchBar.becomeFirstResponder()
             // Hide the floating panel.
-            if DataModel.receivedRequests.count > 0 {
-                print("test2")
-                // TODO crashes here
+            self.fpc.show(animated: false) {
                 self.fpc.hide(animated: false) {
                     self.fpc.dismiss(animated: true) {
+                        
                         //self.fpc.view.removeFromSuperview()
                         //self.fpc.removeFromParent()
                     }
                 }
-                
-                
             }
             
         }
@@ -294,6 +330,51 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         let title = NSAttributedString(string: description, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1), NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         return title
     }
+    
+    @objc func startRefresh(sender:AnyObject) {
+        print("Refreshing...")
+        if let requestVC = DataModel.requestsVC {
+            
+                if requestVC.collectionView.numberOfItems(inSection: 0) != DataModel.receivedRequests.count {
+                    requestVC.collectionView.reloadData()
+                    Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.endRefresh), userInfo: nil, repeats: false)
+                } else {
+                    self.getNewFriendRequests()
+                }
+            
+        }
+    }
+    
+    func getNewFriendRequests() {
+        let friendRequestRef = FriendRequest()
+        let query = PFQuery(className: "FriendRequest")
+        query.whereKey("pending", equalTo: "status")
+        query.whereKey("recipient", equalTo: PFUser.current()!)
+        print("REQUEST IDS TO EXCLUDE", DataModel.receivedRequests.map( { $0.requestId }))
+        query.whereKey("objectId", notContainedIn: DataModel.receivedRequests.map( { $0.requestId }))
+        friendRequestRef.getNewReceivedRequests(query: query) { (queriedRequests) in
+            for request in queriedRequests {
+                print("got new requests!")
+                if request.receiver.objectId == PFUser.current()!.objectId! {
+                    request.sender.requestId = request.objectId
+                    DataModel.receivedRequests.append(request.sender)
+                } else if request.sender.objectId == PFUser.current()!.objectId! {
+                    DataModel.sentRequests.append(request.receiver)
+                }
+                print("RELOADING THE COLLECTION VIEW")
+                DataModel.requestsVC!.collectionView.reloadData()
+                self.endRefresh()
+            }
+            if queriedRequests.count == 0 {
+                Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.endRefresh), userInfo: nil, repeats: false)
+            }
+        }
+    }
+       
+   @objc func endRefresh() {
+       print("End Refreshing...")
+       self.refreshControl.endRefreshing()
+   }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showFriendsProfile" {

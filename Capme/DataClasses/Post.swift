@@ -24,6 +24,7 @@ class Post {
     var objectId = String()
     var captions = [Caption]()
     var releaseDate = Date()
+    var createdAt = Date()
     
     var posts = [Post]()
     
@@ -49,6 +50,7 @@ class Post {
                         if error == nil  {
                             if let finalimage = UIImage(data: imageData!) {
                                 User(user: object["sender"] as! PFUser) { (user) in
+                                    post.createdAt = object.createdAt!
                                     post.objectId = object.objectId!
                                     post.description = object["description"] as! String
                                     post.sender = user
@@ -94,6 +96,7 @@ class Post {
                             if error == nil  {
                                 if let finalimage = UIImage(data: imageData!) {
                                     User(user: object["sender"] as! PFUser) { (user) in
+                                        post.createdAt = object.createdAt!
                                         post.objectId = object.objectId!
                                         post.description = object["description"] as! String
                                         post.sender = user
@@ -183,5 +186,9 @@ class Post {
     
     func sortByReleaseDate(postsToSort: [Post]) -> [Post] {
         return postsToSort.sorted(by: { $0.releaseDate > $1.releaseDate })
+    }
+    
+    func sortByCreatedAt(postsToSort: [Post]) -> [Post] {
+        return postsToSort.sorted(by: { $0.createdAt > $1.createdAt })
     }
 }

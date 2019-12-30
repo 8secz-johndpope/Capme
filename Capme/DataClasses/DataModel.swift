@@ -20,7 +20,7 @@ struct DataModel {
     static var receivedRequests = [User]()
     static var sentRequests = [User]()
     
-    static var requestsVC = RequestsVC()
+    static var requestsVC: RequestsVC?
     static var captionsVC = CaptionsVC()
     
     static var newPost = Post()

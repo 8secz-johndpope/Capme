@@ -43,7 +43,10 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     override func viewDidLoad() {
         setupUI()
-        //self.queryFriends()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
     }
     
     func setupUI() {
@@ -92,44 +95,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         self.profilePicImageView.layer.borderColor = UIColor.white.cgColor
         self.profilePicImageView.layer.cornerRadius = self.profilePicImageView.frame.height/2
         self.profilePicImageView.layer.masksToBounds = true
-    }
-    
-    func queryFriends() {
-        var predicates: [NSPredicate] = []
-        predicates.append(NSPredicate(format: "recipient = %@", PFUser.current()!))
-        predicates.append(NSPredicate(format: "sender = %@", PFUser.current()!))
-        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-        
-        let query = PFQuery(className: "FriendRequest", predicate: predicate)
-        query.includeKey("recipient")
-        query.includeKey("sender")
-        let requestRef = FriendRequest()
-        requestRef.getRequests(query: query) { (queriedRequests) in
-            print("received this many requests:", queriedRequests.count)
-            for request in queriedRequests {
-                if request.status == "accepted" {
-                    if request.receiver.objectId == PFUser.current()!.objectId {
-                        print("appended a friend!1")
-                        DataModel.friends.append(request.sender)
-                    } else if request.sender.objectId == PFUser.current()!.objectId {
-                        print("appended a friend!2")
-                        DataModel.friends.append(request.receiver)
-                    }
-                } else if request.status == "pending" {
-                    if request.receiver.objectId == PFUser.current()!.objectId! {
-                        request.sender.requestId = request.objectId
-                        DataModel.receivedRequests.append(request.sender)
-                    } else if request.sender.objectId == PFUser.current()!.objectId! {
-                        
-                        DataModel.sentRequests.append(request.receiver)
-                    }
-                }
-                if request === queriedRequests.last {
-                    self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
-                    self.collectionView.reloadData()
-                }
-            }
-        }
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

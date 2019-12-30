@@ -25,6 +25,8 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     
     func setupUI() {
         
+        print("setting up requests vc")
+        
         // Collection View
         let screenSize = UIScreen.main.bounds
         let screenWidth = screenSize.width
@@ -49,7 +51,7 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        DataModel.receivedRequests.count
+        return DataModel.receivedRequests.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -79,6 +81,11 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
         let index = sender.tag
         DataModel.receivedRequests.remove(at: index)
         self.collectionView.reloadData()
+        if DataModel.receivedRequests.count == 0 {
+            self.dismiss(animated: true) {
+                print("dismissed the reqeusts vc")
+            }
+        }
     }
     
     @objc func acceptRequest(sender:UIButton) {
@@ -87,6 +94,11 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
         DataModel.friends.insert(newFriend, at: 0)
         self.collectionView.reloadData()
         friendsRef.tableView.reloadData()
+        if DataModel.receivedRequests.count == 0 {
+            self.dismiss(animated: true) {
+                print("dismissed the reqeusts vc")
+            }
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

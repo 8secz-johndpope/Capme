@@ -13,12 +13,28 @@ import NVActivityIndicatorView
 import ATGMediaBrowser
 import FloatingPanel
 import WLEmptyState
+import SCLAlertView
 
 class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, WLEmptyStateDelegate, WLEmptyStateDataSource {
     
     @IBOutlet weak var tableView: UITableView!
     @IBAction func postAction(_ sender: Any) {
-        self.performSegue(withIdentifier: "showCreate", sender: nil)
+        if DataModel.friends.count > 0 {
+            self.performSegue(withIdentifier: "showCreate", sender: nil)
+        } else {
+            let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+            let alert = SCLAlertView(appearance: appearance)
+            alert.addButton("Add Friends") {
+                self.tabBarController?.selectedIndex = 2
+            }
+            alert.addButton("Invite Contacts") {
+                let items: [Any] = ["Join me on Capme! This app helps friends build one another the best captions!", URL(string: "https://www.linkedin.com/in/gabriel-wilson-2b480914b/")!]
+                let ac = UIActivityViewController(activityItems: items, applicationActivities: nil)
+                self.present(ac, animated: true)
+            }
+            alert.showInfo("Notice", subTitle: "You need to have ", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+        }
+        
     }
     
     @IBAction func discoverUnwind(segue: UIStoryboardSegue) {
@@ -53,7 +69,12 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             profileVC.performSegue(withIdentifier: "showFriends", sender: nil)
         } else if DataModel.pushId == "captionRequest" {
             DataModel.pushId = ""
-            self.tabBarController?.selectedIndex = 1
+            if let badgeValue = self.tabBarController!.tabBar.items?[1].badgeValue,
+                let value = Int(badgeValue) {
+                tabBarController!.tabBar.items?[1].badgeValue = String(value + 1)
+            } else {
+                tabBarController!.tabBar.items?[1].badgeValue = "1"
+            }
         }
     }
     
