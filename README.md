@@ -7,7 +7,7 @@ git push --set-upstream origin dev-<first name><br/>
 
 ## Capme Developers
 
-*name* - (Machine Learning)
-*name* - (Full-Stack)
-*name* - (Backend)
+*name* - (Machine Learning)<br/>
+*name* - (Full-Stack)<br/>
+*name* - (Backend)<br/>
 *name* - (Front End)
