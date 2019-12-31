@@ -7,12 +7,17 @@ Welcome to Capme the app where your friends craft the wittiest, funniest, and be
 3) git clone https://github.com/gabrielw98/Capme.git<br/>
 4) git checkout -b dev-(*first name*)<br/>
 
-## Steps To Make Your First Code Review:<br/>
+## Steps To Add Your Name To The README.md:<br/>
 1) vi README.md<br/>
-2) Enter 'i' to edit and replace *name* with your full name<br/>
+2) Enter 'i' to edit then replace *name* with your full name<br/>
 3) Enter ':wq' to save your edits and close out<br/>
 4) git push --set-upstream origin dev-(*first name*)<br/>
-5) Within this webpage, click
+ 
+
+## Steps To Make Your First Code Review:<br/>
+1) Within this webpage, click "branches"
+2) Select the "Yours" tab
+3) Select "New Pull Request"
 
 ## Capme Developers
 Capme developers are all proficient in object oriented programming and mobile development. At the same time, they specialize in different software engineering fields specified below:<br/><br/>
