@@ -1,6 +1,8 @@
 # Capme
 Welcome to Capme! Capme is the app where your friends craft the wittiest, funniest, and best captions for your images. Whether you have an explotable image from a movie or an embarassing moment, or want to refine your posts before you publish them, Capme is the app for you. 
 
+<!-- toc -->
+
 ## Table Of Contents<br/>
 - [Steps To Initialize Your Dev Environment](#heading)
 - [Steps To Add Your Name To The README.md](#heading-1)
