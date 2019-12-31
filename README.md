@@ -8,7 +8,7 @@ Welcome to Capme! Capme is the app where your friends craft the wittiest, funnie
 4) git checkout -b dev-(*first name*)<br/>
 
 ## Steps To Add Your Name To The README.md:<br/>
-1) vi README.md<br/>
+1) In the same terminal window enter: vi README.md<br/>
 2) Enter 'i' to edit then replace *name* with your full name<br/>
 3) Enter ':wq' to save your edits and close out<br/>
 4) git push --set-upstream origin dev-(*first name*)<br/>
@@ -20,7 +20,7 @@ Welcome to Capme! Capme is the app where your friends craft the wittiest, funnie
 4) Set the title to "Added my name" and add gabrielw98 as a reviewer
 
 ## Capme Developers
-Capme developers are all proficient in object oriented programming and mobile development. At the same time, they specialize in different software engineering fields specified below:<br/><br/>
+Capme developers are all proficient in object oriented programming and mobile development. Through this medium, they design and develop solutions using different software engineering fields specified below:<br/><br/>
 Gabe Wilson - (Team Lead)<br/>
 *name* - (Machine Learning)<br/>
 *name* - (Full-Stack)<br/>
