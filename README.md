@@ -4,10 +4,10 @@ Welcome to Capme! Capme is the app where your friends craft the wittiest, funnie
 <!-- toc -->
 
 ## Table Of Contents<br/>
-- [Steps To Initialize Your Dev Environment](#heading)
-- [Steps To Add Your Name To The README.md](#heading-1)
-- [Steps To Make Your First Code Review](#heading-2)
-- [Capme Developers](#heading-2)
+- [Steps To Initialize Your Dev Environment](##Steps%20To%20Initialize%20Your%20Dev%20Environment)
+- [Steps To Add Your Name To The README.md](##Steps%20To%20Add%20Your%20Name%20To%20The%20README.md)
+- [Steps To Make Your First Code Review](##Steps%20To%20Make%20Your%20First%20Code%20Review)
+- [Capme Developers](##Capme%20Developers)
 
 ## Steps To Initialize Your Dev Environment<br/>
 1) Accept the request to collaborate on the repository (Found in your email)<br/>
