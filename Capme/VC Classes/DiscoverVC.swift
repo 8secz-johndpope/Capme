@@ -32,7 +32,7 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 let ac = UIActivityViewController(activityItems: items, applicationActivities: nil)
                 self.present(ac, animated: true)
             }
-            alert.showInfo("Notice", subTitle: "You need to have ", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+            alert.showInfo("Notice", subTitle: "Add friends to send caption requests", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
         }
         
     }
@@ -93,8 +93,8 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.tableView.dataSource = self
         let postRef = Post()
         let query = PFQuery(className: "Post")
-        query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
+        query.includeKey("sender")
         postRef.getPosts(query: query) { (queriedPosts) in
             if queriedPosts.count == 0 {
                 self.tableView.backgroundColor = UIColor.white

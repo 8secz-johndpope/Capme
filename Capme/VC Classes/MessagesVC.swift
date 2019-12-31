@@ -111,6 +111,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
         refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
         self.refreshControl.programaticallyBeginRefreshing(in: self.tableView)
+        self.tableView.addSubview(refreshControl)
         
         // Table View
         self.tableView.delegate = self

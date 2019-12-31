@@ -80,8 +80,8 @@ extension Bluring where Self: UIView {
 }
 
 extension UIScrollView {
-    func updateContentView() {
-        contentSize.height = (subviews.sorted(by: { $0.frame.maxY < $1.frame.maxY }).last?.frame.maxY)! + 15.0 ?? contentSize.height
+    func updateContentView(addInset: CGFloat) {
+        contentSize.height = (subviews.sorted(by: { $0.frame.maxY < $1.frame.maxY }).last?.frame.maxY)! + addInset ?? contentSize.height
     }
 }
 

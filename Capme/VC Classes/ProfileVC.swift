@@ -13,15 +13,18 @@ import Parse
 
 class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var profilePicImageView: UIImageView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var shadowLabel: UILabel!
+    @IBOutlet weak var postsCollectionView: UICollectionView!
     
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
     var collectionViewCounts = ["---", "---", "---"]
     
     var friends = [User]()
+    var posts = [Post]()
     
     var selectedUser = User()
     var fromSelectedUser = false
@@ -45,20 +48,24 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         setupUI()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
+    override func viewDidAppear(_ animated: Bool) {    self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
     }
     
     func setupUI() {
         
-        // Profile Picture
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
-        profilePicImageView.isUserInteractionEnabled = true
-        profilePicImageView.addGestureRecognizer(tapGestureRecognizer)
         if self.fromSelectedUser {
             self.profilePicImageView.image = self.selectedUser.profilePic
             self.usernameLabel.text = self.selectedUser.username
+            self.navigationItem.rightBarButtonItem = nil
+            // Get the users posts
+            // Query Users
+            // Keep track of the number of friends per user? NO query users because we will show the list anyway
+            
         } else {
+            // Profile Picture
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
+            profilePicImageView.isUserInteractionEnabled = true
+            profilePicImageView.addGestureRecognizer(tapGestureRecognizer)
             self.usernameLabel.text = PFUser.current()?.username!
             if DataModel.profilePic != UIImage() {
                 self.profilePicImageView.image = DataModel.profilePic
@@ -67,7 +74,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             }
         }
         
-        // Collection View
+        // Actions Collection View
         self.collectionView.delegate = self
         self.collectionView.dataSource = self
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
@@ -78,6 +85,20 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         collectionView!.collectionViewLayout = layout
         self.collectionView.layer.cornerRadius = 3
         self.collectionView.reloadData()
+        
+        // Posts Collection View
+        self.postsCollectionView.delegate = self
+        self.postsCollectionView.dataSource = self
+        self.getCurrentUsersPosts()
+        let postsLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
+        postsLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        let screenSize = UIScreen.main.bounds
+        let screenWidth = screenSize.width
+        postsLayout.itemSize = CGSize(width: (screenWidth / 3) - 1, height: (screenWidth / 3) - 1)
+        postsLayout.minimumInteritemSpacing = 0.5
+        postsLayout.minimumLineSpacing = 1.0
+        self.postsCollectionView.collectionViewLayout = postsLayout
+        
         shadowLabel.layer.shadowPath = UIBezierPath(rect: shadowLabel.bounds).cgPath
         shadowLabel.layer.shadowRadius = 3
         shadowLabel.layer.shadowOffset = .zero
@@ -95,21 +116,87 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         self.profilePicImageView.layer.borderColor = UIColor.white.cgColor
         self.profilePicImageView.layer.cornerRadius = self.profilePicImageView.frame.height/2
         self.profilePicImageView.layer.masksToBounds = true
+        
+        
+    }
+    
+    func getCurrentUsersPosts() {
+        let postsRef = Post()
+        let query = PFQuery(className: "Post")
+        query.order(byDescending: "createdAt")
+        query.whereKey("sender", equalTo: PFUser.current()!)
+        query.includeKey("sender")
+        postsRef.getPosts(query: query) { (userPosts) in
+            self.posts.append(contentsOf: userPosts)
+            for post in userPosts {
+                print(post.description, "post description")
+            }
+            if userPosts.count <= 2 && !self.fromSelectedUser {
+                let addPost = Post()
+                addPost.images.append(UIImage(named: "addPost")!)
+                self.posts.append(addPost)
+            }
+            self.postsCollectionView.reloadData()
+            self.postsCollectionView.frame = CGRect(x: self.postsCollectionView.frame.minX, y: self.postsCollectionView.frame.minY, width: self.postsCollectionView.frame.width, height: self.postsCollectionView.collectionViewLayout.collectionViewContentSize.height)
+            self.scrollView.updateContentView(addInset: 0.0)
+            
+            if (self.scrollView.contentSize.height < self.scrollView.frame.size.height) {
+               self.scrollView.isScrollEnabled = false
+            } else {
+               self.scrollView.isScrollEnabled = true
+            }
+            
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if collectionView == self.postsCollectionView {
+            if self.posts[indexPath.row].images[0] == UIImage(named: "addPost") { // Add Button
+                print("selected add button")
+                tabBarController?.selectedIndex = 0
+                if let discoverVC = UIApplication.getTopViewController() as? DiscoverVC {
+                    print(type(of: discoverVC))
+                    discoverVC.postAction(self)
+                    print("this is the top vc")
+                }
+            } else { // Actual Posts
+                
+            }
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.collectionViewTitles.count
+        if collectionView == self.collectionView {
+            return self.collectionViewTitles.count
+        } else {
+            return self.posts.count
+        }
+        
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ProfileCollectionViewCell
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(collectionViewTapped(tapGestureRecognizer:)))
-        tapGestureRecognizer.accessibilityLabel = collectionViewTitles[indexPath.row] + "_" + String(describing: collectionViewCounts[indexPath.row])
-        cell.isUserInteractionEnabled = true
-        cell.addGestureRecognizer(tapGestureRecognizer)
-        cell.titleLabel.text = collectionViewTitles[indexPath.row]
-        cell.countLabel.text = String(describing: collectionViewCounts[indexPath.row])
-        return cell
+        if collectionView == self.collectionView {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ProfileCollectionViewCell
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(collectionViewTapped(tapGestureRecognizer:)))
+            tapGestureRecognizer.accessibilityLabel = collectionViewTitles[indexPath.row] + "_" + String(describing: collectionViewCounts[indexPath.row])
+            cell.isUserInteractionEnabled = true
+            cell.addGestureRecognizer(tapGestureRecognizer)
+            cell.titleLabel.text = collectionViewTitles[indexPath.row]
+            cell.countLabel.text = String(describing: collectionViewCounts[indexPath.row])
+            return cell
+        } else if collectionView == self.postsCollectionView {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ProfilePostsCollectionViewCell
+            cell.postImageView.image = self.posts[indexPath.row].images[0]
+            if UIImage(named: "addPost")! == self.posts[indexPath.row].images[0] {
+                cell.postImageView.frame = CGRect(x: cell.postImageView.frame.midX - (50/2), y: cell.postImageView.frame.midY - (50/2), width: 50.0, height: 50.0)
+                cell.postImageView.contentMode = .center
+            } else {
+                cell.postImageView.contentMode = .scaleAspectFill
+            }
+            return cell
+        }
+        return UICollectionViewCell()
+        
     }
     
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer) {

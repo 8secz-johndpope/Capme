@@ -43,6 +43,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     var users = [User]()
     var filteredUsers = [User]()
     var segmentedTitles = ["Friends", "Search"]
+    var selectedSegment = 0
     
     var bound: CGFloat = 0.0
     var segmentHeight: CGFloat = 0.0
@@ -127,6 +128,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         let controller = self.storyboard?.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
         DataModel.requestsVC = controller
         fpc.set(contentViewController: DataModel.requestsVC)
+        DataModel.requestsVC!.friendsRef = self
         fpc.delegate = self
         print("right before")
         self.present(self.fpc, animated: DataModel.receivedRequests.count > 0, completion: {
@@ -200,6 +202,13 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         if self.searchController.searchBar.isHidden {
             self.selectedUser = DataModel.friends[indexPath.row]
             self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
+        } else {
+            if (searchController.isActive) {
+                self.selectedUser = self.filteredUsers[indexPath.row]
+            } else {
+                self.selectedUser = self.users[indexPath.row]
+            }
+            self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
         }
     }
     
@@ -265,31 +274,35 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     func changeToIndex(index: Int) {
         
         if index == 0 {
+            self.selectedSegment = 0
             self.navigationItem.rightBarButtonItem = self.restrictedOutletTemp
             self.searchController.searchBar.isHidden = true
             self.searchController.searchBar.resignFirstResponder()
             if DataModel.receivedRequests.count > 0 {
-                print("test1")
                 self.fpc.dismiss(animated: true) {
                     self.present(self.fpc, animated: true, completion: nil)
                 }
             }
         } else if index == 1 {
-            self.restrictedOutletTemp = self.navigationItem.rightBarButtonItem!
-            self.navigationItem.rightBarButtonItem = nil
-            self.searchController.searchBar.isHidden = false
-            self.searchController.searchBar.becomeFirstResponder()
-            // Hide the floating panel.
-            self.fpc.show(animated: false) {
-                self.fpc.hide(animated: false) {
-                    self.fpc.dismiss(animated: true) {
-                        
-                        //self.fpc.view.removeFromSuperview()
-                        //self.fpc.removeFromParent()
+            if selectedSegment != 1 {
+                self.selectedSegment = 1
+                self.restrictedOutletTemp = self.navigationItem.rightBarButtonItem!
+                self.navigationItem.rightBarButtonItem = nil
+                
+                // Hide the floating panel.
+                self.fpc.show(animated: false) {
+                    self.fpc.hide(animated: false) {
+                        self.fpc.dismiss(animated: true) {
+                            self.searchController.searchBar.isHidden = false
+                            self.searchController.searchBar.becomeFirstResponder()
+                            //self.fpc.view.removeFromSuperview()
+                            //self.fpc.removeFromParent()
+                        }
                     }
                 }
+            } else {
+                self.searchController.searchBar.becomeFirstResponder()
             }
-            
         }
         self.tableView.reloadData()
     }
@@ -334,14 +347,21 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     @objc func startRefresh(sender:AnyObject) {
         print("Refreshing...")
         if let requestVC = DataModel.requestsVC {
-            
-                if requestVC.collectionView.numberOfItems(inSection: 0) != DataModel.receivedRequests.count {
-                    requestVC.collectionView.reloadData()
-                    Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.endRefresh), userInfo: nil, repeats: false)
-                } else {
-                    self.getNewFriendRequests()
+            print("here1")
+            print("number of items in the collection view", requestVC.collectionView.numberOfItems(inSection: 0))
+            print("here2")
+            self.fpc.set(contentViewController: requestVC)
+            if DataModel.receivedRequests.count > 0 {
+                self.fpc.dismiss(animated: true) {
+                    self.present(self.fpc, animated: true, completion: {
+                        print("refreshing collection view")
+                        requestVC.collectionView.reloadData()
+                        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.endRefresh), userInfo: nil, repeats: false)
+                    })
                 }
-            
+            }
+            print("here3")
+            Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.endRefresh), userInfo: nil, repeats: false)
         }
     }
     
@@ -351,7 +371,7 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         query.whereKey("pending", equalTo: "status")
         query.whereKey("recipient", equalTo: PFUser.current()!)
         print("REQUEST IDS TO EXCLUDE", DataModel.receivedRequests.map( { $0.requestId }))
-        query.whereKey("objectId", notContainedIn: DataModel.receivedRequests.map( { $0.requestId }))
+        query.whereKey("objectId", notContainedIn: DataModel.receivedRequests.map( { $0.requestId! }))
         friendRequestRef.getNewReceivedRequests(query: query) { (queriedRequests) in
             for request in queriedRequests {
                 print("got new requests!")

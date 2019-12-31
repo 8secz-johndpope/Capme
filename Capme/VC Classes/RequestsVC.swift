@@ -51,6 +51,7 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        print("reloading and have this many...?", DataModel.receivedRequests.count)
         return DataModel.receivedRequests.count
     }
     

@@ -120,7 +120,7 @@ class InspirationVC: UIViewController, UITextFieldDelegate {
             button.frame = CGRect(x: button.frame.origin.x, y: button.frame.minY - nextDistanceToShift, width: button.frame.width, height: button.frame.height)
         }
         
-        self.scrollView.updateContentView()
+        self.scrollView.updateContentView(addInset: 15.0)
     }
     
     func createBackgroundView(textView: UITextView, selectableTextArray: [String], label: UILabel) -> [UIButton] {

@@ -49,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Badge increment and clear
     //*Open to specified location
     //*Message Push Scenarios
+    //*Show profile from search (did select)
     
     /* IN PROGRESS */
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
