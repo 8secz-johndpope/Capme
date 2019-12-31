@@ -22,6 +22,8 @@ class User {
     var requestSender: PFUser?
     var requestreceiver: PFUser?
     
+    var pfuserRef: PFUser?
+    
     var users = [User]()
     
     // For friend selection
@@ -34,12 +36,14 @@ class User {
     }
     
     init(user: PFUser, image: UIImage) {
+        self.pfuserRef = user
         self.objectId = user.objectId!
         self.username = user.username!
         self.profilePic = image
     }
     
     init(user: PFUser, completion: @escaping (_ result: User)->()) {
+        self.pfuserRef = user
         self.objectId = user.objectId!
         self.username = user.username!
         if let image = user["profilePic"] as? PFFileObject {
@@ -78,7 +82,7 @@ class User {
                             if error == nil  {
                                 if let finalimage = UIImage(data: imageData!) {
                                     let user = User()
-                                    
+                                    user.pfuserRef = object
                                     user.username = object.username!
                                     user.objectId = object.objectId!
                                     user.profilePic = finalimage
@@ -92,6 +96,7 @@ class User {
                         }
                     } else {
                         let user = User()
+                        user.pfuserRef = object
                         user.username = object.username!
                         user.objectId = object.objectId!
                         user.profilePic = UIImage(named: "defaultProfilePic")

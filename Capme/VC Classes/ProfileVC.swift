@@ -57,12 +57,14 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             self.profilePicImageView.image = self.selectedUser.profilePic
             self.usernameLabel.text = self.selectedUser.username
             self.navigationItem.rightBarButtonItem = nil
+            self.getCurrentUsersPosts(currentUser: selectedUser.pfuserRef!)
             // Get the users posts
             // Query Users
             // Keep track of the number of friends per user? NO query users because we will show the list anyway
             
         } else {
             // Profile Picture
+            self.getCurrentUsersPosts(currentUser: PFUser.current()!)
             let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
             profilePicImageView.isUserInteractionEnabled = true
             profilePicImageView.addGestureRecognizer(tapGestureRecognizer)
@@ -89,7 +91,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         // Posts Collection View
         self.postsCollectionView.delegate = self
         self.postsCollectionView.dataSource = self
-        self.getCurrentUsersPosts()
+        
         let postsLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         postsLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         let screenSize = UIScreen.main.bounds
@@ -120,22 +122,43 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         
     }
     
-    func getCurrentUsersPosts() {
+    func getCurrentUsersPosts(currentUser: PFUser) {
         let postsRef = Post()
         let query = PFQuery(className: "Post")
-        query.order(byDescending: "createdAt")
-        query.whereKey("sender", equalTo: PFUser.current()!)
+        query.whereKey("sender", equalTo: currentUser)
         query.includeKey("sender")
         postsRef.getPosts(query: query) { (userPosts) in
             self.posts.append(contentsOf: userPosts)
             for post in userPosts {
                 print(post.description, "post description")
+                if post === userPosts.last {
+                    self.posts = postsRef.sortByCreatedAt(postsToSort: self.posts)
+                }
             }
-            if userPosts.count <= 2 && !self.fromSelectedUser {
+            if userPosts.count == 0  && !self.fromSelectedUser {
+                
+                let addPostFirst = Post()
+                addPostFirst.images.append(UIImage(named: "addPostFirst")!)
+                let addPostInfo = Post()
+                addPostInfo.images.append(UIImage(named: "addPostInfo")!)
+                let addPostNew = Post()
+                addPostNew.images.append(UIImage(named: "addPostNew")!)
+                self.posts.append(addPostFirst)
+                self.posts.append(addPostInfo)
+                self.posts.append(addPostNew)
+            } else if userPosts.count == 1  && !self.fromSelectedUser {
+                let addPostInfo = Post()
+                addPostInfo.images.append(UIImage(named: "addPostInfo")!)
+                let addPostNew = Post()
+                addPostNew.images.append(UIImage(named: "addPostNew")!)
+                self.posts.append(addPostInfo)
+                self.posts.append(addPostNew)
+            } else if userPosts.count == 2  && !self.fromSelectedUser {
                 let addPost = Post()
-                addPost.images.append(UIImage(named: "addPost")!)
+                addPost.images.append(UIImage(named: "addPostNew")!)
                 self.posts.append(addPost)
             }
+            
             self.postsCollectionView.reloadData()
             self.postsCollectionView.frame = CGRect(x: self.postsCollectionView.frame.minX, y: self.postsCollectionView.frame.minY, width: self.postsCollectionView.frame.width, height: self.postsCollectionView.collectionViewLayout.collectionViewContentSize.height)
             self.scrollView.updateContentView(addInset: 0.0)
@@ -151,7 +174,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == self.postsCollectionView {
-            if self.posts[indexPath.row].images[0] == UIImage(named: "addPost") { // Add Button
+            if self.posts[indexPath.row].images[0] == UIImage(named: "addPostNew") { // Add Button
                 print("selected add button")
                 tabBarController?.selectedIndex = 0
                 if let discoverVC = UIApplication.getTopViewController() as? DiscoverVC {
@@ -159,8 +182,26 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                     discoverVC.postAction(self)
                     print("this is the top vc")
                 }
-            } else { // Actual Posts
-                
+            } else if self.posts[indexPath.row].images[0] == UIImage(named: "addPostFirst") {
+                let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+                let alert = SCLAlertView(appearance: appearance)
+                if DataModel.friends.count == 0 {
+                    alert.addButton("Add Friends") {
+                        self.performSegue(withIdentifier: "showFriends", sender: nil)
+                    }
+                } else {
+                    alert.addButton("Caption Your Image") {
+                        self.tabBarController?.selectedIndex = 0
+                        if let discoverVC = UIApplication.getTopViewController() as? DiscoverVC {
+                            discoverVC.postAction(self)
+                        }
+                    }
+                }
+                alert.showInfo("Your Posts\nInfo", subTitle: "Capme lets you pick any number of friends to create the best caption for your images", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+            } else if self.posts[indexPath.row].images[0] == UIImage(named: "addPostInfo") {
+                let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+                let alert = SCLAlertView(appearance: appearance)
+                alert.showInfo("Your Posts\nTiming", subTitle: "Choose a deadline for your captioners to write their captions. Once their time is up, your post with their captions will be published and the favoriting competition begins!", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "hourglass"), animationStyle: .topToBottom)
             }
         }
     }
@@ -187,7 +228,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         } else if collectionView == self.postsCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ProfilePostsCollectionViewCell
             cell.postImageView.image = self.posts[indexPath.row].images[0]
-            if UIImage(named: "addPost")! == self.posts[indexPath.row].images[0] {
+            if UIImage(named: "addPostNew")! == self.posts[indexPath.row].images[0] || UIImage(named: "addPostFirst")! == self.posts[indexPath.row].images[0] || UIImage(named: "addPostInfo")! == self.posts[indexPath.row].images[0] {
                 cell.postImageView.frame = CGRect(x: cell.postImageView.frame.midX - (50/2), y: cell.postImageView.frame.midY - (50/2), width: 50.0, height: 50.0)
                 cell.postImageView.contentMode = .center
             } else {
