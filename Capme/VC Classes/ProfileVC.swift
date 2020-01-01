@@ -19,6 +19,8 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var shadowLabel: UILabel!
     @IBOutlet weak var postsCollectionView: UICollectionView!
+    @IBOutlet weak var noPostsImageView: UIImageView!
+    @IBOutlet weak var noPostsLabel: UILabel!
     
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
     var collectionViewCounts = ["---", "---", "---"]
@@ -27,7 +29,10 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     var posts = [Post]()
     
     var selectedUser = User()
+    var selectedUsersFriends = [User]()
     var fromSelectedUser = false
+    
+    var selectedUserIsFriend = false
     
     @IBAction func logoutAction(_ sender: Any) {
         let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
@@ -48,12 +53,49 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         setupUI()
     }
     
-    override func viewDidAppear(_ animated: Bool) {    self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
+    override func viewDidAppear(_ animated: Bool) {
+        self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
     }
     
     func setupUI() {
         
         if self.fromSelectedUser {
+            self.selectedUserIsFriend = DataModel.friends.map( { $0.objectId }).contains(self.selectedUser.objectId)
+            if self.selectedUserIsFriend { // Selected User is a friend
+                // Query their friends
+                var predicates: [NSPredicate] = []
+                print("querying friends of this user:", self.selectedUser.username)
+                predicates.append(NSPredicate(format: "recipient = %@", self.selectedUser.pfuserRef!))
+                predicates.append(NSPredicate(format: "sender = %@", self.selectedUser.pfuserRef!))
+                let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+                
+                let query = PFQuery(className: "FriendRequest", predicate: predicate)
+                query.whereKey("status", equalTo: "accepted")
+                query.includeKey("recipient")
+                query.includeKey("sender")
+                let requestRef = FriendRequest()
+                    
+                requestRef.getRequestsForAnotherUser(query: query, user: self.selectedUser.pfuserRef!) { (queriedRequests) in
+                    for request in queriedRequests {
+                        if request.receiver.objectId == self.selectedUser.objectId {
+                            print("receiver:", request.receiver.username, "sender:", request.sender.username, "append sender")
+                            self.selectedUsersFriends.append(request.sender)
+                        } else if request.sender.objectId == self.selectedUser.objectId {
+                            print("receiver:", request.receiver.username, "sender:", request.sender.username, "append receiver")
+                            self.selectedUsersFriends.append(request.receiver)
+                            
+                        }
+                    }
+                    
+                    self.collectionViewCounts[2] = String(describing: queriedRequests.count)
+                    self.collectionView.reloadData()
+                }
+
+                
+            } else {
+                self.collectionViewCounts[2] = "---"
+            }
+            
             self.profilePicImageView.image = self.selectedUser.profilePic
             self.usernameLabel.text = self.selectedUser.username
             self.navigationItem.rightBarButtonItem = nil
@@ -73,6 +115,11 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 self.profilePicImageView.image = DataModel.profilePic
             } else {
                 self.profilePicImageView.image = UIImage(named: "defaultProfilePic")
+            }
+            if DataModel.friends.count == 0 {
+                self.collectionViewCounts[2] = "+"
+            } else {
+                self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
             }
         }
         
@@ -105,11 +152,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         shadowLabel.layer.shadowRadius = 3
         shadowLabel.layer.shadowOffset = .zero
         shadowLabel.layer.shadowOpacity = 0.8
-        if DataModel.friends.count == 0 {
-            self.collectionViewCounts[2] = "+"
-        } else {
-            self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
-        }
+        
         
         self.collectionView.reloadData()
         
@@ -157,6 +200,9 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 let addPost = Post()
                 addPost.images.append(UIImage(named: "addPostNew")!)
                 self.posts.append(addPost)
+            } else if self.fromSelectedUser && self.posts.count == 0 {
+                self.noPostsImageView.isHidden = false
+                self.noPostsLabel.isHidden = false
             }
             
             self.postsCollectionView.reloadData()
@@ -293,14 +339,19 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     func friendsSelected(count: Int) {
         // TODO determine if we will show friends of other users
-        if !fromSelectedUser {
+        if !fromSelectedUser || self.selectedUserIsFriend {
             self.performSegue(withIdentifier: "showFriends", sender: nil)
         }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showFriends" {
-            let _ = segue.destination as! FriendsVC
+            let targetVC = segue.destination as! FriendsVC
+            targetVC.selectedUserIsFriend = self.selectedUserIsFriend
+            targetVC.selectedUsersFriends = self.selectedUsersFriends
+            if self.selectedUserIsFriend {
+                targetVC.selectedUser = self.selectedUser
+            }
         }
     }
     
