@@ -50,6 +50,8 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     var tableViewHeight: CGFloat = 0.0
     
     var selectedUser = User()
+    var selectedUserIsFriend = false
+    var selectedUsersFriends = [User]()
     
     var restrictedIds = [String]()
     var restrictedOutletTemp = UIBarButtonItem()
@@ -59,8 +61,10 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     override func viewWillDisappear(_ animated: Bool) {
         if DataModel.receivedRequests.count > 0 {
-            fpc.hide(animated: true) {
-                self.fpc.dismiss(animated: true) {}
+            fpc.show(animated: false) {
+                self.fpc.hide(animated: true) {
+                    self.fpc.dismiss(animated: true) {}
+                }
             }
         }
     }
@@ -79,6 +83,13 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     func setupUI() {
         
+        
+        if selectedUserIsFriend {
+            let firstIndex = self.selectedUser.username + "'s " + segmentedTitles.remove(at: 0)
+            segmentControl.setButtonTitles(buttonTitles: [firstIndex], initialIndex: 0)
+        } else {
+            print("current user")
+        }
         
         // Cannot Friend these object ids
         restrictedIds = DataModel.friends.map { $0.objectId! }
@@ -119,31 +130,32 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         self.tableViewHeight = self.tableView.frame.height
         self.tableView.tableFooterView = UIView()
         
-        // Refresh Controller
-        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
-        refreshControl.attributedTitle = NSAttributedString(string: "Searching for new friend requests...", attributes: attributes)
-        refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
-        refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
-        self.tableView.addSubview(refreshControl)
-        let controller = self.storyboard?.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
-        DataModel.requestsVC = controller
-        fpc.set(contentViewController: DataModel.requestsVC)
-        DataModel.requestsVC!.friendsRef = self
-        fpc.delegate = self
-        print("right before")
-        self.present(self.fpc, animated: DataModel.receivedRequests.count > 0, completion: {
-            if DataModel.receivedRequests.count == 0 {
-                self.fpc.show(animated: false) {
-                    self.fpc.hide(animated: false) {
-                        self.fpc.dismiss(animated: true) {
-                            print("dismissed empty fpc")
-                            
+        if !self.selectedUserIsFriend {
+            // Refresh Controller
+            let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
+            refreshControl.attributedTitle = NSAttributedString(string: "Searching for new friend requests...", attributes: attributes)
+            refreshControl.tintColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
+            refreshControl.addTarget(self, action: #selector(startRefresh), for: UIControl.Event.valueChanged)
+            self.tableView.addSubview(refreshControl)
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "requestsVC") as! RequestsVC
+            DataModel.requestsVC = controller
+            fpc.set(contentViewController: DataModel.requestsVC)
+            DataModel.requestsVC!.friendsRef = self
+            fpc.delegate = self
+            print("right before")
+            self.present(self.fpc, animated: DataModel.receivedRequests.count > 0, completion: {
+                if DataModel.receivedRequests.count == 0 {
+                    self.fpc.show(animated: false) {
+                        self.fpc.hide(animated: false) {
+                            self.fpc.dismiss(animated: true) {
+                                print("dismissed empty fpc")
+                                
+                            }
                         }
                     }
                 }
-            }
-        })
-        print("right after")
+            })
+        }
         
         if DataModel.friends.count == 0 && DataModel.receivedRequests.count == 0 {
             self.changeToIndex(index: 1)
@@ -199,22 +211,43 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if self.searchController.searchBar.isHidden {
-            self.selectedUser = DataModel.friends[indexPath.row]
-            self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
-        } else {
-            if (searchController.isActive) {
-                self.selectedUser = self.filteredUsers[indexPath.row]
-            } else {
-                self.selectedUser = self.users[indexPath.row]
+        if self.selectedUserIsFriend {
+            if self.selectedUsersFriends[indexPath.row].username != PFUser.current()?.username {
+                self.selectedUser = self.selectedUsersFriends[indexPath.row]
+                self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
             }
-            self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
+        } else {
+            if self.searchController.searchBar.isHidden {
+                self.selectedUser = DataModel.friends[indexPath.row]
+                self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
+            } else {
+                if (searchController.isActive) {
+                    self.selectedUser = self.filteredUsers[indexPath.row]
+                } else {
+                    self.selectedUser = self.users[indexPath.row]
+                }
+                self.performSegue(withIdentifier: "showFriendsProfile", sender: nil)
+            }
         }
+        
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! FriendTableViewCell
         var customUser = User()
+        if self.selectedUserIsFriend {
+            print("in selected user is friend")
+            customUser = self.selectedUsersFriends[indexPath.row]
+            cell.profilePicImageView.image = customUser.profilePic
+            cell.usernameLabel.text = customUser.username
+            cell.addFriendOutlet.layer.cornerRadius = 8
+            cell.addFriendOutlet.layer.masksToBounds = true
+            if customUser.username == PFUser.current()?.username ||  DataModel.friends.map( { $0.objectId }).contains(self.selectedUsersFriends[indexPath.row].objectId) {
+                cell.addFriendOutlet.isHidden = true
+                cell.addFriendLabel.isHidden = true
+            }
+            return cell
+        }
         if searchController.searchBar.isHidden {
             customUser = DataModel.friends[indexPath.row]
             cell.addFriendOutlet.isHidden = true
@@ -243,15 +276,20 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if searchController.searchBar.isHidden {
-            return DataModel.friends.count
+        if self.selectedUserIsFriend {
+            return self.selectedUsersFriends.count
         } else {
-            if (searchController.isActive) {
-                return self.filteredUsers.count
+            if searchController.searchBar.isHidden {
+                return DataModel.friends.count
             } else {
-                return self.users.count
+                if (searchController.isActive) {
+                    return self.filteredUsers.count
+                } else {
+                    return self.users.count
+                }
             }
         }
+        
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -347,14 +385,10 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     @objc func startRefresh(sender:AnyObject) {
         print("Refreshing...")
         if let requestVC = DataModel.requestsVC {
-            print("here1")
-            print("number of items in the collection view", requestVC.collectionView.numberOfItems(inSection: 0))
-            print("here2")
             self.fpc.set(contentViewController: requestVC)
             if DataModel.receivedRequests.count > 0 {
                 self.fpc.dismiss(animated: true) {
                     self.present(self.fpc, animated: true, completion: {
-                        print("refreshing collection view")
                         requestVC.collectionView.reloadData()
                         Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.endRefresh), userInfo: nil, repeats: false)
                     })
