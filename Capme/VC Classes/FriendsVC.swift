@@ -83,8 +83,8 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
     
     func setupUI() {
         
-        
         if selectedUserIsFriend {
+            self.navigationItem.rightBarButtonItem = nil
             let firstIndex = self.selectedUser.username + "'s " + segmentedTitles.remove(at: 0)
             segmentControl.setButtonTitles(buttonTitles: [firstIndex], initialIndex: 0)
         } else {
@@ -263,6 +263,12 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
                 }
             } else {
                 customUser = self.users[indexPath.row]
+                let sentUserIds = DataModel.sentRequests.map { $0.objectId! }
+                if sentUserIds.contains(customUser.objectId) {
+                    cell.addFriendLabel.text = "Sent ✓"
+                } else {
+                    cell.addFriendLabel.text = "Add Friend"
+                }
             }
             cell.addFriendOutlet.isHidden = false
             cell.addFriendLabel.isHidden = false
@@ -272,6 +278,34 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         cell.profilePicImageView.image = customUser.profilePic
         cell.usernameLabel.text = customUser.username
         cell.addFriendOutlet.accessibilityLabel = customUser.objectId
+        
+        cell.addFriendAction = { [unowned self] in
+            cell.addFriendOutlet.isEnabled = false
+            cell.addFriendLabel.text = "Sent ✓"
+            print("Sending friend request to ", customUser.username, customUser.objectId)
+            if let i = DataModel.users.firstIndex(where: { $0.objectId == customUser.objectId }) {
+                print("adding to Data Model", customUser.username)
+                DataModel.sentRequests.append(DataModel.users[i])
+            }
+            let Request = PFObject(className: "FriendRequest")
+            Request["sender"] = PFUser.current()
+            Request["recipient"] = PFUser(withoutDataWithObjectId: customUser.objectId)
+            Request["status"] = "pending"
+            Request.saveInBackground { (success, error) in
+                if error == nil {
+                    print("Success: Saved the new friend request")
+                    cell.addFriendOutlet.setTitle("Pending...", for: .normal)
+                    PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [customUser.objectId], "title": PFUser.current()?.username!, "message": "Check out your new friend request!", "identifier" : "friendRequest", "objectId" : Request.objectId]) {
+                        (response, error) in
+                        if error == nil {
+                            print("Success: Sent a push notification for a new friend request")
+                        } else {
+                            print(error?.localizedDescription, "Cloud Code Push Error")
+                        }
+                    }
+                }
+            }
+        }
         return cell
     }
     

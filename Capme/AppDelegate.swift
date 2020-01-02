@@ -50,12 +50,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Open to specified location
     //*Message Push Scenarios
     //*Show profile from search (did select)
+    //*Handle send requests properly
+    //*Profile Posts loading indicator
+    //*Take photo option when currentUser's profile pic is selected
+    //*Did select users old posts on profile
     
     /* IN PROGRESS */
-    // Handle send requests properly
-    // Profile Posts loading indicator
-    // Take photo option when currentUser's profile pic is selected
-    // Did select users old posts on profile
+    // Half finish profile half write spec (add same images to github)
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
     // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages *)
@@ -63,7 +64,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // From background - (TODO) app selected (app is closed, app is resting in background on discover, app is resting in background on messages)
     
     /* BACK LOG (minor) */
-    // No friends no message to
     // Time didnt display properly
     // Remove request until only one left, center remaining
     // Add contact picker to send invite to use the app
@@ -87,6 +87,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // Should we support videos?
     // Which image processing library should we use?
     // How to deliver exploitable images content?
+    // Is using core data faster than querying from back4app?
     
     var window: UIWindow?
     let reachability = try! Reachability()

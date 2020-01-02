@@ -142,6 +142,7 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
         let tempVC : CaptionsVC = mainStoryboard.instantiateViewController(withIdentifier: "captionsVC") as! CaptionsVC
         tempVC.discoverRef = self
+        tempVC.fromDiscover = true
         tempVC.postId = self.posts[indexPath.row].objectId
         tempVC.mediaBrowserRef = mediaBrowser
         tempVC.captions = self.posts[indexPath.row].captions

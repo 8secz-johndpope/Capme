@@ -10,8 +10,10 @@ import Foundation
 import UIKit
 import SCLAlertView
 import Parse
+import ATGMediaBrowser
+import FloatingPanel
 
-class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource {
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var usernameLabel: UILabel!
@@ -21,6 +23,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBOutlet weak var postsCollectionView: UICollectionView!
     @IBOutlet weak var noPostsImageView: UIImageView!
     @IBOutlet weak var noPostsLabel: UILabel!
+    @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
     
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
     var collectionViewCounts = ["---", "---", "---"]
@@ -30,7 +33,11 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     var selectedUser = User()
     var selectedUsersFriends = [User]()
+    var selectedPost = Post()
     var fromSelectedUser = false
+    
+    let fpc = FloatingPanelController()
+    var mediaBrowser: MediaBrowserViewController!
     
     var selectedUserIsFriend = false
     
@@ -59,6 +66,10 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     func setupUI() {
         
+        // Loading Indicator
+        self.loadingIndicator.hidesWhenStopped = true
+        self.loadingIndicator.startAnimating()
+        
         if self.fromSelectedUser {
             self.selectedUserIsFriend = DataModel.friends.map( { $0.objectId }).contains(self.selectedUser.objectId)
             if self.selectedUserIsFriend { // Selected User is a friend
@@ -76,6 +87,8 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 let requestRef = FriendRequest()
                     
                 requestRef.getRequestsForAnotherUser(query: query, user: self.selectedUser.pfuserRef!) { (queriedRequests) in
+                    self.loadingIndicator.stopAnimating()
+                    self.loadingIndicator.isHidden = true
                     for request in queriedRequests {
                         if request.receiver.objectId == self.selectedUser.objectId {
                             print("receiver:", request.receiver.username, "sender:", request.sender.username, "append sender")
@@ -104,7 +117,9 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             // Query Users
             // Keep track of the number of friends per user? NO query users because we will show the list anyway
             
-        } else {
+        } else { // Current Users posts and profile
+            
+            
             // Profile Picture
             self.getCurrentUsersPosts(currentUser: PFUser.current()!)
             let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
@@ -204,7 +219,8 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 self.noPostsImageView.isHidden = false
                 self.noPostsLabel.isHidden = false
             }
-            
+            self.loadingIndicator.stopAnimating()
+            self.loadingIndicator.isHidden = true
             self.postsCollectionView.reloadData()
             self.postsCollectionView.frame = CGRect(x: self.postsCollectionView.frame.minX, y: self.postsCollectionView.frame.minY, width: self.postsCollectionView.frame.width, height: self.postsCollectionView.collectionViewLayout.collectionViewContentSize.height)
             self.scrollView.updateContentView(addInset: 0.0)
@@ -243,11 +259,30 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                         }
                     }
                 }
-                alert.showInfo("Your Posts\nInfo", subTitle: "Capme lets you pick any number of friends to create the best caption for your images", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+                alert.showInfo("Your Posts:\nInfo", subTitle: "Capme lets you pick any number of friends to create the best caption for your images", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
             } else if self.posts[indexPath.row].images[0] == UIImage(named: "addPostInfo") {
                 let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
                 let alert = SCLAlertView(appearance: appearance)
-                alert.showInfo("Your Posts\nTiming", subTitle: "Choose a deadline for your captioners to write their captions. Once their time is up, your post with their captions will be published and the favoriting competition begins!", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "hourglass"), animationStyle: .topToBottom)
+                alert.showInfo("Your Posts:\nTiming", subTitle: "Choose a deadline for your captioners to write their captions. Once their time is up, your post with their captions will be published and the favoriting competition begins!", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "hourglass"), animationStyle: .topToBottom)
+            } else {
+                self.selectedPost = self.posts[indexPath.row]
+                self.selectedPost = self.posts[indexPath.row]
+                mediaBrowser = MediaBrowserViewController(dataSource: self)
+                present(mediaBrowser, animated: true, completion: nil)
+                let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+                let tempVC : CaptionsVC = mainStoryboard.instantiateViewController(withIdentifier: "captionsVC") as! CaptionsVC
+                tempVC.profileRef = self
+                tempVC.fromProfile = true
+                tempVC.postId = self.posts[indexPath.row].objectId
+                tempVC.mediaBrowserRef = mediaBrowser
+                tempVC.captions = self.posts[indexPath.row].captions
+                tempVC.view.layer.cornerRadius = 10.0
+                tempVC.view.layer.masksToBounds = true
+                fpc.set(contentViewController: tempVC)
+                DataModel.captionsVC = tempVC
+                fpc.isRemovalInteractionEnabled = true
+                mediaBrowser.present(fpc, animated: true, completion: nil)
+                //self.performSegue(withIdentifier: "showPost", sender: nil)
             }
         }
     }
@@ -293,10 +328,17 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         alert.view.tintColor = #colorLiteral(red: 0.3333333433, green: 0.3333333433, blue: 0.3333333433, alpha: 1)
         
-        let messageAttrString = NSMutableAttributedString(string: "Choose Image", attributes: nil)
+        let messageAttrString = NSMutableAttributedString(string: "Choose Image From:", attributes: nil)
         
         alert.setValue(messageAttrString, forKey: "attributedMessage")
-
+        
+        alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
+            imagePicker.sourceType = .camera
+            imagePicker.allowsEditing = true
+            imagePicker.delegate = self
+            self.present(imagePicker, animated: true, completion: nil)
+        }))
+        
         alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { _ in
             imagePicker.sourceType = .photoLibrary
             self.present(imagePicker, animated: true, completion: nil)
@@ -352,8 +394,19 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             if self.selectedUserIsFriend {
                 targetVC.selectedUser = self.selectedUser
             }
+        } else if segue.identifier == "showPost" {
+            let targetVC = segue.destination as! PostDetailsVC
+            targetVC.selectedPost = self.selectedPost
         }
     }
+}
+
+extension ProfileVC {
+    func numberOfItems(in mediaBrowser: MediaBrowserViewController) -> Int {
+        return 1
+    }
     
-    
+    func mediaBrowser(_ mediaBrowser: MediaBrowserViewController, imageAt index: Int, completion: @escaping MediaBrowserViewControllerDataSource.CompletionBlock) {
+        completion(index, selectedPost.images[0], ZoomScale.default, nil)
+    }
 }
