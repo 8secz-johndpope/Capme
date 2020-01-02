@@ -19,6 +19,11 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     var captions = [Caption]()
     var selectedUser = User()
     var discoverRef = DiscoverVC()
+    var profileRef = ProfileVC()
+    
+    var fromDiscover = false
+    var fromProfile = false
+    
     var mediaBrowserRef: MediaBrowserViewController!
     
     // Fields to Handle Favorite/Unfavorite
@@ -31,7 +36,9 @@ class CaptionsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     override func viewWillDisappear(_ animated: Bool) {
         // TODO this could potentially be dangerous
-        discoverRef.tableView.reloadData()
+        if fromDiscover {
+            discoverRef.tableView.reloadData()
+        }
     }
     
     func setupUI() {
