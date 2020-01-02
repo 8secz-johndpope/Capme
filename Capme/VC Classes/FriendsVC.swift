@@ -91,6 +91,13 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
             print("current user")
         }
         
+        if selectedUserIsFriend {
+            let firstIndex = self.selectedUser.username + "'s " + segmentedTitles.remove(at: 0)
+            segmentControl.setButtonTitles(buttonTitles: [firstIndex], initialIndex: 0)
+        } else {
+            print("current user")
+        }
+        
         // Cannot Friend these object ids
         restrictedIds = DataModel.friends.map { $0.objectId! }
         print("received", DataModel.receivedRequests.map { $0.objectId! })

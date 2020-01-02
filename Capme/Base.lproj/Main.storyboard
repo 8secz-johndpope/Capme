@@ -838,6 +838,7 @@
                                         <rect key="frame" x="177" y="356" width="20" height="20"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </activityIndicatorView>
+
                                 </subviews>
                                 <viewLayoutGuide key="contentLayoutGuide" id="puT-b8-3e4"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="nYJ-Um-Dxo"/>
@@ -1680,7 +1681,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="YXJ-Cu-NCf">
-                                        <rect key="frame" x="8" y="217" width="343" height="160"/>
+                                        <rect key="frame" x="8" y="187" width="343" height="160"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="160" id="MwG-7D-ABc"/>
@@ -1690,12 +1691,12 @@
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Add Location" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Jz4-y9-TpN">
-                                        <rect key="frame" x="8" y="95" width="310" height="74"/>
+                                        <rect key="frame" x="8" y="95" width="310" height="44"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" returnKeyType="continue" textContentType="location"/>
                                     </textField>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Add Release Date" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="nHX-Mv-Bwp">
-                                        <rect key="frame" x="8" y="170" width="310" height="44"/>
+                                        <rect key="frame" x="8" y="140" width="310" height="44"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" returnKeyType="continue" textContentType="location"/>
                                     </textField>
@@ -1710,7 +1711,7 @@
                                         </connections>
                                     </button>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLY-ec-VU6">
-                                        <rect key="frame" x="321" y="118" width="25" height="26"/>
+                                        <rect key="frame" x="321" y="103" width="25" height="26"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="26" id="auU-6Y-WjI"/>
                                             <constraint firstAttribute="width" constant="25" id="zDc-8U-rAP"/>
@@ -1721,7 +1722,7 @@
                                         </connections>
                                     </button>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tYs-Er-jDh">
-                                        <rect key="frame" x="321" y="177" width="25" height="26"/>
+                                        <rect key="frame" x="321" y="147" width="25" height="26"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="26" id="8SX-Te-QBg"/>
                                         </constraints>
@@ -2240,5 +2241,6 @@
     <inferredMetricsTieBreakers>
         <segue reference="qc1-x0-RXH"/>
         <segue reference="lKN-8b-Okq"/>
+        <segue reference="EF4-OX-sI6"/>
     </inferredMetricsTieBreakers>
 </document>

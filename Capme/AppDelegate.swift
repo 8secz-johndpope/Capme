@@ -56,7 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Did select users old posts on profile
     
     /* IN PROGRESS */
-    // Half finish profile half write spec (add same images to github)
+
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
     // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages *)
