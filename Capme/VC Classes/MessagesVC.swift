@@ -23,6 +23,11 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.lowerView.captionTextView.becomeFirstResponder()
     }
     
+    @IBAction func addMessageAction(_ sender: Any) {
+        self.performSegue(withIdentifier: "showMessage", sender: nil)
+    }
+    
+    
     @IBOutlet weak var inspirationOutlet: UIButton!
     @IBOutlet weak var selectedPostLowerView: PostDetailsLowerView!
     @IBOutlet weak var tableView: UITableView!

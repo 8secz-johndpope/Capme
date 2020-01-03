@@ -14,6 +14,7 @@ import Reachability
 import SCLAlertView
 import UserNotifications
 import ATGMediaBrowser
+import ParseLiveQuery
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -56,7 +57,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Did select users old posts on profile
     
     /* IN PROGRESS */
-    // Half finish profile half write spec (add same images to github)
+    
+    // Open a blank message
+    // Send and receive a message (Parse Live Query)
+    // Populate old messages with parse backend messages
+    // Determine chatroom naming convention
+    
+    // Bring over all of the necessary classes from MessageKit
+    // Learn Parse Live Query
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
     // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages *)
@@ -134,6 +142,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         //Configure Parse client
+        Message.registerSubclass()
+        Room.registerSubclass()
+        
         let configuration = ParseClientConfiguration {
             $0.applicationId = "1I5ln2S1erGZTcjiEzmt0TccGrALbxR81u8ONETx"
             $0.clientKey = "oHmjv3beFFvBtvZSceeYpOK8Vr24ua07wmHqrrRE"
