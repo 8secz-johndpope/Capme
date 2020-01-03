@@ -25,7 +25,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBOutlet weak var noPostsLabel: UILabel!
     @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
 
-  
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
     var collectionViewCounts = ["---", "---", "---"]
     
@@ -39,7 +38,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     let fpc = FloatingPanelController()
     var mediaBrowser: MediaBrowserViewController!
-    var fromSelectedUser = false
 
     var selectedUserIsFriend = false
     
@@ -399,8 +397,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             }
         } else if segue.identifier == "showPost" {
             let targetVC = segue.destination as! PostDetailsVC
-            targetVC.selectedPost = self.selectedPost
-
         }
     }
 }

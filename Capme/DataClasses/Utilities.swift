@@ -98,6 +98,10 @@ extension Encodable {
     }
 }
 
+extension UIColor {
+    static let primaryColor = #colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1)
+}
+
 // Conformance
 extension UIView: Bluring {}
 

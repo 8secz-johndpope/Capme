@@ -654,6 +654,9 @@
                     <navigationItem key="navigationItem" id="4w0-Py-ZZk">
                         <barButtonItem key="rightBarButtonItem" systemItem="compose" id="Mix-Na-470">
                             <color key="tintColor" red="0.98823529409999999" green="0.81960784310000001" blue="0.1647058824" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="addMessageAction:" destination="uH9-z6-gru" id="ejL-Ib-RUY"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
@@ -662,11 +665,28 @@
                         <outlet property="sendNewCaptionOutlet" destination="VIf-JU-Arj" id="Rpm-gc-OUP"/>
                         <outlet property="tableView" destination="6nB-YB-bKK" id="vfr-Ya-CIs"/>
                         <segue destination="lw9-a2-zGw" kind="show" identifier="showInspiration" id="1uI-ec-7pX"/>
+                        <segue destination="zl7-Gz-AXf" kind="show" identifier="showMessage" id="qQc-EO-eYB"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KGy-hi-n6C" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1688.8" y="872.11394302848578"/>
+        </scene>
+        <!--Message KitVC-->
+        <scene sceneID="pFW-BD-WZZ">
+            <objects>
+                <viewController id="zl7-Gz-AXf" customClass="MessageKitVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="IHt-8D-F0V">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="AQh-Pi-BmR"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="wuG-kX-Gmi"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="g8d-Ws-H6k" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2650" y="1635"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="Fga-TL-gv3">
@@ -838,7 +858,6 @@
                                         <rect key="frame" x="177" y="356" width="20" height="20"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </activityIndicatorView>
-
                                 </subviews>
                                 <viewLayoutGuide key="contentLayoutGuide" id="puT-b8-3e4"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="nYJ-Um-Dxo"/>
@@ -2215,7 +2234,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kji-EL-HfU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1688.8" y="1634.9325337331336"/>
+            <point key="canvasLocation" x="518" y="1635"/>
         </scene>
     </scenes>
     <resources>
@@ -2241,6 +2260,5 @@
     <inferredMetricsTieBreakers>
         <segue reference="qc1-x0-RXH"/>
         <segue reference="lKN-8b-Okq"/>
-        <segue reference="EF4-OX-sI6"/>
     </inferredMetricsTieBreakers>
 </document>
