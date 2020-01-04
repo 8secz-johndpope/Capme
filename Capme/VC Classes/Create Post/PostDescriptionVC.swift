@@ -315,6 +315,13 @@ class PostDescriptionVC: UIViewController, UITextViewDelegate, MKLocalSearchComp
         DataModel.newPost.description = textView.text
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showReview" {
+            let targetVC = segue.destination as! ChooseFriendsVC
+            targetVC.fromNewPost = true
+        }
+    }
+    
 }
 
 

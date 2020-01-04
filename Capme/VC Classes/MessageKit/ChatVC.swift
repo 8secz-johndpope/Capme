@@ -33,6 +33,10 @@ class ChatVC: MessagesViewController, MessagesDataSource {
         return formatter
     }()
     
+    var roomName = ""
+    var currentUser = User()
+    var externalUser = User()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -45,8 +49,9 @@ class ChatVC: MessagesViewController, MessagesDataSource {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        chatManager.connectToChatRoom("test")
+        print("in chat vc trying to connect with this name", self.roomName)
+        chatManager.connectToChatRoom(self.roomName)
+        chatManager.chatRef = self
         //let myQuery = Message.query()?.whereKey("recipient", equalTo: PFUser.current()!.objectId!)
         
         /*MockSocket.shared.connect(with: [SampleData.shared.nathan, SampleData.shared.wu])
@@ -58,7 +63,7 @@ class ChatVC: MessagesViewController, MessagesDataSource {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         
-        chatManager.connectToChatRoom("test")
+        chatManager.disconnectFromChatRoom()
         
         /*MockSocket.shared.disconnect()
         audioController.stopAnyOngoingPlaying()*/
@@ -70,21 +75,13 @@ class ChatVC: MessagesViewController, MessagesDataSource {
             let query = PFQuery(className: "Message")
             query.addAscendingOrder("createdAt")
             query.limit = 20
-            query.whereKey("author", equalTo: PFUser.current()!)
-            query.whereKey("roomName", equalTo: "test")
+            query.includeKey("author")
+            query.whereKey("roomName", equalTo: self.roomName)
             messageRef.getMessages(query: query) { (queriedMessages) in
+                
                 self.messageList = queriedMessages
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToBottom()
-            }
-            
-            let count = UserDefaults.standard.mockMessagesCount()
-            SampleData.shared.getMessages(count: count) { messages in
-                DispatchQueue.main.async {
-                    self.messageList = messages
-                    self.messagesCollectionView.reloadData()
-                    self.messagesCollectionView.scrollToBottom()
-                }
             }
         }
     }
@@ -182,7 +179,6 @@ class ChatVC: MessagesViewController, MessagesDataSource {
     }
     
     func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        
         let dateString = formatter.string(from: message.sentDate)
         return NSAttributedString(string: dateString, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption2)])
     }
@@ -332,8 +328,21 @@ extension ChatVC: InputBarAccessoryViewDelegate {
             }
         }
     }
+    
+    public func insertReceivedMessages(_ data: [Any]) {
+        for component in data {
+            let user = MockUser(senderId: externalUser.objectId, displayName: externalUser.username!)
+            if let str = component as? String {
+                let message = MockMessage(text: str, user: user, messageId: UUID().uuidString, date: Date())
+                insertMessage(message)
+            } else if let img = component as? UIImage {
+                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                insertMessage(message)
+            }
+        }
+    }
 
-    private func insertMessages(_ data: [Any]) {
+    public func insertMessages(_ data: [Any]) {
         for component in data {
             let user = SampleData.shared.currentSender
             if let str = component as? String {

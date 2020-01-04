@@ -19,6 +19,7 @@ struct DataModel {
     static var friends = [User]()
     static var receivedRequests = [User]()
     static var sentRequests = [User]()
+    static var currentUser = User()
     
     static var requestsVC: RequestsVC?
     static var captionsVC = CaptionsVC()
@@ -38,6 +39,7 @@ struct DataModel {
     static var newMessage: Post?
     static var receivedMessage = false
     static var newMessageId = ""
+    static var currentRecipient = User()
     
 }
     

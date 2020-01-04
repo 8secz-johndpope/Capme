@@ -113,5 +113,12 @@ extension PostKeywordsVC {
            return tag.text != "#" && !tags.contains(where: { $0.text.uppercased() == tag.text.uppercased() })
         }
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showReview" {
+            let targetVC = segue.destination as! ChooseFriendsVC
+            targetVC.fromNewPost = true
+        }
+    }
 
 }

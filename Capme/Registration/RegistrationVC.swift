@@ -82,6 +82,7 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                     if error == nil  {
                         if let finalimage = UIImage(data: imageData!) {
                             DataModel.profilePic = finalimage
+                            DataModel.currentUser = User(user: PFUser.current()!, image: finalimage)
                         }
                     }
                 }
@@ -184,6 +185,7 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                         if error == nil  {
                             if let finalimage = UIImage(data: imageData!) {
                                 DataModel.profilePic = finalimage
+                                DataModel.currentUser = User(user: user!, image: finalimage)
                             }
                         }
                     }
