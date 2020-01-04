@@ -667,6 +667,7 @@
                         <segue destination="lw9-a2-zGw" kind="show" identifier="showInspiration" id="1uI-ec-7pX"/>
                         <segue destination="zl7-Gz-AXf" kind="show" identifier="showMessage" id="qQc-EO-eYB"/>
                         <segue destination="MVB-UI-7ds" kind="show" identifier="showChooseFriend" id="2UP-4Q-ijU"/>
+
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KGy-hi-n6C" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -679,6 +680,7 @@
                 <viewController id="zl7-Gz-AXf" customClass="MessageKitVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IHt-8D-F0V">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="AQh-Pi-BmR"/>

@@ -33,6 +33,7 @@ class ChatRoomManager {
         if connected {
             disconnectFromChatRoom()
         }
+      
         self.currentChatRoom?.name = room
         print("Inside Chat Room", room)
         Room.query()?.whereKey("name", equalTo: room).getFirstObjectInBackground(block: { (roomObject, error) in
@@ -82,7 +83,7 @@ class ChatRoomManager {
             return nil
         })
     }
-    
+  
     func subscribeToUpdates() {
         subscription = liveQueryClient
             .subscribe(messagesQuery)

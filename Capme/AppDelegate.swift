@@ -61,10 +61,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Determine chatroom naming convention
     
     /* IN PROGRESS */
-    
+  
     // Design workflow for creating receiving messages and caption requests
     // Compress messages sent by the same user
-    // Support Images, videos, and audio
+    // Support Images, videos, and audi
     
     // Bring over all of the necessary classes from MessageKit
     // Learn Parse Live Query

@@ -36,7 +36,7 @@ class ChatVC: MessagesViewController, MessagesDataSource {
     var roomName = ""
     var currentUser = User()
     var externalUser = User()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -52,6 +52,7 @@ class ChatVC: MessagesViewController, MessagesDataSource {
         print("in chat vc trying to connect with this name", self.roomName)
         chatManager.connectToChatRoom(self.roomName)
         chatManager.chatRef = self
+
         //let myQuery = Message.query()?.whereKey("recipient", equalTo: PFUser.current()!.objectId!)
         
         /*MockSocket.shared.connect(with: [SampleData.shared.nathan, SampleData.shared.wu])
@@ -62,9 +63,7 @@ class ChatVC: MessagesViewController, MessagesDataSource {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        
         chatManager.disconnectFromChatRoom()
-        
         /*MockSocket.shared.disconnect()
         audioController.stopAnyOngoingPlaying()*/
     }
@@ -78,7 +77,6 @@ class ChatVC: MessagesViewController, MessagesDataSource {
             query.includeKey("author")
             query.whereKey("roomName", equalTo: self.roomName)
             messageRef.getMessages(query: query) { (queriedMessages) in
-                
                 self.messageList = queriedMessages
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToBottom()
@@ -343,6 +341,7 @@ extension ChatVC: InputBarAccessoryViewDelegate {
     }
 
     public func insertMessages(_ data: [Any]) {
+
         for component in data {
             let user = SampleData.shared.currentSender
             if let str = component as? String {

@@ -27,6 +27,7 @@ import CoreLocation
 import AVFoundation
 import Parse
 
+
 final internal class SampleData {
 
     static let shared = SampleData()
@@ -259,7 +260,6 @@ final internal class SampleData {
             }
             
         }
-        
         switch sender.senderId {
         case "000001":
             return Avatar(image: #imageLiteral(resourceName: "noPosts"), initials: initials)
