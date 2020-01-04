@@ -21,10 +21,11 @@ class ChatRoomManager {
     fileprivate var currentChatRoom: Room?
     fileprivate var subscription: Subscription<Message>?
 
+    var chatRef = ChatVC()
     var connected: Bool { return currentChatRoom != nil }
     var messagesQuery: PFQuery<Message> {
         return (Message.query()?
-            .whereKey("roomName", equalTo: currentChatRoom!.name!)
+            .whereKey("roomName", equalTo: chatRef.roomName)
             .order(byAscending: "createdAt")) as! PFQuery<Message>
     }
 
@@ -32,20 +33,36 @@ class ChatRoomManager {
         if connected {
             disconnectFromChatRoom()
         }
-        
-        Room.query()?.whereKey("name", equalTo: room).getFirstObjectInBackground()
-            .continueOnSuccessWith(block: { task -> Any? in
-            self.currentChatRoom = task.result as? Room
-            print("Connected to room \(self.currentChatRoom?.name ?? "null")")
-            
-            self.printPriorMessages()
-            self.subscribeToUpdates()
-
-            return nil
+      
+        self.currentChatRoom?.name = room
+        print("Inside Chat Room", room)
+        Room.query()?.whereKey("name", equalTo: room).getFirstObjectInBackground(block: { (roomObject, error) in
+            if roomObject == nil {
+                let room = Room()
+                room.name = self.chatRef.roomName
+                room.saveInBackground { (success, error) in
+                    if error == nil {
+                        print("Success: Saved the new chat room")
+                    }
+                }
+            } else {
+                let queriedRoom = Room()
+                queriedRoom.name = (roomObject!["name"] as! String)
+                self.currentChatRoom = queriedRoom
+                print("Connected to room \(self.currentChatRoom?.name ?? "null")")
+                self.printPriorMessages()
+                self.subscribeToUpdates()
+            }
         })
+        
+        /*Room.query()?.whereKey("name", equalTo: room).getFirstObjectInBackground()
+            .continueOnSuccessWith(block: { task -> Any? in
+            
+        })*/
     }
 
     func disconnectFromChatRoom() {
+        print("Success: Disconnected from the chat room")
         liveQueryClient.unsubscribe(messagesQuery, handler: subscription!)
     }
 
@@ -66,21 +83,26 @@ class ChatRoomManager {
             return nil
         })
     }
-    
-    
-
+  
     func subscribeToUpdates() {
         subscription = liveQueryClient
             .subscribe(messagesQuery)
             .handle(Event.created) { _, message in
-                self.printMessage(message)
+                self.printNewMessage(message)
         }
-        print("subscription validity", subscription == nil)
+    }
+    
+    fileprivate func printNewMessage(_ message: Message) {
+        if message.authorName != PFUser.current()!.username {
+            print("New Message:", message.message!)
+            DispatchQueue.main.async {
+                self.chatRef.insertReceivedMessages([message.message!])
+            }
+        }
     }
 
     fileprivate func printMessage(_ message: Message) {
         let createdAt = message.createdAt ?? Date()
-        print("Received Message!", message.message)
         print("\(createdAt) \(message.authorName ?? "unknown"): \(message.message ?? "")")
     }
 }

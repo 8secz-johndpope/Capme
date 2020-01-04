@@ -55,13 +55,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Profile Posts loading indicator
     //*Take photo option when currentUser's profile pic is selected
     //*Did select users old posts on profile
+    //*Open a blank message
+    //*Send and receive a message (Parse Live Query)
+    //*Populate old messages with parse backend messages
+    //*Determine chatroom naming convention
     
     /* IN PROGRESS */
-    
-    // Open a blank message
-    // Send and receive a message (Parse Live Query)
-    // Populate old messages with parse backend messages
-    // Determine chatroom naming convention
+  
+    // Design workflow for creating receiving messages and caption requests
+    // Compress messages sent by the same user
+    // Support Images, videos, and audi
     
     // Bring over all of the necessary classes from MessageKit
     // Learn Parse Live Query

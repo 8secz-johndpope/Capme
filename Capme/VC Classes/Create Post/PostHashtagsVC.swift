@@ -62,6 +62,13 @@ class PostHashtagsVC: UIViewController, UITextFieldDelegate {
         self.view.addSubview(tagsField)
         textFieldEvents()
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showReview" {
+            let targetVC = segue.destination as! ChooseFriendsVC
+            targetVC.fromNewPost = true
+        }
+    }
 }
 
 

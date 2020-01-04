@@ -91,8 +91,8 @@ class PostImageVC: UIViewController, UIImagePickerControllerDelegate, UINavigati
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showReview" {
-            print("Segue: AddImageVC -> PropertyDetailsVC")
-            
+            let targetVC = segue.destination as! ChooseFriendsVC
+            targetVC.fromNewPost = true
         }
     }
 }

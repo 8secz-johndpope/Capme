@@ -8,10 +8,12 @@
 
 import Foundation
 import UIKit
+import Parse
 
 class ChooseFriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var doneOutlet: UIButton!
     
     @IBAction func doneAction(_ sender: Any) {
         let chosenFriends = DataModel.friends.filter({ $0.isSelected })
@@ -21,11 +23,18 @@ class ChooseFriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSou
         self.performSegue(withIdentifier: "discoverUnwind", sender: nil)
     }
     
+    var fromNewMessages = false
+    var fromNewPost = false
+    var selectedFriend = User()
+    
     override func viewDidLoad() {
         setupUI()
     }
     
     func setupUI() {
+        if self.fromNewMessages {
+            self.doneOutlet.isHidden = true
+        }
         tableView.delegate = self
         tableView.dataSource = self
         tableView.reloadData()
@@ -63,13 +72,20 @@ class ChooseFriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSou
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("selected " + (DataModel.friends[indexPath.row].username))
-        if DataModel.friends[indexPath.row].isSelected {
-            DataModel.friends[indexPath.row].isSelected = false
-        } else {
-            DataModel.friends[indexPath.row].isSelected = true
+        if self.fromNewPost {
+            print("selected " + (DataModel.friends[indexPath.row].username))
+            if DataModel.friends[indexPath.row].isSelected {
+                DataModel.friends[indexPath.row].isSelected = false
+            } else {
+                DataModel.friends[indexPath.row].isSelected = true
+            }
+            self.tableView.reloadData()
+        } else if self.fromNewMessages {
+            // perform segue to messages
+            self.selectedFriend = DataModel.friends[indexPath.row]
+            self.performSegue(withIdentifier: "showChatRoom", sender: nil)
         }
-        self.tableView.reloadData()
+        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -80,6 +96,18 @@ class ChooseFriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSou
             
             targetVC.posts.insert(newPost, at: 0)
             DataModel.newPost = Post()
+        } else if segue.identifier == "showChatRoom" {
+            let targetVC = segue.destination as! ChatVC
+            var users = [String]()
+            users.append(PFUser.current()!.objectId!)
+            users.append(self.selectedFriend.objectId!)
+            let sortedUsers = users.sorted { $0 < $1 }
+            targetVC.roomName = sortedUsers[0] + "+" + sortedUsers[1]
+            targetVC.externalUser = self.selectedFriend
+            DataModel.currentRecipient = self.selectedFriend
+            targetVC.currentUser = DataModel.currentUser
+            print("Set the roomName:", targetVC.roomName)
+            
         }
     }
 }

@@ -666,6 +666,8 @@
                         <outlet property="tableView" destination="6nB-YB-bKK" id="vfr-Ya-CIs"/>
                         <segue destination="lw9-a2-zGw" kind="show" identifier="showInspiration" id="1uI-ec-7pX"/>
                         <segue destination="zl7-Gz-AXf" kind="show" identifier="showMessage" id="qQc-EO-eYB"/>
+                        <segue destination="MVB-UI-7ds" kind="show" identifier="showChooseFriend" id="2UP-4Q-ijU"/>
+
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KGy-hi-n6C" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -677,7 +679,8 @@
             <objects>
                 <viewController id="zl7-Gz-AXf" customClass="MessageKitVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IHt-8D-F0V">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="AQh-Pi-BmR"/>
@@ -686,7 +689,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="g8d-Ws-H6k" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2650" y="1635"/>
+            <point key="canvasLocation" x="474" y="1635"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="Fga-TL-gv3">
@@ -1891,7 +1894,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZIc-nc-Iit" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-6486" y="1764"/>
+            <point key="canvasLocation" x="-6487" y="1635"/>
         </scene>
         <!--Choose FriendsVC-->
         <scene sceneID="ksf-gC-b6h">
@@ -1983,14 +1986,16 @@
                     </view>
                     <navigationItem key="navigationItem" id="SSX-7q-qaW"/>
                     <connections>
+                        <outlet property="doneOutlet" destination="g9y-jz-pwU" id="LpD-Sy-YjQ"/>
                         <outlet property="tableView" destination="0RL-vA-Msc" id="u0H-GU-HtS"/>
                         <segue destination="YOo-En-tFp" kind="unwind" identifier="discoverUnwind" unwindAction="discoverUnwindWithSegue:" id="X1l-UX-UQY"/>
+                        <segue destination="zl7-Gz-AXf" kind="show" identifier="showChatRoom" id="nzg-xP-RBy"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Pba-rK-PDc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <exit id="YOo-En-tFp" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="-6487" y="2633"/>
+            <point key="canvasLocation" x="-3390" y="1635"/>
         </scene>
         <!--CaptionsVC-->
         <scene sceneID="dCC-la-FWg">
@@ -2234,7 +2239,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kji-EL-HfU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="518" y="1635"/>
+            <point key="canvasLocation" x="2967" y="1635"/>
         </scene>
     </scenes>
     <resources>
@@ -2258,7 +2263,9 @@
         <image name="unfilledStar" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
+        <segue reference="xvM-TY-yXt"/>
         <segue reference="qc1-x0-RXH"/>
         <segue reference="lKN-8b-Okq"/>
+        <segue reference="nzg-xP-RBy"/>
     </inferredMetricsTieBreakers>
 </document>

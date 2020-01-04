@@ -25,6 +25,8 @@
 import MessageKit
 import CoreLocation
 import AVFoundation
+import Parse
+
 
 final internal class SampleData {
 
@@ -63,7 +65,11 @@ final internal class SampleData {
     ]
 
     var currentSender: MockUser {
-        return steven
+        return MockUser(senderId: DataModel.currentUser.objectId, displayName: DataModel.currentUser.username)
+    }
+    
+    var currentRecipient: MockUser {
+        return MockUser(senderId: DataModel.currentRecipient.objectId, displayName: DataModel.currentRecipient.username)
     }
 
     var now = Date()
@@ -241,8 +247,19 @@ final internal class SampleData {
 
     func getAvatarFor(sender: SenderType) -> Avatar {
         let firstName = sender.displayName.components(separatedBy: " ").first
-        let lastName = sender.displayName.components(separatedBy: " ").first
-        let initials = "\(firstName?.first ?? "A")\(lastName?.first ?? "A")"
+        let initials = "\(firstName?.first ?? "A")"
+        if sender.senderId == DataModel.currentUser.objectId {
+            return Avatar(image: DataModel.profilePic, initials: "")
+        }
+        
+        if sender.senderId == self.currentRecipient.senderId {
+            if let profilePic = DataModel.currentRecipient.profilePic {
+                return Avatar(image: profilePic, initials: "")
+            } else {
+                return Avatar(image: #imageLiteral(resourceName: "noPosts"), initials: initials)
+            }
+            
+        }
         switch sender.senderId {
         case "000001":
             return Avatar(image: #imageLiteral(resourceName: "noPosts"), initials: initials)

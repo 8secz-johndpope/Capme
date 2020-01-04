@@ -24,7 +24,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     @IBAction func addMessageAction(_ sender: Any) {
-        self.performSegue(withIdentifier: "showMessage", sender: nil)
+        self.performSegue(withIdentifier: "showChooseFriend", sender: nil)
     }
     
     
@@ -372,6 +372,10 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         if segue.identifier == "showInspiration" {
             let targetVC = segue.destination as! InspirationVC
             targetVC.selectedPost = self.selectedPost
+        } else if segue.identifier == "showChooseFriend" {
+            let targetVC = segue.destination as! ChooseFriendsVC
+            targetVC.fromNewMessages = true
+            
         }
     }
 }

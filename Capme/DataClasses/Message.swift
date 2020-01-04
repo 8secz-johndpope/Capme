@@ -36,7 +36,7 @@ class Message: PFObject, PFSubclassing {
                     let messageText = object["message"] as! String
                     let id = object.objectId!
                     let date = object.createdAt!
-                    let user = MockUser(senderId: "Test", displayName: "sech")
+                    let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
                     let message = MockMessage(text: messageText, user: user, messageId: id, date: date)
                     messages.append(message)
                     if object == objects?.last {
