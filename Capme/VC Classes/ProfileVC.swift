@@ -24,7 +24,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBOutlet weak var noPostsImageView: UIImageView!
     @IBOutlet weak var noPostsLabel: UILabel!
     @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
-    
+
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
     var collectionViewCounts = ["---", "---", "---"]
     
@@ -38,7 +38,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     let fpc = FloatingPanelController()
     var mediaBrowser: MediaBrowserViewController!
-    
+
     var selectedUserIsFriend = false
     
     @IBAction func logoutAction(_ sender: Any) {
@@ -89,6 +89,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 requestRef.getRequestsForAnotherUser(query: query, user: self.selectedUser.pfuserRef!) { (queriedRequests) in
                     self.loadingIndicator.stopAnimating()
                     self.loadingIndicator.isHidden = true
+
                     for request in queriedRequests {
                         if request.receiver.objectId == self.selectedUser.objectId {
                             print("receiver:", request.receiver.username, "sender:", request.sender.username, "append sender")
@@ -396,7 +397,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             }
         } else if segue.identifier == "showPost" {
             let targetVC = segue.destination as! PostDetailsVC
-            targetVC.selectedPost = self.selectedPost
         }
     }
 }
