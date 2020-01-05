@@ -35,7 +35,7 @@ struct DataModel {
     static var pushId = ""
     
     // Messages
-    static var messages = [Post]()
+    static var captionRequests = [Post]()
     static var newMessage: Post?
     static var receivedMessage = false
     static var newMessageId = ""

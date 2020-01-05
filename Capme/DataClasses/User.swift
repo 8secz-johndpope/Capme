@@ -11,7 +11,17 @@ import UIKit
 import Parse
 
 
-class User {
+class User: Hashable {
+    
+    
+    static func == (lhs: User, rhs: User) -> Bool {
+        lhs.objectId == rhs.objectId
+    }
+    
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(objectId)
+    }
     
     var objectId: String!
     var username: String!

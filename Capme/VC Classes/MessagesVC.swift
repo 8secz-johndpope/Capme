@@ -27,12 +27,10 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.performSegue(withIdentifier: "showChooseFriend", sender: nil)
     }
     
-    
     @IBOutlet weak var inspirationOutlet: UIButton!
     @IBOutlet weak var selectedPostLowerView: PostDetailsLowerView!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var sendNewCaptionOutlet: UIButton!
-    
     
     @IBAction func inspirationAction(_ sender: Any) {
         self.mediaBrowser.dismiss(animated: false) {
@@ -68,9 +66,75 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var blurView = UIImageView()
     var inspirationButton = UIButton()
     let refreshControl = UIRefreshControl()
+    var selectedFriend = User()
+    var messageItemsPerFriend = [User : Any]() // Can be a message or a caption request
 
     override func viewDidLoad() {
+        self.getMessageItems()
         setupUI()
+    }
+    
+    func getMessageItems() {
+        // Get most recent message from each conversation
+        
+        /*PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) {
+            (response, error) in
+            if error == nil {
+                print(response, "got this result!")
+            } else {
+                print(error?.localizedDescription, "Cloud Code Push Error")
+            }
+        }*/
+        
+        PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) { (response, error) in
+            if error == nil {
+                print("this is the success!")
+                print(response)
+            }
+        }
+        
+        /*
+        // Use a REST API to get the distinct messages
+        let session = URLSession(configuration: .default, delegate: nil, delegateQueue: .main)
+        let url = URL(string: "example.com")!
+        let task = session.dataTask(with: url, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+            // Parse the data in the response and use it
+        })
+        task.resume()
+        
+        
+        let query = PFQuery(className: "Message")
+        query.whereKey("roomName", containedIn: self.getRoomNames())
+        query.order(byDescending: "roomName")
+        query.order(by: <#T##NSSortDescriptor#>)
+        query.addAscendingOrder("createdAt")
+        query.findObjectsInBackground {
+            (objects:[PFObject]?, error:Error?) -> Void in
+            if let error = error {
+                print("Error: " + error.localizedDescription)
+            } else {
+                if objects?.count == 0 || objects?.count == nil {
+                    print("No new objects")
+                    return
+                }
+                for object in objects! {
+                    print(object["message"] as! String, "written by", object["authorName"] as! String)
+                }
+            }
+        }*/
+    }
+    
+    func getRoomNames() -> [String] {
+        var roomNames = [String]()
+        for friend in DataModel.friends {
+            var users = [String]()
+            users.append(PFUser.current()!.objectId!)
+            users.append(friend.objectId)
+            let sortedUsers = users.sorted { $0 < $1 }
+            roomNames.append(sortedUsers[0] + "+" + sortedUsers[1])
+        }
+        print("got these roomnames", roomNames)
+        return roomNames
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -125,28 +189,27 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let query = PFQuery(className: "Post")
         query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
-        query.whereKey("objectId", notContainedIn: DataModel.messages.map( { $0.objectId }))
-        print("getting posts...", DataModel.newMessageId, DataModel.messages.map( { $0.objectId }))
+        query.whereKey("objectId", notContainedIn: DataModel.captionRequests.map( { $0.objectId }))
+        print("getting posts...", DataModel.newMessageId, DataModel.captionRequests.map( { $0.objectId }))
         
         postRef.getPosts(query: query) { (queriedPosts) in
-            print(DataModel.messages.count, "count of messages before queried posts")
-            
+                        
             for post in queriedPosts {
                 if post.objectId == DataModel.newMessageId {
                     print("insert here2")
-                    DataModel.messages.insert(post, at: 0)
+                    DataModel.captionRequests.insert(post, at: 0)
                 } else {
-                    if !DataModel.messages.map( { $0.objectId }).contains(post.objectId) {
-                        DataModel.messages.append(post)
+                    if !DataModel.captionRequests.map( { $0.objectId }).contains(post.objectId) {
+                        DataModel.captionRequests.append(post)
                     }
                 }
                 if post === queriedPosts.last {
-                    DataModel.messages = postRef.sortByCreatedAt(postsToSort: DataModel.messages)
+                    DataModel.captionRequests = postRef.sortByCreatedAt(postsToSort: DataModel.captionRequests)
                     self.tableView.reloadData()
                     self.refreshControl.endRefreshing()
                 }
             }
-            if DataModel.messages.count == 0 && queriedPosts.count == 0 {
+            if DataModel.captionRequests.count == 0 && queriedPosts.count == 0 {
                 self.refreshControl.endRefreshing()
                 self.tableView.emptyStateDataSource = self
                 self.tableView.reloadData()
@@ -155,21 +218,21 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return DataModel.messages.count
+        return DataModel.captionRequests.count
     }
      
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! MessageTableViewCell
-        cell.messageTextLabel.text = DataModel.messages[indexPath.row].description
-        cell.usernameLabel.text = DataModel.messages[indexPath.row].sender.username
-        cell.profilePicImageView.image = DataModel.messages[indexPath.row].sender.profilePic
-        if DataModel.messages[indexPath.row].isViewed {
+        cell.messageTextLabel.text = DataModel.captionRequests[indexPath.row].description
+        cell.usernameLabel.text = DataModel.captionRequests[indexPath.row].sender.username
+        cell.profilePicImageView.image = DataModel.captionRequests[indexPath.row].sender.profilePic
+        if DataModel.captionRequests[indexPath.row].isViewed {
             cell.composeImageView.isHidden = true
             cell.messageTextLabel.frame.origin = CGPoint(x: 80, y: cell.messageTextLabel.frame.origin.y)
             cell.profilePicImageView.layer.borderWidth = 0.0
             cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.semibold)
-            cell.usernameLabel.textColor = UIColor.black
+            cell.usernameLabel.textColor = UIColor.darkGray
         } else {
             cell.profilePicImageView.layer.borderWidth = 2.0
             cell.profilePicImageView.layer.borderColor = CGColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
@@ -183,40 +246,54 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.fromDismiss = true
-        DataModel.messages[indexPath.row].isViewed = true
-        self.tableView.reloadData()
-        self.selectedPost = DataModel.messages[indexPath.row]
-        mediaBrowser = MediaBrowserViewController(dataSource: self)
         
-        self.lowerView.descriptionTextView.text = self.selectedPost.description
-        self.lowerView.descriptionTextView.isHidden = true
+        // TODO Change this conditional to activate when the most recent item is a message
+        if true {
+            if let i = DataModel.friends.firstIndex(where: { $0.objectId == DataModel.captionRequests[indexPath.row].sender.objectId }) {
+                print("\(DataModel.friends[i])!")
+                self.selectedFriend = DataModel.friends[i]
+            }
+            self.performSegue(withIdentifier: "showMessage", sender: nil)
+        }
         
-        textView.text = self.selectedPost.description
-        textView.shouldTrim = true
-        textView.maximumNumberOfLines = 2
-        textView.font  = UIFont.systemFont(ofSize: 17.0)
-        textView.backgroundColor = UIColor.black
-        textView.textColor = UIColor.white
-        let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
-        textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
-        textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
-        textView.frame = self.lowerView.descriptionTextView.frame
-        var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
-        selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.tapTextView(sender:)))
-        selectTextViewGesture.delegate = self
-        textView.addGestureRecognizer(selectTextViewGesture)
-        self.originalTextFieldHeight = textView.frame.height
-        print("new height", textView.frame.height)
-        self.lowerView.addSubview(textView)
+        // TODO Change this conditional to activate when
+        if false {
+            self.fromDismiss = true
+            DataModel.captionRequests[indexPath.row].isViewed = true
+            self.tableView.reloadData()
+            self.selectedPost = DataModel.captionRequests[indexPath.row]
+            mediaBrowser = MediaBrowserViewController(dataSource: self)
+            
+            self.lowerView.descriptionTextView.text = self.selectedPost.description
+            self.lowerView.descriptionTextView.isHidden = true
+            
+            textView.text = self.selectedPost.description
+            textView.shouldTrim = true
+            textView.maximumNumberOfLines = 2
+            textView.font  = UIFont.systemFont(ofSize: 17.0)
+            textView.backgroundColor = UIColor.black
+            textView.textColor = UIColor.white
+            let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
+            textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
+            textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
+            textView.frame = self.lowerView.descriptionTextView.frame
+            var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
+            selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.tapTextView(sender:)))
+            selectTextViewGesture.delegate = self
+            textView.addGestureRecognizer(selectTextViewGesture)
+            self.originalTextFieldHeight = textView.frame.height
+            print("new height", textView.frame.height)
+            self.lowerView.addSubview(textView)
+            
+            self.lowerView.usernameLabel.text = self.selectedPost.sender.username
+            self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
         
-        self.lowerView.usernameLabel.text = self.selectedPost.sender.username
-        self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
-    
-        self.inspirationButton.isHidden = false
-        mediaBrowser.view.addSubview(self.inspirationButton)
-        mediaBrowser.view.addSubview(self.lowerView)
-        present(mediaBrowser, animated: true, completion: nil)
+            self.inspirationButton.isHidden = false
+            mediaBrowser.view.addSubview(self.inspirationButton)
+            mediaBrowser.view.addSubview(self.lowerView)
+            present(mediaBrowser, animated: true, completion: nil)
+        }
+        
     }
     
     @objc func tapTextView(sender:UITapGestureRecognizer) {
@@ -344,9 +421,9 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let postRef = Post()
             postRef.getPostWithObjectId(id: DataModel.newMessageId) { (post) in
                 print("completed", post)
-                if !DataModel.messages.map( {$0.objectId}).contains(post.objectId) {
+                if !DataModel.captionRequests.map( {$0.objectId}).contains(post.objectId) {
                     print("inserting new message")
-                    DataModel.messages.insert(post, at: 0)
+                    DataModel.captionRequests.insert(post, at: 0)
                     self.tableView.reloadData()
                     self.refreshControl.endRefreshing()
                     DataModel.newMessageId = ""
@@ -376,6 +453,17 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let targetVC = segue.destination as! ChooseFriendsVC
             targetVC.fromNewMessages = true
             
+        } else if segue.identifier == "showMessage" {
+            let targetVC = segue.destination as! ChatVC
+            var users = [String]()
+            users.append(PFUser.current()!.objectId!)
+            users.append(self.selectedFriend.objectId!)
+            let sortedUsers = users.sorted { $0 < $1 }
+            targetVC.roomName = sortedUsers[0] + "+" + sortedUsers[1]
+            targetVC.externalUser = self.selectedFriend
+            DataModel.currentRecipient = self.selectedFriend
+            targetVC.currentUser = DataModel.currentUser
+            print("Set the roomName:", targetVC.roomName)
         }
     }
 }

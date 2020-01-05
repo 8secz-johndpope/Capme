@@ -612,7 +612,7 @@
                                                     <rect key="frame" x="80" y="8" width="287" height="33"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="21"/>
-                                                    <nil key="textColor"/>
+                                                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Username: Request" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KUE-ub-Ddv">
@@ -667,7 +667,6 @@
                         <segue destination="lw9-a2-zGw" kind="show" identifier="showInspiration" id="1uI-ec-7pX"/>
                         <segue destination="zl7-Gz-AXf" kind="show" identifier="showMessage" id="qQc-EO-eYB"/>
                         <segue destination="MVB-UI-7ds" kind="show" identifier="showChooseFriend" id="2UP-4Q-ijU"/>
-
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KGy-hi-n6C" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -679,8 +678,7 @@
             <objects>
                 <viewController id="zl7-Gz-AXf" customClass="MessageKitVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IHt-8D-F0V">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
-
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="AQh-Pi-BmR"/>
@@ -1901,11 +1899,11 @@
             <objects>
                 <viewController id="MVB-UI-7ds" customClass="ChooseFriendsVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ICu-vx-rIY">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g9y-jz-pwU">
-                                <rect key="frame" x="0.0" y="583" width="375" height="64"/>
+                                <rect key="frame" x="0.0" y="554" width="375" height="64"/>
                                 <color key="backgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="64" id="UZx-sd-t04"/>
@@ -1920,7 +1918,7 @@
                                 </connections>
                             </button>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="0RL-vA-Msc">
-                                <rect key="frame" x="0.0" y="43" width="375" height="540"/>
+                                <rect key="frame" x="0.0" y="31" width="375" height="523"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" rowHeight="71" id="LgB-5i-91x" customClass="FriendTableViewCell" customModule="Capme" customModuleProvider="target">
@@ -2263,9 +2261,9 @@
         <image name="unfilledStar" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="xvM-TY-yXt"/>
+        <segue reference="2UP-4Q-ijU"/>
         <segue reference="qc1-x0-RXH"/>
         <segue reference="lKN-8b-Okq"/>
-        <segue reference="nzg-xP-RBy"/>
+        <segue reference="qQc-EO-eYB"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -73,7 +73,19 @@ class ChatRoomManager {
         message.message = msg
         message.room = currentChatRoom
         message.roomName = currentChatRoom?.name
-        message.saveInBackground()
+        message.saveInBackground { (success, error) in
+            if error == nil {
+                
+                PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.chatRef.externalUser.objectId], "title": message.authorName!, "message": msg, "identifier" : "newMessage", "objectId" : message.objectId!]) {
+                    (response, error) in
+                    if error == nil {
+                        print("Success: Pushed the notification for newMessage")
+                    } else {
+                        print(error?.localizedDescription, "Cloud Code Push Error")
+                    }
+                }
+            }
+        }
     }
 
     func printPriorMessages() {
