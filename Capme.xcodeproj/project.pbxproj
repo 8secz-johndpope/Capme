@@ -46,6 +46,7 @@
 		8C3333D023BEC0CB008ED79B /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3333CF23BEC0CB008ED79B /* Message.swift */; };
 		8C3333D223BEC349008ED79B /* Room.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3333D123BEC349008ED79B /* Room.swift */; };
 		8C3333D423BEC5A9008ED79B /* ChatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3333D323BEC5A9008ED79B /* ChatManager.swift */; };
+		8C3333D623C2CB79008ED79B /* MessagePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3333D523C2CB79008ED79B /* MessagePreview.swift */; };
 		8C557CCE23B2E0B7000B8639 /* InspirationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C557CCD23B2E0B7000B8639 /* InspirationVC.swift */; };
 		8C9029B323A7194B00CA465D /* SlidingSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */; };
 		8C9029B523A74D6F00CA465D /* FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9029B423A74D6F00CA465D /* FriendRequest.swift */; };
@@ -135,6 +136,7 @@
 		8C3333CF23BEC0CB008ED79B /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		8C3333D123BEC349008ED79B /* Room.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Room.swift; sourceTree = "<group>"; };
 		8C3333D323BEC5A9008ED79B /* ChatManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatManager.swift; sourceTree = "<group>"; };
+		8C3333D523C2CB79008ED79B /* MessagePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePreview.swift; sourceTree = "<group>"; };
 		8C557CCD23B2E0B7000B8639 /* InspirationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspirationVC.swift; sourceTree = "<group>"; };
 		8C9029B223A7194B00CA465D /* SlidingSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlidingSegmentedControl.swift; sourceTree = "<group>"; };
 		8C9029B423A74D6F00CA465D /* FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequest.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 		8C14B9B623A5A88600C4FA58 /* DataClasses */ = {
 			isa = PBXGroup;
 			children = (
+				8C3333D523C2CB79008ED79B /* MessagePreview.swift */,
 				8C3333B723BE8C8B008ED79B /* CustomMessageFlowLayout.swift */,
 				8C3333AC23BE79DC008ED79B /* Lorem.swift */,
 				8C14B9C223A5CFC800C4FA58 /* User.swift */,
@@ -617,6 +620,7 @@
 				8C14B9BF23A5B25200C4FA58 /* MessageTableViewCell.swift in Sources */,
 				8C14B9BB23A5ADA800C4FA58 /* ProfileVC.swift in Sources */,
 				8C14B9C123A5BC6C00C4FA58 /* ProfileCollectionViewCell.swift in Sources */,
+				8C3333D623C2CB79008ED79B /* MessagePreview.swift in Sources */,
 				8C14B98723A5966200C4FA58 /* RegistrationVC.swift in Sources */,
 				8CF5244323AA0EAE0039EBDC /* PostHashtagsVC.swift in Sources */,
 				8C3333C023BE8CAE008ED79B /* MockMessage.swift in Sources */,

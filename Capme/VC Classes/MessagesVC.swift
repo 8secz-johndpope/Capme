@@ -68,6 +68,8 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     let refreshControl = UIRefreshControl()
     var selectedFriend = User()
     var messageItemsPerFriend = [User : Any]() // Can be a message or a caption request
+    
+    var messagePreviews = [MessagePreview]()
 
     override func viewDidLoad() {
         self.getMessageItems()
@@ -76,52 +78,29 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     func getMessageItems() {
         // Get most recent message from each conversation
-        
-        /*PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) {
-            (response, error) in
-            if error == nil {
-                print(response, "got this result!")
-            } else {
-                print(error?.localizedDescription, "Cloud Code Push Error")
+        PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) { (result, error) in
+            print("result", result)
+            if let messagePreviews = result as? [NSMutableDictionary] {
+                for preview in messagePreviews {
+                    print(type(of: preview))
+                    let messagePreview = MessagePreview()
+                    messagePreview.roomName = preview["objectId"] as? String
+                    messagePreview.previewText = preview["message"] as? String
+                    messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: messagePreview.roomName)
+                    messagePreview.itemType = "message"
+                    print(preview["message"] as! String)
+                    print(preview["createdAt"] as! String)
+                    print(preview["objectId"] as! String)
+                }
             }
-        }*/
-        
-        PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) { (response, error) in
-            if error == nil {
-                print("this is the success!")
-                print(response)
-            }
+            /*let objects = result as! [PFObject]
+            for object in objects {
+                let message = Message()
+                message.authorName = (object["authorName"] as! String)
+                message.message = (object["message"] as! String)
+                print(message.createdAt?.getWeekDay(), message.authorName, message.message)
+            }*/
         }
-        
-        /*
-        // Use a REST API to get the distinct messages
-        let session = URLSession(configuration: .default, delegate: nil, delegateQueue: .main)
-        let url = URL(string: "example.com")!
-        let task = session.dataTask(with: url, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
-            // Parse the data in the response and use it
-        })
-        task.resume()
-        
-        
-        let query = PFQuery(className: "Message")
-        query.whereKey("roomName", containedIn: self.getRoomNames())
-        query.order(byDescending: "roomName")
-        query.order(by: <#T##NSSortDescriptor#>)
-        query.addAscendingOrder("createdAt")
-        query.findObjectsInBackground {
-            (objects:[PFObject]?, error:Error?) -> Void in
-            if let error = error {
-                print("Error: " + error.localizedDescription)
-            } else {
-                if objects?.count == 0 || objects?.count == nil {
-                    print("No new objects")
-                    return
-                }
-                for object in objects! {
-                    print(object["message"] as! String, "written by", object["authorName"] as! String)
-                }
-            }
-        }*/
     }
     
     func getRoomNames() -> [String] {
