@@ -16,10 +16,12 @@ class MessagePreview {
     var username: String!
     var previewText: String!
     var profilePic: UIImage!
-    var date: String!
-    var viewed: Bool!
-    var itemType: String! // message || captionRequest
+    var date: Date!
     var externalUser: User!
+    var isViewed: Bool!
+    
+    var itemType: String! // message || captionRequest
+    var captionRequestObjectId: String!
     
     func getExternalUserFromRoomName(roomName: String) -> User {
         let userIds = roomName.components(separatedBy: "+")
@@ -34,6 +36,23 @@ class MessagePreview {
             return DataModel.friends[i]
         }
         return User()
+    }
+    
+    func getDateFromString(stringDate: String) -> Date {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        var dateObject = dateFormatter.date(from: stringDate)
+        if dateObject == nil {
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            dateObject = dateFormatter.date(from: stringDate)
+        }
+        
+        // Continue handle createdAt
+        return dateObject!
+    }
+    
+    func sortByCreatedAt(messagePreviewsToSort: [MessagePreview]) -> [MessagePreview] {
+        return messagePreviewsToSort.sorted(by: { $0.date > $1.date })
     }
     
 }

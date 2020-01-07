@@ -9,7 +9,15 @@
 import Foundation
 import UIKit
 import ATGMediaBrowser
+import Parse
 
+func getRoomName(externalUserId: String) -> String {
+    var users = [String]()
+    users.append(PFUser.current()!.objectId!)
+    users.append(externalUserId)
+    let sortedUsers = users.sorted { $0 < $1 }
+    return sortedUsers[0] + "+" + sortedUsers[1]
+}
 
 extension UIViewController {
     func hideKeyboardWhenTappedAround() {

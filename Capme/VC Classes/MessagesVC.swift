@@ -70,36 +70,102 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var messageItemsPerFriend = [User : Any]() // Can be a message or a caption request
     
     var messagePreviews = [MessagePreview]()
+    var captionRequests = [MessagePreview]()
 
     override func viewDidLoad() {
-        self.getMessageItems()
         setupUI()
     }
+    
+    // Message + Caption Request Workflow
+    // 1) Get last message for each
+    // 2) Get all caption requests later than the newest message (only a temp solution - eventually replace with cloud code $in)
+    
     
     func getMessageItems() {
         // Get most recent message from each conversation
         PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) { (result, error) in
-            print("result", result)
-            if let messagePreviews = result as? [NSMutableDictionary] {
-                for preview in messagePreviews {
-                    print(type(of: preview))
+            if let messagePreviewsDicts = result as? [NSMutableDictionary] {
+                for preview in messagePreviewsDicts {
                     let messagePreview = MessagePreview()
                     messagePreview.roomName = preview["objectId"] as? String
                     messagePreview.previewText = preview["message"] as? String
                     messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: messagePreview.roomName)
-                    messagePreview.itemType = "message"
-                    print(preview["message"] as! String)
                     print(preview["createdAt"] as! String)
+                    messagePreview.date = messagePreview.getDateFromString(stringDate: preview["createdAt"] as! String)
+                    messagePreview.itemType = "message"
+                    messagePreview.isViewed = false
+                    print(preview["message"] as! String)
                     print(preview["objectId"] as! String)
+                    self.messagePreviews.append(messagePreview)
+                    if preview === messagePreviewsDicts.last {
+                        // Sort the messages
+                        self.messagePreviews = messagePreview.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
+                        print(self.messagePreviews.first?.date, "first")
+                        print(self.messagePreviews.last?.date, "last")
+                        // Get the oldest (messagePreviews.last) message preview
+                        self.getCaptionRequests(minDate: self.messagePreviews.last!.date)
+                    }
+                }
+                if messagePreviewsDicts.count == 0 {
+                    let timeInterval  = 1415639000.67457
+                    let minDate = NSDate(timeIntervalSince1970: timeInterval)
+                    self.getCaptionRequests(minDate: minDate as Date)
                 }
             }
-            /*let objects = result as! [PFObject]
-            for object in objects {
-                let message = Message()
-                message.authorName = (object["authorName"] as! String)
-                message.message = (object["message"] as! String)
-                print(message.createdAt?.getWeekDay(), message.authorName, message.message)
-            }*/
+        }
+    }
+    
+    func getCaptionRequests(minDate: Date) {
+        
+        let postRef = Post()
+        let query = PFQuery(className: "Post")
+        query.includeKey("sender")
+        query.whereKey("recipients", contains: PFUser.current()?.objectId)
+        query.whereKey("createdAt", greaterThan: minDate)
+        query.whereKey("objectId", notContainedIn: DataModel.captionRequests.map( { $0.objectId }))
+        query.order(byDescending: "createdAt")
+        postRef.getCaptionRequestPreviews(query: query) { (captionRequests) in
+            self.captionRequests = captionRequests
+            // CONTINUE HERE: Change loop to track index - 1
+            for (index, preview) in self.messagePreviews.enumerated() {
+                // Get the corresponding captionRequest
+                if let i = captionRequests.firstIndex(where: { $0.externalUser.objectId == preview.externalUser.objectId }) {
+                    if captionRequests[i].date > preview.date {
+                        // Replace the message preview using index - 2
+                        self.messagePreviews[index] = captionRequests[i]
+                    }
+                }
+                if index == self.messagePreviews.count - 1 {
+                    print("made it to reload table view")
+                    self.reloadTableView()
+                }
+            }
+            if captionRequests.count == 0 {
+                self.reloadTableView()
+            }
+        }
+    }
+    
+    func reloadTableView() {
+        let roomNames = self.messagePreviews.map( {$0.roomName })
+        for captionRequest in captionRequests {
+            
+            var users = [String]()
+            users.append(PFUser.current()!.objectId!)
+            users.append(captionRequest.externalUser.objectId)
+            let sortedUsers = users.sorted { $0 < $1 }
+            if !roomNames.contains(sortedUsers[0] + "+" + sortedUsers[1]) {
+                self.messagePreviews.insert(captionRequest, at: 0)
+            }
+            
+            if captionRequest === captionRequests.last {
+                self.messagePreviews = captionRequest.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
+                self.tableView.reloadData()
+            }
+        }
+        if self.captionRequests.count == 0 && self.messagePreviews.count > 0 {
+            self.messagePreviews = self.messagePreviews[0].sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
+            self.tableView.reloadData()
         }
     }
     
@@ -164,7 +230,9 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         // Table View
         self.tableView.delegate = self
         self.tableView.dataSource = self
-        let postRef = Post()
+        self.getMessageItems()
+        
+        /*let postRef = Post()
         let query = PFQuery(className: "Post")
         query.includeKey("sender")
         query.whereKey("recipients", contains: PFUser.current()?.objectId)
@@ -193,17 +261,38 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 self.tableView.emptyStateDataSource = self
                 self.tableView.reloadData()
             }
-        }
+        }*/
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return DataModel.captionRequests.count
+        //return DataModel.captionRequests.count
+        return self.messagePreviews.count
     }
      
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! MessageTableViewCell
-        cell.messageTextLabel.text = DataModel.captionRequests[indexPath.row].description
+        cell.messageTextLabel.text = self.messagePreviews[indexPath.row].previewText
+        cell.profilePicImageView.image = self.messagePreviews[indexPath.row].externalUser.profilePic
+        cell.usernameLabel.text = self.messagePreviews[indexPath.row].externalUser.username
+        cell.selectionStyle = .none
+        
+        if self.messagePreviews[indexPath.row].isViewed {
+            cell.composeImageView.isHidden = true
+            cell.messageTextLabel.frame.origin = CGPoint(x: 80, y: cell.messageTextLabel.frame.origin.y)
+            cell.profilePicImageView.layer.borderWidth = 0.0
+            cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.semibold)
+            cell.usernameLabel.textColor = UIColor.darkGray
+        } else {
+            cell.profilePicImageView.layer.borderWidth = 2.0
+            cell.profilePicImageView.layer.borderColor = CGColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
+            cell.usernameLabel.font = UIFont.boldSystemFont(ofSize: 17.0)
+            cell.usernameLabel.textColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
+            cell.messageTextLabel.frame.origin = CGPoint(x: 110, y: cell.messageTextLabel.frame.origin.y)
+            cell.composeImageView.isHidden = false
+        }
+        
+        /*cell.messageTextLabel.text = DataModel.captionRequests[indexPath.row].description
         cell.usernameLabel.text = DataModel.captionRequests[indexPath.row].sender.username
         cell.profilePicImageView.image = DataModel.captionRequests[indexPath.row].sender.profilePic
         if DataModel.captionRequests[indexPath.row].isViewed {
@@ -220,57 +309,75 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             cell.messageTextLabel.frame.origin = CGPoint(x: 110, y: cell.messageTextLabel.frame.origin.y)
             cell.composeImageView.isHidden = false
         }
-        cell.selectionStyle = .none
+        cell.selectionStyle = .none*/
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
+        self.messagePreviews[indexPath.row].isViewed = true
+        self.tableView.reloadData()
+        
+        if self.messagePreviews[indexPath.row].itemType == "message" {
+            self.selectedFriend = self.messagePreviews[indexPath.row].externalUser
+            self.performSegue(withIdentifier: "showMessage", sender: nil)
+        } else if self.messagePreviews[indexPath.row].itemType == "captionRequest" {
+            self.fromDismiss = true
+            self.messagePreviews[indexPath.row].isViewed = true
+            self.tableView.reloadData()
+            self.selectedFriend = self.messagePreviews[indexPath.row].externalUser
+            
+            Post().getPostWithObjectId(id: self.messagePreviews[indexPath.row].captionRequestObjectId) { (post) in
+                self.selectedPost = post
+                self.mediaBrowser = MediaBrowserViewController(dataSource: self)
+                    
+                self.lowerView.descriptionTextView.text = self.selectedPost.description
+                self.lowerView.descriptionTextView.isHidden = true
+                
+                self.textView.text = self.selectedPost.description
+                self.textView.shouldTrim = true
+                self.textView.maximumNumberOfLines = 2
+                self.textView.font  = UIFont.systemFont(ofSize: 17.0)
+                self.textView.backgroundColor = UIColor.black
+                self.textView.textColor = UIColor.white
+                let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
+                self.textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
+                self.textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
+                self.textView.frame = self.lowerView.descriptionTextView.frame
+                var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
+                selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.tapTextView(sender:)))
+                selectTextViewGesture.delegate = self
+                self.textView.addGestureRecognizer(selectTextViewGesture)
+                self.originalTextFieldHeight = self.textView.frame.height
+                print("new height", self.textView.frame.height)
+                self.lowerView.addSubview(self.textView)
+                
+                self.lowerView.usernameLabel.text = self.selectedPost.sender.username
+                self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
+            
+                self.inspirationButton.isHidden = false
+                self.mediaBrowser.view.addSubview(self.inspirationButton)
+                self.mediaBrowser.view.addSubview(self.lowerView)
+                
+                self.present(self.mediaBrowser, animated: true, completion: nil)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.performSegue(withIdentifier: "showMessage", sender: nil)
+                }
+            }
+        }
+        
         // TODO Change this conditional to activate when the most recent item is a message
         if true {
-            if let i = DataModel.friends.firstIndex(where: { $0.objectId == DataModel.captionRequests[indexPath.row].sender.objectId }) {
+            /*if let i = DataModel.friends.firstIndex(where: { $0.objectId == DataModel.captionRequests[indexPath.row].sender.objectId }) {
                 print("\(DataModel.friends[i])!")
                 self.selectedFriend = DataModel.friends[i]
             }
-            self.performSegue(withIdentifier: "showMessage", sender: nil)
+            self.performSegue(withIdentifier: "showMessage", sender: nil)*/
         }
         
-        // TODO Change this conditional to activate when
+        // TODO Change this conditional to activate when the selected message is a caption request
         if false {
-            self.fromDismiss = true
-            DataModel.captionRequests[indexPath.row].isViewed = true
-            self.tableView.reloadData()
-            self.selectedPost = DataModel.captionRequests[indexPath.row]
-            mediaBrowser = MediaBrowserViewController(dataSource: self)
             
-            self.lowerView.descriptionTextView.text = self.selectedPost.description
-            self.lowerView.descriptionTextView.isHidden = true
-            
-            textView.text = self.selectedPost.description
-            textView.shouldTrim = true
-            textView.maximumNumberOfLines = 2
-            textView.font  = UIFont.systemFont(ofSize: 17.0)
-            textView.backgroundColor = UIColor.black
-            textView.textColor = UIColor.white
-            let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
-            textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
-            textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
-            textView.frame = self.lowerView.descriptionTextView.frame
-            var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
-            selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.tapTextView(sender:)))
-            selectTextViewGesture.delegate = self
-            textView.addGestureRecognizer(selectTextViewGesture)
-            self.originalTextFieldHeight = textView.frame.height
-            print("new height", textView.frame.height)
-            self.lowerView.addSubview(textView)
-            
-            self.lowerView.usernameLabel.text = self.selectedPost.sender.username
-            self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
-        
-            self.inspirationButton.isHidden = false
-            mediaBrowser.view.addSubview(self.inspirationButton)
-            mediaBrowser.view.addSubview(self.lowerView)
-            present(mediaBrowser, animated: true, completion: nil)
         }
         
     }

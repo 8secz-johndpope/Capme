@@ -678,7 +678,7 @@
             <objects>
                 <viewController id="zl7-Gz-AXf" customClass="MessageKitVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IHt-8D-F0V">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="AQh-Pi-BmR"/>
@@ -1899,11 +1899,11 @@
             <objects>
                 <viewController id="MVB-UI-7ds" customClass="ChooseFriendsVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ICu-vx-rIY">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g9y-jz-pwU">
-                                <rect key="frame" x="0.0" y="554" width="375" height="64"/>
+                                <rect key="frame" x="0.0" y="583" width="375" height="64"/>
                                 <color key="backgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="64" id="UZx-sd-t04"/>
@@ -1918,7 +1918,7 @@
                                 </connections>
                             </button>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="0RL-vA-Msc">
-                                <rect key="frame" x="0.0" y="31" width="375" height="523"/>
+                                <rect key="frame" x="0.0" y="43" width="375" height="540"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" rowHeight="71" id="LgB-5i-91x" customClass="FriendTableViewCell" customModule="Capme" customModuleProvider="target">
@@ -2261,9 +2261,9 @@
         <image name="unfilledStar" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="2UP-4Q-ijU"/>
+        <segue reference="xvM-TY-yXt"/>
         <segue reference="qc1-x0-RXH"/>
         <segue reference="lKN-8b-Okq"/>
-        <segue reference="qQc-EO-eYB"/>
+        <segue reference="nzg-xP-RBy"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -27,6 +27,7 @@ class Post {
     var createdAt = Date()
     
     var posts = [Post]()
+    var messagePreviews = [MessagePreview]()
     
     func isValid() -> Bool {
         print("checking valid", self.images.count > 0 && self.description.count > 9)
@@ -70,6 +71,45 @@ class Post {
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    func getCaptionRequestPreviews(query: PFQuery<PFObject>, completion: @escaping (_ result: [MessagePreview])->()) {
+        query.findObjectsInBackground {
+        (objects:[PFObject]?, error:Error?) -> Void in
+            var messagePreviewDict = [String:MessagePreview]()
+            if let error = error {
+                print("Error: " + error.localizedDescription)
+            } else {
+                if objects?.count == 0 || objects?.count == nil {
+                    print("No new objects")
+                    completion(self.messagePreviews)
+                    return
+                }
+                for object in objects! {
+                    let messagePreview = MessagePreview()
+                    let sender = (object["sender"] as! PFUser).objectId!
+                    messagePreview.roomName = getRoomName(externalUserId: sender)
+                    messagePreview.previewText = object["description"] as? String
+                    messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: messagePreview.roomName)
+                    messagePreview.date = object.createdAt!
+                    messagePreview.itemType = "captionRequest"
+                    messagePreview.isViewed = false
+                    messagePreview.captionRequestObjectId = object.objectId!
+                    
+                    if !messagePreviewDict.keys.contains(sender) {
+                        messagePreviewDict[sender] = messagePreview
+                    } else {
+                        if object.createdAt! > (messagePreviewDict[sender]?.date!)! {
+                            messagePreviewDict[sender] = messagePreview
+                        }
+                    }
+                    if object === objects?.last {
+                        self.messagePreviews = messagePreviewDict.map({$0.value})
+                        completion(self.messagePreviews)
                     }
                 }
             }

@@ -65,8 +65,9 @@ class PostHashtagsVC: UIViewController, UITextFieldDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showReview" {
-            let targetVC = segue.destination as! ChooseFriendsVC
-            targetVC.fromNewPost = true
+            if let navigationVC = segue.destination as? UINavigationController, let targetVC = navigationVC.topViewController as? ChooseFriendsVC {
+                targetVC.fromNewPost = true
+            }
         }
     }
 }
