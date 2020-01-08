@@ -15,6 +15,7 @@ class Message: PFObject, PFSubclassing {
     @NSManaged var message: String?
     @NSManaged var room: PFObject?
     @NSManaged var roomName: String?
+    @NSManaged var isViewed: NSNumber?
 
     class func parseClassName() -> String {
         return "Message"

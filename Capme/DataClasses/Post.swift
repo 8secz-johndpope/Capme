@@ -93,12 +93,20 @@ class Post {
                     let messagePreview = MessagePreview()
                     let sender = (object["sender"] as! PFUser).objectId!
                     messagePreview.roomName = getRoomName(externalUserId: sender)
+                    messagePreview.objectId = object.objectId!
                     messagePreview.previewText = object["description"] as? String
                     messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: messagePreview.roomName)
                     messagePreview.date = object.createdAt!
                     messagePreview.itemType = "captionRequest"
-                    messagePreview.isViewed = false
-                    messagePreview.captionRequestObjectId = object.objectId!
+                    messagePreview.sender = sender
+                    
+                    if let isViewed = object["isViewed"] as? Bool {
+                        messagePreview.isViewed = isViewed
+                    } else {
+                        messagePreview.isViewed = false
+                    }
+                    
+                    messagePreview.objectId = object.objectId!
                     
                     if !messagePreviewDict.keys.contains(sender) {
                         messagePreviewDict[sender] = messagePreview
@@ -176,6 +184,7 @@ class Post {
         post["sender"] = PFUser.current()!
         post["recipients"] = self.chosenFriendIds
         post["releaseDate"] = self.releaseDateDict[releaseDateDict.keys.first!]
+        post["isViewed"] = false
         post["captions"] = []
         self.sender = User(user: PFUser.current()!, image: DataModel.profilePic)
         if let imageData = DataModel.newPost.images[0].jpegData(compressionQuality: 1.00) {

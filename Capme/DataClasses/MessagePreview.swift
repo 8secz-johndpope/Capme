@@ -12,6 +12,8 @@ import Parse
 
 class MessagePreview {
     
+    var sender: String!
+    var objectId: String!
     var roomName: String!
     var username: String!
     var previewText: String!
@@ -21,7 +23,6 @@ class MessagePreview {
     var isViewed: Bool!
     
     var itemType: String! // message || captionRequest
-    var captionRequestObjectId: String!
     
     func getExternalUserFromRoomName(roomName: String) -> User {
         let userIds = roomName.components(separatedBy: "+")
@@ -46,9 +47,29 @@ class MessagePreview {
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
             dateObject = dateFormatter.date(from: stringDate)
         }
-        
-        // Continue handle createdAt
         return dateObject!
+    }
+    
+    func messageBecameViewed() {
+        var className = ""
+        if self.itemType == "message" {
+            className = "Message"
+        } else if self.itemType == "captionRequest" {
+            className = "Post"
+        }
+        let query = PFQuery(className: className)
+        query.getObjectInBackground(withId: objectId) { (object, error) in
+            if error == nil {
+                if let object = object {
+                    object["isViewed"] = true
+                }
+                object?.saveInBackground(block: { (success, error) in
+                    if error == nil {
+                        print("Success: Updated the \(className) to viewed")
+                    }
+                })
+            }
+        }
     }
     
     func sortByCreatedAt(messagePreviewsToSort: [MessagePreview]) -> [MessagePreview] {

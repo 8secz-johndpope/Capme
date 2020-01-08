@@ -40,6 +40,7 @@ struct DataModel {
     static var receivedMessage = false
     static var newMessageId = ""
     static var currentRecipient = User()
+    static var sentMessagePreview: MessagePreview?
     
 }
     

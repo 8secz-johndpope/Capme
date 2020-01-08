@@ -59,15 +59,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Send and receive a message (Parse Live Query)
     //*Populate old messages with parse backend messages
     //*Determine chatroom naming convention
+    //*Design workflow for creating receiving messages and caption requests
     
     /* IN PROGRESS */
   
-    // Design workflow for creating receiving messages and caption requests
-    // Compress messages sent by the same user
-    // Support Images, videos, and audi
+    //*Update message preview when a new message is sent (Use data model?)
+    //*Advanced messaging UI compress messages sent by the same user
+    //3Push notifications from messages
     
-    // Bring over all of the necessary classes from MessageKit
-    // Learn Parse Live Query
+    
+    // Support Images, videos, and audi
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
     // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages *)

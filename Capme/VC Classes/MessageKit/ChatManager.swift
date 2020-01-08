@@ -67,12 +67,26 @@ class ChatRoomManager {
     }
 
     func sendMessage(_ msg: String) {
+        
         let message = Message()
         message.author = PFUser.current()
         message.authorName = message.author?.username
         message.message = msg
         message.room = currentChatRoom
         message.roomName = currentChatRoom?.name
+        message.isViewed = false
+        
+        let sentMessagePreview = MessagePreview()
+        sentMessagePreview.roomName = currentChatRoom?.name
+        sentMessagePreview.previewText = msg
+        sentMessagePreview.objectId = message.objectId
+        sentMessagePreview.externalUser = self.chatRef.externalUser
+        sentMessagePreview.date = message.createdAt
+        sentMessagePreview.itemType = "message"
+        sentMessagePreview.sender = PFUser.current()!.objectId!
+        sentMessagePreview.isViewed = true
+        DataModel.sentMessagePreview = sentMessagePreview
+        
         message.saveInBackground { (success, error) in
             if error == nil {
                 

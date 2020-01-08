@@ -80,7 +80,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     // 1) Get last message for each
     // 2) Get all caption requests later than the newest message (only a temp solution - eventually replace with cloud code $in)
     
-    
     func getMessageItems() {
         // Get most recent message from each conversation
         PFCloud.callFunction(inBackground: "getMessagePreviews", withParameters: ["roomNames": self.getRoomNames()]) { (result, error) in
@@ -89,20 +88,24 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     let messagePreview = MessagePreview()
                     messagePreview.roomName = preview["objectId"] as? String
                     messagePreview.previewText = preview["message"] as? String
+                    messagePreview.objectId = preview["messageId"] as? String
                     messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: messagePreview.roomName)
-                    print(preview["createdAt"] as! String)
                     messagePreview.date = messagePreview.getDateFromString(stringDate: preview["createdAt"] as! String)
+                    let tempSender = (preview["sender"] as! String)
+                    messagePreview.sender = tempSender.replacingOccurrences(of: "_User$", with: "", options: NSString.CompareOptions.literal, range: nil)
                     messagePreview.itemType = "message"
-                    messagePreview.isViewed = false
+                    if let isViewed = preview["isViewed"] as? Bool {
+                        messagePreview.isViewed = isViewed
+                    } else {
+                        messagePreview.isViewed = false
+                    }
+                    
                     print(preview["message"] as! String)
                     print(preview["objectId"] as! String)
                     self.messagePreviews.append(messagePreview)
                     if preview === messagePreviewsDicts.last {
                         // Sort the messages
                         self.messagePreviews = messagePreview.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
-                        print(self.messagePreviews.first?.date, "first")
-                        print(self.messagePreviews.last?.date, "last")
-                        // Get the oldest (messagePreviews.last) message preview
                         self.getCaptionRequests(minDate: self.messagePreviews.last!.date)
                     }
                 }
@@ -126,17 +129,14 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         query.order(byDescending: "createdAt")
         postRef.getCaptionRequestPreviews(query: query) { (captionRequests) in
             self.captionRequests = captionRequests
-            // CONTINUE HERE: Change loop to track index - 1
             for (index, preview) in self.messagePreviews.enumerated() {
                 // Get the corresponding captionRequest
                 if let i = captionRequests.firstIndex(where: { $0.externalUser.objectId == preview.externalUser.objectId }) {
                     if captionRequests[i].date > preview.date {
-                        // Replace the message preview using index - 2
                         self.messagePreviews[index] = captionRequests[i]
                     }
                 }
                 if index == self.messagePreviews.count - 1 {
-                    print("made it to reload table view")
                     self.reloadTableView()
                 }
             }
@@ -156,6 +156,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let sortedUsers = users.sorted { $0 < $1 }
             if !roomNames.contains(sortedUsers[0] + "+" + sortedUsers[1]) {
                 self.messagePreviews.insert(captionRequest, at: 0)
+                
             }
             
             if captionRequest === captionRequests.last {
@@ -185,6 +186,15 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     override func viewDidAppear(_ animated: Bool) {
         self.tabBarController?.viewControllers?[1].tabBarItem.badgeValue = nil
          getPostWithId()
+        
+        if let newSentMessage = DataModel.sentMessagePreview {
+            if let index = self.messagePreviews.firstIndex(where: { $0.roomName == newSentMessage.roomName }) {
+                self.messagePreviews.remove(at: index)
+                self.messagePreviews.insert(newSentMessage, at: 0)
+                self.tableView.reloadData()
+                DataModel.sentMessagePreview = nil
+            }
+        }
     }
     
     fileprivate func addObservers() {
@@ -231,37 +241,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.tableView.delegate = self
         self.tableView.dataSource = self
         self.getMessageItems()
-        
-        /*let postRef = Post()
-        let query = PFQuery(className: "Post")
-        query.includeKey("sender")
-        query.whereKey("recipients", contains: PFUser.current()?.objectId)
-        query.whereKey("objectId", notContainedIn: DataModel.captionRequests.map( { $0.objectId }))
-        print("getting posts...", DataModel.newMessageId, DataModel.captionRequests.map( { $0.objectId }))
-        
-        postRef.getPosts(query: query) { (queriedPosts) in
-                        
-            for post in queriedPosts {
-                if post.objectId == DataModel.newMessageId {
-                    print("insert here2")
-                    DataModel.captionRequests.insert(post, at: 0)
-                } else {
-                    if !DataModel.captionRequests.map( { $0.objectId }).contains(post.objectId) {
-                        DataModel.captionRequests.append(post)
-                    }
-                }
-                if post === queriedPosts.last {
-                    DataModel.captionRequests = postRef.sortByCreatedAt(postsToSort: DataModel.captionRequests)
-                    self.tableView.reloadData()
-                    self.refreshControl.endRefreshing()
-                }
-            }
-            if DataModel.captionRequests.count == 0 && queriedPosts.count == 0 {
-                self.refreshControl.endRefreshing()
-                self.tableView.emptyStateDataSource = self
-                self.tableView.reloadData()
-            }
-        }*/
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -277,57 +256,41 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         cell.usernameLabel.text = self.messagePreviews[indexPath.row].externalUser.username
         cell.selectionStyle = .none
         
-        if self.messagePreviews[indexPath.row].isViewed {
-            cell.composeImageView.isHidden = true
-            cell.messageTextLabel.frame.origin = CGPoint(x: 80, y: cell.messageTextLabel.frame.origin.y)
+        print("first", self.messagePreviews[indexPath.row].isViewed)
+        print("second", self.messagePreviews[indexPath.row].sender == PFUser.current()?.objectId)
+        print("third", self.messagePreviews[indexPath.row].sender)
+        if self.messagePreviews[indexPath.row].isViewed || self.messagePreviews[indexPath.row].sender == PFUser.current()?.objectId {
             cell.profilePicImageView.layer.borderWidth = 0.0
-            cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.semibold)
+            cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.medium)
             cell.usernameLabel.textColor = UIColor.darkGray
         } else {
             cell.profilePicImageView.layer.borderWidth = 2.0
             cell.profilePicImageView.layer.borderColor = CGColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
             cell.usernameLabel.font = UIFont.boldSystemFont(ofSize: 17.0)
             cell.usernameLabel.textColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
-            cell.messageTextLabel.frame.origin = CGPoint(x: 110, y: cell.messageTextLabel.frame.origin.y)
             cell.composeImageView.isHidden = false
         }
         
-        /*cell.messageTextLabel.text = DataModel.captionRequests[indexPath.row].description
-        cell.usernameLabel.text = DataModel.captionRequests[indexPath.row].sender.username
-        cell.profilePicImageView.image = DataModel.captionRequests[indexPath.row].sender.profilePic
-        if DataModel.captionRequests[indexPath.row].isViewed {
-            cell.composeImageView.isHidden = true
+        if self.messagePreviews[indexPath.row].itemType == "message" {
             cell.messageTextLabel.frame.origin = CGPoint(x: 80, y: cell.messageTextLabel.frame.origin.y)
-            cell.profilePicImageView.layer.borderWidth = 0.0
-            cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.semibold)
-            cell.usernameLabel.textColor = UIColor.darkGray
-        } else {
-            cell.profilePicImageView.layer.borderWidth = 2.0
-            cell.profilePicImageView.layer.borderColor = CGColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
-            cell.usernameLabel.font = UIFont.boldSystemFont(ofSize: 17.0)
-            cell.usernameLabel.textColor = UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))
-            cell.messageTextLabel.frame.origin = CGPoint(x: 110, y: cell.messageTextLabel.frame.origin.y)
+            cell.composeImageView.isHidden = true
+        } else if self.messagePreviews[indexPath.row].itemType == "captionRequest" {
             cell.composeImageView.isHidden = false
+            cell.messageTextLabel.frame.origin = CGPoint(x: 110, y: cell.messageTextLabel.frame.origin.y)
         }
-        cell.selectionStyle = .none*/
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let viewedMessagePreview = self.messagePreviews[indexPath.row]
         
-        self.messagePreviews[indexPath.row].isViewed = true
-        self.tableView.reloadData()
-        
-        if self.messagePreviews[indexPath.row].itemType == "message" {
-            self.selectedFriend = self.messagePreviews[indexPath.row].externalUser
+        if self.messagePreviews[indexPath.row].itemType == "message" || self.messagePreviews[indexPath.row].isViewed {
+            self.selectedFriend = viewedMessagePreview.externalUser
             self.performSegue(withIdentifier: "showMessage", sender: nil)
-        } else if self.messagePreviews[indexPath.row].itemType == "captionRequest" {
+        } else if viewedMessagePreview.itemType == "captionRequest" {
             self.fromDismiss = true
-            self.messagePreviews[indexPath.row].isViewed = true
-            self.tableView.reloadData()
-            self.selectedFriend = self.messagePreviews[indexPath.row].externalUser
-            
-            Post().getPostWithObjectId(id: self.messagePreviews[indexPath.row].captionRequestObjectId) { (post) in
+            self.selectedFriend = viewedMessagePreview.externalUser
+            Post().getPostWithObjectId(id: viewedMessagePreview.objectId) { (post) in
                 self.selectedPost = post
                 self.mediaBrowser = MediaBrowserViewController(dataSource: self)
                     
@@ -349,7 +312,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 selectTextViewGesture.delegate = self
                 self.textView.addGestureRecognizer(selectTextViewGesture)
                 self.originalTextFieldHeight = self.textView.frame.height
-                print("new height", self.textView.frame.height)
                 self.lowerView.addSubview(self.textView)
                 
                 self.lowerView.usernameLabel.text = self.selectedPost.sender.username
@@ -360,26 +322,14 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 self.mediaBrowser.view.addSubview(self.lowerView)
                 
                 self.present(self.mediaBrowser, animated: true, completion: nil)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.performSegue(withIdentifier: "showMessage", sender: nil)
-                }
             }
         }
-        
-        // TODO Change this conditional to activate when the most recent item is a message
-        if true {
-            /*if let i = DataModel.friends.firstIndex(where: { $0.objectId == DataModel.captionRequests[indexPath.row].sender.objectId }) {
-                print("\(DataModel.friends[i])!")
-                self.selectedFriend = DataModel.friends[i]
-            }
-            self.performSegue(withIdentifier: "showMessage", sender: nil)*/
+        if self.messagePreviews[indexPath.row].sender != PFUser.current()?.objectId && !viewedMessagePreview.isViewed {
+            // Only the recipient of the views
+            viewedMessagePreview.messageBecameViewed()
+            viewedMessagePreview.isViewed = true
+            self.tableView.reloadData()
         }
-        
-        // TODO Change this conditional to activate when the selected message is a caption request
-        if false {
-            
-        }
-        
     }
     
     @objc func tapTextView(sender:UITapGestureRecognizer) {
@@ -403,8 +353,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             self.textView.backgroundColor = UIColor.black
             self.textView.showMoreText()
             self.textView.adjustUITextViewHeight()
-            let screenSize = UIScreen.main.bounds
-            let screenHeight = screenSize.height
             let originalTransform = self.textView.transform
             let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.00)
             
@@ -549,7 +497,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             targetVC.externalUser = self.selectedFriend
             DataModel.currentRecipient = self.selectedFriend
             targetVC.currentUser = DataModel.currentUser
-            print("Set the roomName:", targetVC.roomName)
         }
     }
 }
