@@ -75,6 +75,8 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             } else {
                 tabBarController!.tabBar.items?[1].badgeValue = "1"
             }
+        } else if DataModel.pushId == "newMessage" {
+            AppDelegate().queryFriends()
         }
     }
     

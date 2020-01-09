@@ -185,7 +185,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     override func viewDidAppear(_ animated: Bool) {
         self.tabBarController?.viewControllers?[1].tabBarItem.badgeValue = nil
-         getPostWithId()
+        getPostWithId()
         
         if let newSentMessage = DataModel.sentMessagePreview {
             if let index = self.messagePreviews.firstIndex(where: { $0.roomName == newSentMessage.roomName }) {
@@ -448,9 +448,31 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     @objc func getPostWithId() {
-        print("attempting to refresh...", DataModel.newMessageId)
         tabBarController!.tabBar.items?[1].badgeValue = nil
         if DataModel.newMessageId != "" {
+            let messageRef = Message()
+            let query = PFQuery(className: "Message")
+            query.includeKey("author")
+            query.whereKey("objectId", equalTo: DataModel.newMessageId)
+            messageRef.getMessageFromId(query: query, id: DataModel.newMessageId) { (message) in
+                if let index = self.messagePreviews.firstIndex(where: { $0.roomName == message.roomName }) {
+                    let messagePreview = message.convertMessageToPreview()
+                    self.messagePreviews[index] = messagePreview
+                    self.messagePreviews = messagePreview.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
+                    self.tableView.reloadData()
+                    if DataModel.pushId == "newMessage" {
+                        DataModel.pushId = ""
+                        if let index = self.messagePreviews.firstIndex(where: { $0.objectId == DataModel.newMessageId } ) {
+                            self.messagePreviews[index].isViewed = true
+                            self.messagePreviews[index].messageBecameViewed()
+                            self.selectedFriend = self.messagePreviews[index].externalUser
+                            self.performSegue(withIdentifier: "showMessage", sender: nil)
+                        }
+                    }
+                }
+            }
+        } else {
+            /*
             self.refreshControl.programaticallyBeginRefreshing(in: self.tableView)
             let postRef = Post()
             postRef.getPostWithObjectId(id: DataModel.newMessageId) { (post) in
@@ -462,8 +484,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     self.refreshControl.endRefreshing()
                     DataModel.newMessageId = ""
                 }
-            }
-        } else {
+            }*/
             Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(endRefresh), userInfo: nil, repeats: false)
         }
         

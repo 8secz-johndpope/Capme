@@ -12,11 +12,13 @@ import MessageKit
 import InputBarAccessoryView
 import ParseLiveQuery
 import Parse
+import Photos
 
 /// A base class for the example controllers
-class ChatVC: MessagesViewController, MessagesDataSource {
+class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let outgoingAvatarOverlap: CGFloat = 17.5
+    var skipCount = 0
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -47,7 +49,26 @@ class ChatVC: MessagesViewController, MessagesDataSource {
         loadFirstMessages()
     }
     
-    func setupUI() {}
+    func setupUI() {
+        // 1
+        let cameraItem = InputBarButtonItem(type: .system)
+        cameraItem.tintColor = .darkGray
+        cameraItem.image = UIImage(named: "add")
+
+        // 2
+        cameraItem.addTarget(
+          self,
+          action: #selector(cameraButtonPressed),
+          for: .primaryActionTriggered
+        )
+        cameraItem.setSize(CGSize(width: 60, height: 30), animated: false)
+
+        messageInputBar.leftStackView.alignment = .center
+        messageInputBar.setLeftStackViewWidthConstant(to: 50, animated: false)
+
+        // 3
+        messageInputBar.setStackViewItems([cameraItem], forStack: .left, animated: false)
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -73,7 +94,7 @@ class ChatVC: MessagesViewController, MessagesDataSource {
         DispatchQueue.global(qos: .userInitiated).async {
             let messageRef = Message()
             let query = PFQuery(className: "Message")
-            query.addAscendingOrder("createdAt")
+            query.order(byDescending: "createdAt")
             query.limit = 20
             query.includeKey("author")
             query.whereKey("roomName", equalTo: self.roomName)
@@ -81,13 +102,106 @@ class ChatVC: MessagesViewController, MessagesDataSource {
                 self.messageList = queriedMessages
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToBottom()
+                self.skipCount += 20
             }
         }
     }
     
+    @objc private func cameraButtonPressed() {
+      let imagePicker = UIImagePickerController()
+      imagePicker.delegate = self
+      imagePicker.allowsEditing = true
+      let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+      alert.view.tintColor = #colorLiteral(red: 0.3333333433, green: 0.3333333433, blue: 0.3333333433, alpha: 1)
+      
+      let messageAttrString = NSMutableAttributedString(string: "Choose Image From:", attributes: nil)
+      
+      alert.setValue(messageAttrString, forKey: "attributedMessage")
+      
+      alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { _ in
+          imagePicker.sourceType = .camera
+          imagePicker.allowsEditing = true
+          imagePicker.delegate = self
+          self.present(imagePicker, animated: true, completion: nil)
+      }))
+      
+      alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { _ in
+          imagePicker.sourceType = .photoLibrary
+          self.present(imagePicker, animated: true, completion: nil)
+      }))
+      alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+      present(alert, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+      picker.dismiss(animated: true, completion: nil)
+      
+      // 1
+      if let asset = info[.phAsset] as? PHAsset {
+        let size = CGSize(width: 500, height: 500)
+        PHImageManager.default().requestImage(
+          for: asset,
+          targetSize: size,
+          contentMode: .aspectFit,
+          options: nil) { result, info in
+            
+          guard let image = result else {
+            
+            return
+          }
+            
+          //self.sendPhoto(image)
+            let attachment = NSTextAttachment()
+            attachment.image = image
+            let attString = NSAttributedString(attachment: attachment)
+            self.messageInputBar.inputTextView.attributedText = attString
+        }
+
+      // 2
+      } else if let image = info[.originalImage] as? UIImage {
+        //sendPhoto(image)
+        let attachment = NSTextAttachment()
+        attachment.image = image
+        let attString = NSAttributedString(attachment: attachment)
+        
+        
+        
+        
+        let oldWidth = attachment.image!.size.width;
+
+        let scaleFactor = oldWidth / (self.messageInputBar.inputTextView.frame.size.width - 10); //for the padding inside the textView
+        attachment.image = UIImage(cgImage: attachment.image!.cgImage!, scale: scaleFactor, orientation: .right)
+        var attrStringWithImage = NSAttributedString(attachment: attachment)
+        self.messageInputBar.inputTextView.attributedText = attString
+      }
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+      picker.dismiss(animated: true, completion: nil)
+    }
+    
     @objc
     func loadMoreMessages() {
-        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 1) {
+        
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            let messageRef = Message()
+            let query = PFQuery(className: "Message")
+            query.order(byDescending: "createdAt")
+            query.limit = 20
+            query.skip = self.skipCount
+            query.includeKey("author")
+            query.whereKey("roomName", equalTo: self.roomName)
+            messageRef.getMessages(query: query) { (queriedMessages) in
+                self.messageList.insert(contentsOf: queriedMessages, at: 0)
+                self.messagesCollectionView.reloadDataAndKeepOffset()
+                self.skipCount += 20
+                self.refreshControl.endRefreshing()
+            }
+        }
+        
+        /*DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 1) {
             SampleData.shared.getMessages(count: 20) { messages in
                 DispatchQueue.main.async {
                     self.messageList.insert(contentsOf: messages, at: 0)
@@ -95,7 +209,7 @@ class ChatVC: MessagesViewController, MessagesDataSource {
                     self.refreshControl.endRefreshing()
                 }
             }
-        }
+        }*/
     }
     
     func configureMessageCollectionView() {
@@ -322,12 +436,10 @@ extension ChatVC: InputBarAccessoryViewDelegate {
         let attributedText = messageInputBar.inputTextView.attributedText!
         let range = NSRange(location: 0, length: attributedText.length)
         attributedText.enumerateAttribute(.autocompleted, in: range, options: []) { (_, range, _) in
-
             let substring = attributedText.attributedSubstring(from: range)
             let context = substring.attribute(.autocompletedContext, at: 0, effectiveRange: nil)
             print("Autocompleted: `", substring, "` with context: ", context ?? [])
         }
-
         let components = inputBar.inputTextView.components
         messageInputBar.inputTextView.text = String()
         messageInputBar.invalidatePlugins()

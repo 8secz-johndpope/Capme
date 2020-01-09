@@ -60,15 +60,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Populate old messages with parse backend messages
     //*Determine chatroom naming convention
     //*Design workflow for creating receiving messages and caption requests
-    
-    /* IN PROGRESS */
-  
     //*Update message preview when a new message is sent (Use data model?)
     //*Advanced messaging UI compress messages sent by the same user
-    //3Push notifications from messages
+    //*Push notifications from messages
     
-    
-    // Support Images, videos, and audi
+    /* IN PROGRESS */
+
+    // Support Images, videos, and audio
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
     // In foreground - from discover click tab bar (already viewed messages)*, from discover click tab bar (not viewed messages)*, from messages pull to refresh*, select notification discover*, (select notification messages *)
@@ -177,14 +175,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
     {
-        completionHandler([.alert, .badge, .sound])
-        print("will present")
+        print("will present", notification.request.content.userInfo["identifier"] as? String)
         
         if let identifier = notification.request.content.userInfo["identifier"] as? String {
             if identifier == "friendRequest" {
+                completionHandler([.alert, .badge, .sound])
                 let friendRequestRef = FriendRequest()
-                
-                
                 friendRequestRef.getRequestWithId(id: notification.request.content.userInfo["objectId"] as! String) { (request) in
                     if request.receiver.objectId == PFUser.current()!.objectId! {
                         request.sender.requestId = request.objectId
@@ -202,6 +198,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     }
                 }
             } else if identifier == "favoritedCaption" {
+                completionHandler([.alert, .badge, .sound])
                 if let tabBarController =  DataModel.tabBarController {
                     if let badgeValue = tabBarController.tabBar.items?[0].badgeValue,
                         let value = Int(badgeValue) {
@@ -211,7 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     }
                 }
             } else if identifier == "captionRequest" {
-                
+                completionHandler([.alert, .badge, .sound])
                 if let tabBarController =  DataModel.tabBarController {
                     DataModel.newMessageId = notification.request.content.userInfo["objectId"] as! String
                     if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
@@ -221,6 +218,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                         tabBarController.tabBar.items?[1].badgeValue = "1"
                     }
                 } else {
+                    DataModel.pushId = identifier
+                }
+            } else if identifier == "newMessage" {
+                if let tabBarController =  DataModel.tabBarController {
+                    
+                    if tabBarController.selectedIndex == 1 {
+                        // Refresh the existing tableView
+                        DataModel.newMessageId = notification.request.content.userInfo["objectId"] as! String
+                        if let messagesVC = UIApplication.getTopViewController() as? MessagesVC {
+                            messagesVC.getPostWithId()
+                        }
+                    } else {
+                        completionHandler([.alert, .badge, .sound])
+                        DataModel.newMessageId = notification.request.content.userInfo["objectId"] as! String
+                        if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                            let value = Int(badgeValue) {
+                            tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                        } else {
+                            tabBarController.tabBar.items?[1].badgeValue = "1"
+                        }
+                    }
+                } else {
+                    completionHandler([.alert, .badge, .sound])
                     DataModel.pushId = identifier
                 }
             }
@@ -349,6 +369,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     }
                 }*/
                 
+            } else if identifier == "newMessage" {
+                if let tabBarController = DataModel.tabBarController {
+                    DataModel.newMessageId = userInfo["objectId"] as! String
+                    if tabBarController.selectedIndex != 1 {
+                        tabBarController.selectedIndex = 1
+                        if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                            let value = Int(badgeValue) {
+                            tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                        } else {
+                            tabBarController.tabBar.items?[1].badgeValue = "1"
+                        }
+                    } else {
+                        print("print0")
+                        if let messagesVC = UIApplication.getTopViewController() as? MessagesVC {
+                            messagesVC.getPostWithId()
+                        }
+                    }
+                } else {
+                    DataModel.newMessageId = userInfo["objectId"] as! String
+                    DataModel.pushId = identifier
+                }
             }
         }
 
@@ -473,10 +514,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     }
                 }
                 if request === queriedRequests.last {
-                    /*let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let initialViewController = storyboard.instantiateViewController(withIdentifier: "TabBarController")
-                    self.window?.rootViewController = initialViewController
-                    self.window?.makeKeyAndVisible()*/
+                    if DataModel.pushId == "newMessage" {
+                        if let discoverVC = UIApplication.getTopViewController() as? DiscoverVC {
+                            discoverVC.tabBarController?.selectedIndex = 1
+                        }
+                    }
                 }
             }
         }
