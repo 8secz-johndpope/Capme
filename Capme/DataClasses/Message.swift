@@ -16,6 +16,7 @@ class Message: PFObject, PFSubclassing {
     @NSManaged var room: PFObject?
     @NSManaged var roomName: String?
     @NSManaged var isViewed: NSNumber?
+    @NSManaged var image: PFFileObject?
     var date: Date?
 
     class func parseClassName() -> String {
@@ -69,14 +70,35 @@ class Message: PFObject, PFSubclassing {
                     return
                 }
                 for object in objects! {
-                    let messageText = object["message"] as! String
-                    let id = object.objectId!
-                    let date = object.createdAt!
-                    let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
-                    let message = MockMessage(text: messageText, user: user, messageId: id, date: date)
-                    messages.append(message)
-                    if object == objects?.last {
-                        completion(messages)
+                    if let text = object["message"] as? String {
+                        let id = object.objectId!
+                        let date = object.createdAt!
+                        let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
+                        let message = MockMessage(text: text, user: user, messageId: id, date: date)
+                        messages.append(message)
+                        if object == objects?.last {
+                            completion(messages)
+                        }
+                    } else {
+                        let id = object.objectId!
+                        let date = object.createdAt!
+                        let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
+                        if let imageFile = object["image"] as? PFFileObject {
+                            imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                                if error == nil  {
+                                    if let finalimage = UIImage(data: imageData!) {
+                                        let message = MockMessage(image: finalimage, user: user, messageId: id, date: date)
+                                        print("adding image message!", message.user.displayName)
+                                        print(message.sender.displayName)
+                                        print(message.sender.senderId)
+                                        messages.append(message)
+                                        if object == objects?.last {
+                                            completion(messages)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -65,6 +65,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Push notifications from messages
     
     /* IN PROGRESS */
+    
+    // Image should be associated with the correct sender
+    // Include selectable caption requests
 
     // Support Images, videos, and audio
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)

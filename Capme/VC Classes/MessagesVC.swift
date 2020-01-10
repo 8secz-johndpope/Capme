@@ -99,8 +99,9 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     } else {
                         messagePreview.isViewed = false
                     }
-                    
-                    print(preview["message"] as! String)
+                    if let text = preview["message"] as? String {
+                        print(text)
+                    }
                     print(preview["objectId"] as! String)
                     self.messagePreviews.append(messagePreview)
                     if preview === messagePreviewsDicts.last {
@@ -186,7 +187,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     override func viewDidAppear(_ animated: Bool) {
         self.tabBarController?.viewControllers?[1].tabBarItem.badgeValue = nil
         getPostWithId()
-        
+        self.refreshControl.isHidden = true
         if let newSentMessage = DataModel.sentMessagePreview {
             if let index = self.messagePreviews.firstIndex(where: { $0.roomName == newSentMessage.roomName }) {
                 self.messagePreviews.remove(at: index)
@@ -259,6 +260,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         print("first", self.messagePreviews[indexPath.row].isViewed)
         print("second", self.messagePreviews[indexPath.row].sender == PFUser.current()?.objectId)
         print("third", self.messagePreviews[indexPath.row].sender)
+        print("fourth")
         if self.messagePreviews[indexPath.row].isViewed || self.messagePreviews[indexPath.row].sender == PFUser.current()?.objectId {
             cell.profilePicImageView.layer.borderWidth = 0.0
             cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.medium)

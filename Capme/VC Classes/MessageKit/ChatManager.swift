@@ -54,19 +54,49 @@ class ChatRoomManager {
                 self.subscribeToUpdates()
             }
         })
-        
-        /*Room.query()?.whereKey("name", equalTo: room).getFirstObjectInBackground()
-            .continueOnSuccessWith(block: { task -> Any? in
-            
-        })*/
     }
 
     func disconnectFromChatRoom() {
         print("Success: Disconnected from the chat room")
         liveQueryClient.unsubscribe(messagesQuery, handler: subscription!)
     }
+    
+    func sendMessageImage(_ img: UIImage) {
+        let message = Message()
+        message.author = PFUser.current()
+        message.authorName = message.author?.username
+        message.image = PFFileObject(name: "image", data: img.jpegData(compressionQuality: 1.0)!)
+        message.room = currentChatRoom
+        message.roomName = currentChatRoom?.name
+        message.isViewed = false
+        
+        let sentMessagePreview = MessagePreview()
+        sentMessagePreview.roomName = currentChatRoom?.name
+        sentMessagePreview.previewText = "Sent an image"
+        sentMessagePreview.objectId = message.objectId
+        sentMessagePreview.externalUser = self.chatRef.externalUser
+        sentMessagePreview.date = message.createdAt
+        sentMessagePreview.itemType = "message"
+        sentMessagePreview.sender = PFUser.current()!.objectId!
+        sentMessagePreview.isViewed = true
+        DataModel.sentMessagePreview = sentMessagePreview
+        
+        message.saveInBackground { (success, error) in
+            if error == nil {
+                PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.chatRef.externalUser.objectId], "title": message.authorName!, "message": "Sent you an image", "identifier" : "newMessage", "objectId" : message.objectId!]) {
+                    (response, error) in
+                    if error == nil {
+                        print("Success: Pushed the notification for newMessage")
+                    } else {
+                        print(error!.localizedDescription, "Cloud Code Push Error")
+                    }
+                }
+            }
+        }
+    }
+    
 
-    func sendMessage(_ msg: String) {
+    func sendMessageText(_ msg: String) {
         
         let message = Message()
         message.author = PFUser.current()
@@ -89,13 +119,12 @@ class ChatRoomManager {
         
         message.saveInBackground { (success, error) in
             if error == nil {
-                
                 PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.chatRef.externalUser.objectId], "title": message.authorName!, "message": msg, "identifier" : "newMessage", "objectId" : message.objectId!]) {
                     (response, error) in
                     if error == nil {
                         print("Success: Pushed the notification for newMessage")
                     } else {
-                        print(error?.localizedDescription, "Cloud Code Push Error")
+                        print(error!.localizedDescription, "Cloud Code Push Error")
                     }
                 }
             }
@@ -120,15 +149,31 @@ class ChatRoomManager {
     
     fileprivate func printNewMessage(_ message: Message) {
         if message.authorName != PFUser.current()!.username {
-            print("New Message:", message.message!)
-            DispatchQueue.main.async {
-                self.chatRef.insertReceivedMessages([message.message!])
+            if let messageText = message.message {
+                if messageText.count > 0 {
+                    print("New Message:", message.message!)
+                    DispatchQueue.main.async {
+                        self.chatRef.insertReceivedMessages([messageText])
+                    }
+                }
+            } else {
+                
             }
+            
         }
     }
 
     fileprivate func printMessage(_ message: Message) {
         let createdAt = message.createdAt ?? Date()
+        if let image = message.image {
+            image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                if error == nil  {
+                    if let finalimage = UIImage(data: imageData!) {
+                        self.chatRef.insertReceivedMessages([finalimage])
+                    }
+                }
+            }
+        }
         print("\(createdAt) \(message.authorName ?? "unknown"): \(message.message ?? "")")
     }
 }
@@ -153,7 +198,7 @@ class InputManager {
         }
 
         if chatManager.connected {
-            chatManager.sendMessage(inputString)
+            chatManager.sendMessageText(inputString)
         } else {
             chatManager.connectToChatRoom(inputString)
         }

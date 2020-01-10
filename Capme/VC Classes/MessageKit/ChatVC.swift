@@ -74,20 +74,12 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
         super.viewDidAppear(animated)
         chatManager.connectToChatRoom(self.roomName)
         chatManager.chatRef = self
-
-        //let myQuery = Message.query()?.whereKey("recipient", equalTo: PFUser.current()!.objectId!)
-        
-        /*MockSocket.shared.connect(with: [SampleData.shared.nathan, SampleData.shared.wu])
-            .onNewMessage { [weak self] message in
-                self?.insertMessage(message)
-        }*/
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         chatManager.disconnectFromChatRoom()
-        /*MockSocket.shared.disconnect()
-        audioController.stopAnyOngoingPlaying()*/
+        /*audioController.stopAnyOngoingPlaying()*/
     }
     
     func loadFirstMessages() {
@@ -100,6 +92,7 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             query.whereKey("roomName", equalTo: self.roomName)
             messageRef.getMessages(query: query) { (queriedMessages) in
                 self.messageList = queriedMessages
+                
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToBottom()
                 self.skipCount += 20
@@ -164,15 +157,11 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
         let attachment = NSTextAttachment()
         attachment.image = image
         let attString = NSAttributedString(attachment: attachment)
-        
-        
-        
-        
-        let oldWidth = attachment.image!.size.width;
-
+        let oldWidth = attachment.image!.size.width
         let scaleFactor = oldWidth / (self.messageInputBar.inputTextView.frame.size.width - 10); //for the padding inside the textView
+        
+        // TODO handle image orientation dynamically
         attachment.image = UIImage(cgImage: attachment.image!.cgImage!, scale: scaleFactor, orientation: .right)
-        var attrStringWithImage = NSAttributedString(attachment: attachment)
         self.messageInputBar.inputTextView.attributedText = attString
       }
     }
@@ -183,8 +172,6 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     
     @objc
     func loadMoreMessages() {
-        
-        
         DispatchQueue.global(qos: .userInitiated).async {
             let messageRef = Message()
             let query = PFQuery(className: "Message")
@@ -194,22 +181,13 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             query.includeKey("author")
             query.whereKey("roomName", equalTo: self.roomName)
             messageRef.getMessages(query: query) { (queriedMessages) in
+                
                 self.messageList.insert(contentsOf: queriedMessages, at: 0)
                 self.messagesCollectionView.reloadDataAndKeepOffset()
                 self.skipCount += 20
                 self.refreshControl.endRefreshing()
             }
         }
-        
-        /*DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 1) {
-            SampleData.shared.getMessages(count: 20) { messages in
-                DispatchQueue.main.async {
-                    self.messageList.insert(contentsOf: messages, at: 0)
-                    self.messagesCollectionView.reloadDataAndKeepOffset()
-                    self.refreshControl.endRefreshing()
-                }
-            }
-        }*/
     }
     
     func configureMessageCollectionView() {
@@ -245,9 +223,9 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
                 messagesCollectionView.reloadSections([messageList.count - 2])
             }
         }, completion: { [weak self] _ in
-            if self?.isLastSectionVisible() == true {
-                self?.messagesCollectionView.scrollToBottom(animated: true)
-            }
+            //if self?.isLastSectionVisible() == true {
+            self?.messagesCollectionView.scrollToBottom(animated: true)
+            //}
         })
     }
     
@@ -464,24 +442,26 @@ extension ChatVC: InputBarAccessoryViewDelegate {
             let user = MockUser(senderId: externalUser.objectId, displayName: externalUser.username!)
             if let str = component as? String {
                 let message = MockMessage(text: str, user: user, messageId: UUID().uuidString, date: Date())
+                print("Inserting this string:", str)
                 insertMessage(message)
             } else if let img = component as? UIImage {
                 let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                print("Inserting message")
                 insertMessage(message)
             }
         }
     }
 
     public func insertMessages(_ data: [Any]) {
-
         for component in data {
             let user = SampleData.shared.currentSender
             if let str = component as? String {
                 let message = MockMessage(text: str, user: user, messageId: UUID().uuidString, date: Date())
-                chatManager.sendMessage(str)
+                chatManager.sendMessageText(str)
                 insertMessage(message)
             } else if let img = component as? UIImage {
                 let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                chatManager.sendMessageImage(img)
                 insertMessage(message)
             }
         }
