@@ -92,7 +92,6 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             query.whereKey("roomName", equalTo: self.roomName)
             messageRef.getMessages(query: query) { (queriedMessages) in
                 self.messageList = queriedMessages
-                
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToBottom()
                 self.skipCount += 20
@@ -181,7 +180,6 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             query.includeKey("author")
             query.whereKey("roomName", equalTo: self.roomName)
             messageRef.getMessages(query: query) { (queriedMessages) in
-                
                 self.messageList.insert(contentsOf: queriedMessages, at: 0)
                 self.messagesCollectionView.reloadDataAndKeepOffset()
                 self.skipCount += 20
@@ -433,6 +431,21 @@ extension ChatVC: InputBarAccessoryViewDelegate {
                 self?.messageInputBar.inputTextView.placeholder = "Aa"
                 self?.insertMessages(components)
                 self?.messagesCollectionView.scrollToBottom(animated: true)
+            }
+        }
+    }
+    
+    public func insertImageMessage(_ data: [Any], senderId: String, displayName: String) {
+        for component in data {
+            let user = MockUser(senderId: senderId, displayName: displayName)
+            if let str = component as? String {
+                let message = MockMessage(text: str, user: user, messageId: UUID().uuidString, date: Date())
+                print("Inserting this string:", str)
+                insertMessage(message)
+            } else if let img = component as? UIImage {
+                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                print("Inserting image message")
+                insertMessage(message)
             }
         }
     }

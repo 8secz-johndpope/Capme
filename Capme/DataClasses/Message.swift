@@ -88,9 +88,7 @@ class Message: PFObject, PFSubclassing {
                                 if error == nil  {
                                     if let finalimage = UIImage(data: imageData!) {
                                         let message = MockMessage(image: finalimage, user: user, messageId: id, date: date)
-                                        print("adding image message!", message.user.displayName)
-                                        print(message.sender.displayName)
-                                        print(message.sender.senderId)
+                                        print("adding image message!", message.user.displayName, id)
                                         messages.append(message)
                                         if object == objects?.last {
                                             completion(messages)

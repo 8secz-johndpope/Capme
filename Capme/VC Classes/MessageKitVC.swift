@@ -66,8 +66,10 @@ extension MessageKitVC: MessagesDisplayDelegate {
     func messageStyle(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
         
         var corners: UIRectCorner = []
-        
+        print("\n", message.messageId, message.sender.displayName, message.sender.senderId, currentSender().senderId)
+        //message.sender.senderId == currentSender().senderId
         if isFromCurrentSender(message: message) {
+            print("from current user")
             corners.formUnion(.topLeft)
             corners.formUnion(.bottomLeft)
             if !isPreviousMessageSameSender(at: indexPath) {
@@ -77,6 +79,7 @@ extension MessageKitVC: MessagesDisplayDelegate {
                 corners.formUnion(.bottomRight)
             }
         } else {
+            print("from external user")
             corners.formUnion(.topRight)
             corners.formUnion(.bottomRight)
             if !isPreviousMessageSameSender(at: indexPath) {

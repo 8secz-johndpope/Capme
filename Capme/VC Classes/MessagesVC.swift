@@ -68,9 +68,11 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     let refreshControl = UIRefreshControl()
     var selectedFriend = User()
     var messageItemsPerFriend = [User : Any]() // Can be a message or a caption request
+    var minDate = Date()
     
     var messagePreviews = [MessagePreview]()
-    var captionRequests = [MessagePreview]()
+    var allCaptionRequests = [MessagePreview]()
+    var selectedChatCaptionRequests = [Post]()
 
     override func viewDidLoad() {
         setupUI()
@@ -107,19 +109,21 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     if preview === messagePreviewsDicts.last {
                         // Sort the messages
                         self.messagePreviews = messagePreview.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
-                        self.getCaptionRequests(minDate: self.messagePreviews.last!.date)
+                        self.getLastCaptionRequest(minDate: self.messagePreviews.last!.date)
+                        self.minDate = self.messagePreviews.last!.date
                     }
                 }
                 if messagePreviewsDicts.count == 0 {
                     let timeInterval  = 1415639000.67457
                     let minDate = NSDate(timeIntervalSince1970: timeInterval)
-                    self.getCaptionRequests(minDate: minDate as Date)
+                    self.getLastCaptionRequest(minDate: minDate as Date)
+                    self.minDate = minDate as Date
                 }
             }
         }
     }
     
-    func getCaptionRequests(minDate: Date) {
+    func getLastCaptionRequest(minDate: Date) {
         
         let postRef = Post()
         let query = PFQuery(className: "Post")
@@ -129,27 +133,50 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         query.whereKey("objectId", notContainedIn: DataModel.captionRequests.map( { $0.objectId }))
         query.order(byDescending: "createdAt")
         postRef.getCaptionRequestPreviews(query: query) { (captionRequests) in
-            self.captionRequests = captionRequests
+            self.allCaptionRequests = captionRequests
             for (index, preview) in self.messagePreviews.enumerated() {
                 // Get the corresponding captionRequest
-                if let i = captionRequests.firstIndex(where: { $0.externalUser.objectId == preview.externalUser.objectId }) {
-                    if captionRequests[i].date > preview.date {
-                        self.messagePreviews[index] = captionRequests[i]
+                if let i = self.allCaptionRequests.firstIndex(where: { $0.externalUser.objectId == preview.externalUser.objectId }) {
+                    if self.allCaptionRequests[i].date > preview.date {
+                        self.messagePreviews[index] = self.allCaptionRequests[i]
                     }
                 }
                 if index == self.messagePreviews.count - 1 {
                     self.reloadTableView()
                 }
             }
-            if captionRequests.count == 0 {
+            if self.allCaptionRequests.count == 0 {
                 self.reloadTableView()
             }
         }
     }
     
+    func getCaptionRequests() {
+        
+        let currentSenderQuery = PFQuery(className: "Post")
+        currentSenderQuery.whereKey("createdAt", greaterThan: self.minDate)
+        currentSenderQuery.whereKey("recipients", contains: PFUser.current()!.objectId)
+        currentSenderQuery.whereKey("sender", equalTo: self.selectedFriend)
+        
+        let externalSenderQuery = PFQuery(className: "Post")
+        externalSenderQuery.whereKey("createdAt", greaterThan: self.minDate)
+        externalSenderQuery.whereKey("recipients", contains: self.selectedFriend.objectId)
+        externalSenderQuery.whereKey("sender", equalTo: PFUser.current()!)
+        
+        let totalQuery = PFQuery.orQuery(withSubqueries: [currentSenderQuery, externalSenderQuery])
+        let postRef = Post()
+        postRef.getPosts(query: totalQuery) { (captionRequests) in
+            self.selectedChatCaptionRequests = captionRequests
+        }
+        
+        // Query caption requests
+        // Interlace them with messages (as images)
+        // Make caption requests selectable and show caption creation ui
+    }
+    
     func reloadTableView() {
         let roomNames = self.messagePreviews.map( {$0.roomName })
-        for captionRequest in captionRequests {
+        for captionRequest in allCaptionRequests {
             
             var users = [String]()
             users.append(PFUser.current()!.objectId!)
@@ -160,12 +187,12 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 
             }
             
-            if captionRequest === captionRequests.last {
+            if captionRequest === allCaptionRequests.last {
                 self.messagePreviews = captionRequest.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
                 self.tableView.reloadData()
             }
         }
-        if self.captionRequests.count == 0 && self.messagePreviews.count > 0 {
+        if self.allCaptionRequests.count == 0 && self.messagePreviews.count > 0 {
             self.messagePreviews = self.messagePreviews[0].sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
             self.tableView.reloadData()
         }
@@ -289,7 +316,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         if self.messagePreviews[indexPath.row].itemType == "message" || self.messagePreviews[indexPath.row].isViewed {
             self.selectedFriend = viewedMessagePreview.externalUser
             self.performSegue(withIdentifier: "showMessage", sender: nil)
-        } else if viewedMessagePreview.itemType == "captionRequest" {
+        } else if viewedMessagePreview.itemType == "captionRequest" && !self.messagePreviews[indexPath.row].isViewed {
             self.fromDismiss = true
             self.selectedFriend = viewedMessagePreview.externalUser
             Post().getPostWithObjectId(id: viewedMessagePreview.objectId) { (post) in
@@ -325,6 +352,9 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 
                 self.present(self.mediaBrowser, animated: true, completion: nil)
             }
+        } else if viewedMessagePreview.itemType == "captionRequest" && self.messagePreviews[indexPath.row].isViewed {
+            self.selectedFriend = viewedMessagePreview.externalUser
+            self.performSegue(withIdentifier: "showMessage", sender: nil)
         }
         if self.messagePreviews[indexPath.row].sender != PFUser.current()?.objectId && !viewedMessagePreview.isViewed {
             // Only the recipient of the views

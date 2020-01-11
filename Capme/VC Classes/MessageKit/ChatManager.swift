@@ -169,7 +169,7 @@ class ChatRoomManager {
             image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                 if error == nil  {
                     if let finalimage = UIImage(data: imageData!) {
-                        self.chatRef.insertReceivedMessages([finalimage])
+                        self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!)
                     }
                 }
             }

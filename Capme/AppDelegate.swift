@@ -63,12 +63,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Update message preview when a new message is sent (Use data model?)
     //*Advanced messaging UI compress messages sent by the same user
     //*Push notifications from messages
+    //*Image should be associated with the correct sender
     
     /* IN PROGRESS */
-    
-    // Image should be associated with the correct sender
     // Include selectable caption requests
-
     // Support Images, videos, and audio
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
@@ -88,6 +86,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // Add time to release textfield (clock item and text next to the cancel button)
     //1Edit Release date
     //2Center odd requests in the collection view
+    // Minimize # of Parse requests required for images in Messaging (right now 1 request per image)
+    
     
     /* BACK LOG (major) */
     //5AWS S3
