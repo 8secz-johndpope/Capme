@@ -8,6 +8,7 @@
 
 import Foundation
 import Parse
+import MessageKit
 
 class Message: PFObject, PFSubclassing {
     @NSManaged var author: PFUser?
@@ -21,6 +22,10 @@ class Message: PFObject, PFSubclassing {
 
     class func parseClassName() -> String {
         return "Message"
+    }
+    
+    func sortByCreatedAt(messagesToSort: [MockMessage]) -> [MockMessage] {
+        return messagesToSort.sorted(by: { $0.sentDate < $1.sentDate })
     }
     
     func convertMessageToPreview() -> MessagePreview {
@@ -57,6 +62,46 @@ class Message: PFObject, PFSubclassing {
         }
     }
     
+    func getCaptionRequests(query: PFQuery<PFObject>, completion: @escaping (_ result: [MockMessage])->()) {
+        var messages = [MockMessage]()
+        query.findObjectsInBackground { (objects, error) in
+            if let error = error {
+                print("Error: " + error.localizedDescription)
+            } else {
+                if objects?.count == 0 || objects?.count == nil {
+                    print("No new objects")
+                    completion(messages)
+                    return
+                }
+                for object in objects! {
+                    let id = object.objectId!
+                    let date = object.createdAt!
+                    if let description = object["description"] as? String { // Post
+                        print(description, "this is the description")
+                        var username = ""
+                        if let index = DataModel.friends.firstIndex(where: { $0.objectId == (object["sender"] as! PFUser).objectId!}) {
+                            username = DataModel.friends[index].username
+                        }
+                        let user = MockUser(senderId: (object["sender"] as! PFUser).objectId!, displayName: username)
+                        if let imageFile = object["image"] as? PFFileObject {
+                            imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                                if error == nil  {
+                                    if let finalimage = UIImage(data: imageData!) {
+                                        let message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: true)
+                                        messages.append(message)
+                                        if messages.count == objects?.count  {
+                                            completion(messages)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     func getMessages(query: PFQuery<PFObject>, completion: @escaping (_ result: [MockMessage])->()) {
         var messages = [MockMessage]()
         query.findObjectsInBackground {
@@ -70,27 +115,25 @@ class Message: PFObject, PFSubclassing {
                     return
                 }
                 for object in objects! {
+                    let id = object.objectId!
+                    let date = object.createdAt!
                     if let text = object["message"] as? String {
-                        let id = object.objectId!
-                        let date = object.createdAt!
                         let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
                         let message = MockMessage(text: text, user: user, messageId: id, date: date)
                         messages.append(message)
-                        if object == objects?.last {
+                        if messages.count == objects?.count {
                             completion(messages)
                         }
                     } else {
-                        let id = object.objectId!
-                        let date = object.createdAt!
                         let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
                         if let imageFile = object["image"] as? PFFileObject {
                             imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                 if error == nil  {
                                     if let finalimage = UIImage(data: imageData!) {
-                                        let message = MockMessage(image: finalimage, user: user, messageId: id, date: date)
+                                        let message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: false)
                                         print("adding image message!", message.user.displayName, id)
                                         messages.append(message)
-                                        if object == objects?.last {
+                                        if messages.count == objects!.count {
                                             completion(messages)
                                         }
                                     }

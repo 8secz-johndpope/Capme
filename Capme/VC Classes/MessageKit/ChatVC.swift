@@ -40,6 +40,8 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     var roomName = ""
     var currentUser = User()
     var externalUser = User()
+    
+    var selectedChatCaptionRequests = [Post]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,16 +87,32 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     func loadFirstMessages() {
         DispatchQueue.global(qos: .userInitiated).async {
             let messageRef = Message()
-            let query = PFQuery(className: "Message")
-            query.order(byDescending: "createdAt")
-            query.limit = 20
-            query.includeKey("author")
-            query.whereKey("roomName", equalTo: self.roomName)
-            messageRef.getMessages(query: query) { (queriedMessages) in
+            
+            let currentSenderQuery = PFQuery(className: "Post")
+            currentSenderQuery.whereKey("recipients", contains: PFUser.current()!.objectId)
+            currentSenderQuery.whereKey("sender", equalTo: self.externalUser.pfuserRef!)
+            
+            let externalSenderQuery = PFQuery(className: "Post")
+            externalSenderQuery.whereKey("recipients", contains: self.externalUser.objectId)
+            externalSenderQuery.whereKey("sender", equalTo: PFUser.current()!)
+            
+            let messageQuery = PFQuery(className: "Message")
+            messageQuery.order(byDescending: "createdAt")
+            messageQuery.limit = 20
+            messageQuery.includeKey("author")
+            messageQuery.whereKey("roomName", equalTo: self.roomName)
+            
+            let combinedQuery = PFQuery.orQuery(withSubqueries: [currentSenderQuery, externalSenderQuery])
+            
+            messageRef.getMessages(query: messageQuery) { (queriedMessages) in
                 self.messageList = queriedMessages
-                self.messagesCollectionView.reloadData()
-                self.messagesCollectionView.scrollToBottom()
-                self.skipCount += 20
+                messageRef.getCaptionRequests(query: combinedQuery) { (queriedCaptionRequests) in
+                    self.messageList.append(contentsOf: queriedCaptionRequests)
+                    self.messageList = messageRef.sortByCreatedAt(messagesToSort: self.messageList)
+                    self.messagesCollectionView.reloadData()
+                    self.messagesCollectionView.scrollToBottom()
+                    self.skipCount += 20
+                }
             }
         }
     }
@@ -302,6 +320,14 @@ extension ChatVC: MessageCellDelegate {
     }
     
     func didTapMessage(in cell: MessageCollectionViewCell) {
+        if let indexPath = messagesCollectionView.indexPath(for: cell) {
+            print(self.messageList[indexPath.row].kind)
+            if self.messageList[indexPath.row].isCaptionRequest {
+                print("CAPTION REQUEST")
+            } else {
+                print(self.messageList[indexPath.row].messageId, "message id")
+            }
+        }
         print("Message tapped")
     }
     
@@ -443,7 +469,7 @@ extension ChatVC: InputBarAccessoryViewDelegate {
                 print("Inserting this string:", str)
                 insertMessage(message)
             } else if let img = component as? UIImage {
-                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date(), isCaptionRequest: false)
                 print("Inserting image message")
                 insertMessage(message)
             }
@@ -458,7 +484,7 @@ extension ChatVC: InputBarAccessoryViewDelegate {
                 print("Inserting this string:", str)
                 insertMessage(message)
             } else if let img = component as? UIImage {
-                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date(), isCaptionRequest: false)
                 print("Inserting message")
                 insertMessage(message)
             }
@@ -473,7 +499,7 @@ extension ChatVC: InputBarAccessoryViewDelegate {
                 chatManager.sendMessageText(str)
                 insertMessage(message)
             } else if let img = component as? UIImage {
-                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date())
+                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date(), isCaptionRequest: false)
                 chatManager.sendMessageImage(img)
                 insertMessage(message)
             }

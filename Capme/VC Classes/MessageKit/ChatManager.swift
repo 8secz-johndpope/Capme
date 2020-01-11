@@ -165,11 +165,12 @@ class ChatRoomManager {
 
     fileprivate func printMessage(_ message: Message) {
         let createdAt = message.createdAt ?? Date()
+        // If a message is received
         if let image = message.image {
             image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                 if error == nil  {
                     if let finalimage = UIImage(data: imageData!) {
-                        self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!)
+                        //self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!)
                     }
                 }
             }

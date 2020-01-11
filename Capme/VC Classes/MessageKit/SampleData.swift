@@ -176,7 +176,7 @@ final internal class SampleData {
         case .Photo:
             let randomNumberImage = Int(arc4random_uniform(UInt32(messageImages.count)))
             let image = messageImages[randomNumberImage]
-            return MockMessage(image: image, user: user, messageId: uniqueID, date: date)
+            return MockMessage(image: image, user: user, messageId: uniqueID, date: date, isCaptionRequest: false)
         case .Video:
             let randomNumberImage = Int(arc4random_uniform(UInt32(messageImages.count)))
             let image = messageImages[randomNumberImage]

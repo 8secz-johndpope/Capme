@@ -167,6 +167,8 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         let postRef = Post()
         postRef.getPosts(query: totalQuery) { (captionRequests) in
             self.selectedChatCaptionRequests = captionRequests
+            
+            self.performSegue(withIdentifier: "showMessage", sender: nil)
         }
         
         // Query caption requests
@@ -313,7 +315,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let viewedMessagePreview = self.messagePreviews[indexPath.row]
         
-        if self.messagePreviews[indexPath.row].itemType == "message" || self.messagePreviews[indexPath.row].isViewed {
+        if self.messagePreviews[indexPath.row].itemType == "message" {
             self.selectedFriend = viewedMessagePreview.externalUser
             self.performSegue(withIdentifier: "showMessage", sender: nil)
         } else if viewedMessagePreview.itemType == "captionRequest" && !self.messagePreviews[indexPath.row].isViewed {
@@ -355,6 +357,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         } else if viewedMessagePreview.itemType == "captionRequest" && self.messagePreviews[indexPath.row].isViewed {
             self.selectedFriend = viewedMessagePreview.externalUser
             self.performSegue(withIdentifier: "showMessage", sender: nil)
+            //self.getCaptionRequests()
         }
         if self.messagePreviews[indexPath.row].sender != PFUser.current()?.objectId && !viewedMessagePreview.isViewed {
             // Only the recipient of the views

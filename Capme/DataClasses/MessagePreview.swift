@@ -36,6 +36,8 @@ class MessagePreview {
         if let i = DataModel.friends.firstIndex(where: { $0.objectId == externalUserId }) {
             return DataModel.friends[i]
         }
+        print("Getting data model friends")
+        print(DataModel.friends[0].username)
         return User()
     }
     
