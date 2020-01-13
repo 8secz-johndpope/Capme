@@ -312,6 +312,41 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         return cell
     }
     
+    
+    func showCaptionRequest(captionRequest: Post) {
+        self.selectedPost = captionRequest
+        self.mediaBrowser = MediaBrowserViewController(dataSource: self)
+            
+        self.lowerView.descriptionTextView.text = self.selectedPost.description
+        self.lowerView.descriptionTextView.isHidden = true
+        
+        self.textView.text = self.selectedPost.description
+        self.textView.shouldTrim = true
+        self.textView.maximumNumberOfLines = 2
+        self.textView.font  = UIFont.systemFont(ofSize: 17.0)
+        self.textView.backgroundColor = UIColor.black
+        self.textView.textColor = UIColor.white
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
+        self.textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
+        self.textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
+        self.textView.frame = self.lowerView.descriptionTextView.frame
+        var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
+        selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.tapTextView(sender:)))
+        selectTextViewGesture.delegate = self
+        self.textView.addGestureRecognizer(selectTextViewGesture)
+        self.originalTextFieldHeight = self.textView.frame.height
+        self.lowerView.addSubview(self.textView)
+        
+        self.lowerView.usernameLabel.text = self.selectedPost.sender.username
+        self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
+    
+        self.inspirationButton.isHidden = false
+        self.mediaBrowser.view.addSubview(self.inspirationButton)
+        self.mediaBrowser.view.addSubview(self.lowerView)
+        
+        self.present(self.mediaBrowser, animated: true, completion: nil)
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let viewedMessagePreview = self.messagePreviews[indexPath.row]
         
@@ -322,37 +357,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             self.fromDismiss = true
             self.selectedFriend = viewedMessagePreview.externalUser
             Post().getPostWithObjectId(id: viewedMessagePreview.objectId) { (post) in
-                self.selectedPost = post
-                self.mediaBrowser = MediaBrowserViewController(dataSource: self)
-                    
-                self.lowerView.descriptionTextView.text = self.selectedPost.description
-                self.lowerView.descriptionTextView.isHidden = true
-                
-                self.textView.text = self.selectedPost.description
-                self.textView.shouldTrim = true
-                self.textView.maximumNumberOfLines = 2
-                self.textView.font  = UIFont.systemFont(ofSize: 17.0)
-                self.textView.backgroundColor = UIColor.black
-                self.textView.textColor = UIColor.white
-                let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
-                self.textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
-                self.textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
-                self.textView.frame = self.lowerView.descriptionTextView.frame
-                var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
-                selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.tapTextView(sender:)))
-                selectTextViewGesture.delegate = self
-                self.textView.addGestureRecognizer(selectTextViewGesture)
-                self.originalTextFieldHeight = self.textView.frame.height
-                self.lowerView.addSubview(self.textView)
-                
-                self.lowerView.usernameLabel.text = self.selectedPost.sender.username
-                self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
-            
-                self.inspirationButton.isHidden = false
-                self.mediaBrowser.view.addSubview(self.inspirationButton)
-                self.mediaBrowser.view.addSubview(self.lowerView)
-                
-                self.present(self.mediaBrowser, animated: true, completion: nil)
+                self.showCaptionRequest(captionRequest: post)
             }
         } else if viewedMessagePreview.itemType == "captionRequest" && self.messagePreviews[indexPath.row].isViewed {
             self.selectedFriend = viewedMessagePreview.externalUser
@@ -553,6 +558,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             targetVC.externalUser = self.selectedFriend
             DataModel.currentRecipient = self.selectedFriend
             targetVC.currentUser = DataModel.currentUser
+            targetVC.messagesVcRef = self
         }
     }
 }

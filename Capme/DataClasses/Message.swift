@@ -87,10 +87,28 @@ class Message: PFObject, PFSubclassing {
                             imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                 if error == nil  {
                                     if let finalimage = UIImage(data: imageData!) {
-                                        let message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: true)
-                                        messages.append(message)
-                                        if messages.count == objects?.count  {
-                                            completion(messages)
+                                        var message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: true)
+                                        let post = Post()
+                                        User(user: object["sender"] as! PFUser) { (user) in
+                                            post.createdAt = object.createdAt!
+                                            post.objectId = object.objectId!
+                                            post.description = object["description"] as! String
+                                            post.sender = user
+                                            let releaseDate = object["releaseDate"] as! Date
+                                            let releaseDateString = (object["releaseDate"] as! Date).getWeekDay()
+                                            post.releaseDateDict = [releaseDateString : releaseDate]
+                                            post.images.append(finalimage)
+                                            post.location = object["location"] as! String
+                                            post.tags = object["tags"] as! [String]
+                                            post.keywords = object["keywords"] as! [String]
+                                            if let jsonCaptions = object["captions"] as? [String] {
+                                                post.captions = Caption().sortByCreatedAt(captionsToSort: post.convert(captions: jsonCaptions))
+                                            }
+                                            message.captionRequest = post
+                                            messages.append(message)
+                                            if messages.count == objects?.count  {
+                                                completion(messages)
+                                            }
                                         }
                                     }
                                 }

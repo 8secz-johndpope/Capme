@@ -155,8 +155,20 @@ class ChatRoomManager {
                     DispatchQueue.main.async {
                         self.chatRef.insertReceivedMessages([messageText])
                     }
+                } else {
+                    
                 }
             } else {
+                if let image = message.image {
+                    image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                        if error == nil  {
+                            if let finalimage = UIImage(data: imageData!) {
+                                print("got to final image")
+                                self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!)
+                            }
+                        }
+                    }
+                }
                 
             }
             

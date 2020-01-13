@@ -13,6 +13,7 @@ import InputBarAccessoryView
 import ParseLiveQuery
 import Parse
 import Photos
+import ATGMediaBrowser
 
 /// A base class for the example controllers
 class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -41,8 +42,10 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     var currentUser = User()
     var externalUser = User()
     
+    // Caption Request Fields
+    var messagesVcRef = MessagesVC()
     var selectedChatCaptionRequests = [Post]()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -103,6 +106,7 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             messageQuery.whereKey("roomName", equalTo: self.roomName)
             
             let combinedQuery = PFQuery.orQuery(withSubqueries: [currentSenderQuery, externalSenderQuery])
+            combinedQuery.includeKey("sender")
             
             messageRef.getMessages(query: messageQuery) { (queriedMessages) in
                 self.messageList = queriedMessages
@@ -231,6 +235,7 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     // MARK: - Helpers
     
     func insertMessage(_ message: MockMessage) {
+        print("got a new message")
         messageList.append(message)
         // Reload last section to update header/footer labels and insert a new one
         messagesCollectionView.performBatchUpdates({
@@ -321,11 +326,15 @@ extension ChatVC: MessageCellDelegate {
     
     func didTapMessage(in cell: MessageCollectionViewCell) {
         if let indexPath = messagesCollectionView.indexPath(for: cell) {
-            print(self.messageList[indexPath.row].kind)
-            if self.messageList[indexPath.row].isCaptionRequest {
-                print("CAPTION REQUEST")
-            } else {
-                print(self.messageList[indexPath.row].messageId, "message id")
+            let messageType = self.messageForItem(at: indexPath, in: messagesCollectionView)
+            print(messageType.isCaptionRequest)
+            if messageType.isCaptionRequest {
+                if let index = self.messageList.firstIndex(where: { $0.messageId == messageType.messageId }) {
+                    print(index, "this is the index of the selected message where from messageId")
+                    if let captionRequest = self.messageList[index].captionRequest {
+                        self.messagesVcRef.showCaptionRequest(captionRequest: captionRequest)
+                    }
+                }
             }
         }
         print("Message tapped")

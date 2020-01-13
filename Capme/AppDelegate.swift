@@ -231,6 +231,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                         DataModel.newMessageId = notification.request.content.userInfo["objectId"] as! String
                         if let messagesVC = UIApplication.getTopViewController() as? MessagesVC {
                             messagesVC.getPostWithId()
+                        } else if let chatVC = UIApplication.getTopViewController() as? ChatVC {
+                            print("chat vc is the main!")
                         }
                     } else {
                         completionHandler([.alert, .badge, .sound])
