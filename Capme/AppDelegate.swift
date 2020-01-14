@@ -64,8 +64,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Advanced messaging UI compress messages sent by the same user
     //*Push notifications from messages
     //*Image should be associated with the correct sender
+    //*Change captionRequest UI for messaging
     
     /* IN PROGRESS */
+    //3Store dictionary of ["roomName" : [Message]] to reduce queries
+    //2Refactor captionRequest saving and querying for messaging
     // Include selectable caption requests
     // Support Images, videos, and audio
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
@@ -90,11 +93,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     
     /* BACK LOG (major) */
-    //5AWS S3
+    //4AWS S3
     //2Inspiration View for Captioners
-    //4Messaging
+    //3Messaging
     //1Push Notifications (Current)
-    //3Core data
     
     /* QUESTIONS */
     // Should we support videos?

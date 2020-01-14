@@ -214,12 +214,62 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
         
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messageCellDelegate = self
+        messagesCollectionView.register(TextMessageCell.self, forCellWithReuseIdentifier: "cell")
+        messagesCollectionView.register(MediaMessageCell.self, forCellWithReuseIdentifier: "cell")
         
         scrollsToBottomOnKeyboardBeginsEditing = true // default false
         maintainPositionOnKeyboardFrameChanged = true // default false
         
         messagesCollectionView.addSubview(refreshControl)
         refreshControl.addTarget(self, action: #selector(loadMoreMessages), for: .valueChanged)
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let messagesCollectionView = collectionView as? MessagesCollectionView else {
+            fatalError("The collectionView is not a MessagesCollectionView.")
+        }
+
+        guard let messagesDataSource = messagesCollectionView.messagesDataSource else {
+            fatalError("MessagesDataSource has not been set.")
+        }
+
+        if isSectionReservedForTypingIndicator(indexPath.section) {
+            return messagesDataSource.typingIndicator(at: indexPath, in: messagesCollectionView)
+        }
+
+        let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
+
+        switch message.kind {
+        case .text, .attributedText, .emoji:
+            let cell = messagesCollectionView.dequeueReusableCell(TextMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        case .photo, .video:
+            let cell = messagesCollectionView.dequeueReusableCell(MediaMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            if message.isCaptionRequest {
+                cell.imageView.layer.borderWidth = 2.0
+                cell.imageView.layer.borderColor = UIColor.primaryColor.cgColor
+            } else {
+                cell.imageView.layer.borderWidth = 0.0
+                cell.imageView.layer.borderColor = UIColor.clear.cgColor
+            }
+            return cell
+        case .location:
+            let cell = messagesCollectionView.dequeueReusableCell(LocationMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        case .audio:
+            let cell = messagesCollectionView.dequeueReusableCell(AudioMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        case .contact:
+            let cell = messagesCollectionView.dequeueReusableCell(ContactMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        case .custom:
+            return messagesDataSource.customCell(for: message, at: indexPath, in: messagesCollectionView)
+        }
     }
     
     func configureMessageInputBar() {
@@ -473,11 +523,7 @@ extension ChatVC: InputBarAccessoryViewDelegate {
     public func insertImageMessage(_ data: [Any], senderId: String, displayName: String) {
         for component in data {
             let user = MockUser(senderId: senderId, displayName: displayName)
-            if let str = component as? String {
-                let message = MockMessage(text: str, user: user, messageId: UUID().uuidString, date: Date())
-                print("Inserting this string:", str)
-                insertMessage(message)
-            } else if let img = component as? UIImage {
+            if let img = component as? UIImage {
                 let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date(), isCaptionRequest: false)
                 print("Inserting image message")
                 insertMessage(message)
