@@ -65,11 +65,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Push notifications from messages
     //*Image should be associated with the correct sender
     //*Change captionRequest UI for messaging
+    //*Refactor captionRequest saving and querying for messaging
     
     /* IN PROGRESS */
-    //3Store dictionary of ["roomName" : [Message]] to reduce queries
-    //2Refactor captionRequest saving and querying for messaging
-    // Include selectable caption requests
+    // Receive Caption Requests when in the ChatVC and MessagesVC
+    // Choose and implement an image viewer library
     // Support Images, videos, and audio
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
     // Messages push scenarios
@@ -78,6 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // From background - (TODO) app selected (app is closed, app is resting in background on discover, app is resting in background on messages)
     
     /* BACK LOG (minor) */
+    // Store dictionary of ["roomName" : [Message]] to reduce queries
     // Time didnt display properly
     // Remove request until only one left, center remaining
     // Add contact picker to send invite to use the app
@@ -90,7 +91,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //1Edit Release date
     //2Center odd requests in the collection view
     // Minimize # of Parse requests required for images in Messaging (right now 1 request per image)
-    
     
     /* BACK LOG (major) */
     //4AWS S3

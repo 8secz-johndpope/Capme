@@ -62,64 +62,6 @@ class Message: PFObject, PFSubclassing {
         }
     }
     
-    func getCaptionRequests(query: PFQuery<PFObject>, completion: @escaping (_ result: [MockMessage])->()) {
-        var messages = [MockMessage]()
-        query.findObjectsInBackground { (objects, error) in
-            if let error = error {
-                print("Error: " + error.localizedDescription)
-            } else {
-                if objects?.count == 0 || objects?.count == nil {
-                    print("No new objects")
-                    completion(messages)
-                    return
-                }
-                for object in objects! {
-                    let id = object.objectId!
-                    let date = object.createdAt!
-                    if let description = object["description"] as? String { // Post
-                        print(description, "this is the description")
-                        var username = ""
-                        if let index = DataModel.friends.firstIndex(where: { $0.objectId == (object["sender"] as! PFUser).objectId!}) {
-                            username = DataModel.friends[index].username
-                        }
-                        let user = MockUser(senderId: (object["sender"] as! PFUser).objectId!, displayName: username)
-                        if let imageFile = object["image"] as? PFFileObject {
-                            imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
-                                if error == nil  {
-                                    if let finalimage = UIImage(data: imageData!) {
-                                        var message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: true)
-                                        let post = Post()
-                                        User(user: object["sender"] as! PFUser) { (user) in
-                                            post.createdAt = object.createdAt!
-                                            post.objectId = object.objectId!
-                                            post.description = object["description"] as! String
-                                            post.sender = user
-                                            let releaseDate = object["releaseDate"] as! Date
-                                            let releaseDateString = (object["releaseDate"] as! Date).getWeekDay()
-                                            post.releaseDateDict = [releaseDateString : releaseDate]
-                                            post.images.append(finalimage)
-                                            post.location = object["location"] as! String
-                                            post.tags = object["tags"] as! [String]
-                                            post.keywords = object["keywords"] as! [String]
-                                            if let jsonCaptions = object["captions"] as? [String] {
-                                                post.captions = Caption().sortByCreatedAt(captionsToSort: post.convert(captions: jsonCaptions))
-                                            }
-                                            message.captionRequest = post
-                                            messages.append(message)
-                                            if messages.count == objects?.count  {
-                                                completion(messages)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     func getMessages(query: PFQuery<PFObject>, completion: @escaping (_ result: [MockMessage])->()) {
         var messages = [MockMessage]()
         query.findObjectsInBackground {
@@ -135,22 +77,15 @@ class Message: PFObject, PFSubclassing {
                 for object in objects! {
                     let id = object.objectId!
                     let date = object.createdAt!
-                    if let text = object["message"] as? String {
-                        let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
-                        let message = MockMessage(text: text, user: user, messageId: id, date: date)
-                        messages.append(message)
-                        if messages.count == objects?.count {
-                            completion(messages)
-                        }
-                    } else {
-                        let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
-                        if let imageFile = object["image"] as? PFFileObject {
+                    if let captionRequest = object["post"] as? PFObject { // Caption Request
+                        let senderId = (captionRequest["sender"] as! PFUser).objectId!
+                        let user = MockUser(senderId: senderId, displayName: User().getUsernameFromFriendId(id: senderId))
+                        if let imageFile = captionRequest["image"] as? PFFileObject {
                             imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                 if error == nil  {
                                     if let finalimage = UIImage(data: imageData!) {
-                                        let message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: false)
-                                        print("adding image message!", message.user.displayName, id)
-                                        messages.append(message)
+                                        let message = MockMessage(image: finalimage, user: user, messageId: captionRequest.objectId!, date: date, isCaptionRequest: true)
+                                        messages.append(message)                                        
                                         if messages.count == objects!.count {
                                             completion(messages)
                                         }
@@ -158,7 +93,32 @@ class Message: PFObject, PFSubclassing {
                                 }
                             }
                         }
+                    } else {
+                        if let text = object["message"] as? String {
+                            let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
+                            let message = MockMessage(text: text, user: user, messageId: id, date: date)
+                            messages.append(message)
+                            if messages.count == objects?.count {
+                                completion(messages)
+                            }
+                        } else { // Message
+                            let user = MockUser(senderId: (object["author"] as! PFUser).objectId!, displayName: object["authorName"] as! String)
+                            if let imageFile = object["image"] as? PFFileObject {
+                                imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                                    if error == nil  {
+                                        if let finalimage = UIImage(data: imageData!) {
+                                            let message = MockMessage(image: finalimage, user: user, messageId: id, date: date, isCaptionRequest: false)
+                                            messages.append(message)
+                                            if messages.count == objects!.count {
+                                                completion(messages)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
+                    
                 }
             }
         }

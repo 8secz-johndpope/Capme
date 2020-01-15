@@ -151,31 +151,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
-    func getCaptionRequests() {
-        
-        let currentSenderQuery = PFQuery(className: "Post")
-        currentSenderQuery.whereKey("createdAt", greaterThan: self.minDate)
-        currentSenderQuery.whereKey("recipients", contains: PFUser.current()!.objectId)
-        currentSenderQuery.whereKey("sender", equalTo: self.selectedFriend)
-        
-        let externalSenderQuery = PFQuery(className: "Post")
-        externalSenderQuery.whereKey("createdAt", greaterThan: self.minDate)
-        externalSenderQuery.whereKey("recipients", contains: self.selectedFriend.objectId)
-        externalSenderQuery.whereKey("sender", equalTo: PFUser.current()!)
-        
-        let totalQuery = PFQuery.orQuery(withSubqueries: [currentSenderQuery, externalSenderQuery])
-        let postRef = Post()
-        postRef.getPosts(query: totalQuery) { (captionRequests) in
-            self.selectedChatCaptionRequests = captionRequests
-            
-            self.performSegue(withIdentifier: "showMessage", sender: nil)
-        }
-        
-        // Query caption requests
-        // Interlace them with messages (as images)
-        // Make caption requests selectable and show caption creation ui
-    }
-    
     func reloadTableView() {
         let roomNames = self.messagePreviews.map( {$0.roomName })
         for captionRequest in allCaptionRequests {
@@ -362,7 +337,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         } else if viewedMessagePreview.itemType == "captionRequest" && self.messagePreviews[indexPath.row].isViewed {
             self.selectedFriend = viewedMessagePreview.externalUser
             self.performSegue(withIdentifier: "showMessage", sender: nil)
-            //self.getCaptionRequests()
         }
         if self.messagePreviews[indexPath.row].sender != PFUser.current()?.objectId && !viewedMessagePreview.isViewed {
             // Only the recipient of the views

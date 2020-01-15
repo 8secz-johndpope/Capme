@@ -194,13 +194,26 @@ class Post {
         post.saveInBackground { (success, error) in
             if error == nil {
                 print("Success: Saved the new post")
-                print(self.chosenFriendIds)
+                
+                // Save Post as Pessage
+                let postMessage = PFObject(className: "Message")
+                postMessage["post"] = post
+                postMessage["authorName"] = PFUser.current()!.username
+                postMessage["author"] = PFUser.current()!
+                postMessage["recipients"] = self.chosenFriendIds
+                postMessage["isViewed"] = false
+                postMessage.saveInBackground { (success, error) in
+                    if error == nil {
+                        print("Success: Saved the Post as a Message")
+                    }
+                }
+                
                 PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": self.chosenFriendIds, "title": PFUser.current()?.username!, "message": self.description, "identifier" : "captionRequest", "objectId" : post.objectId]) {
                     (response, error) in
                     if error == nil {
                         print(response, "response")
                     } else {
-                        print(error?.localizedDescription, "Cloud Code Push Error")
+                        print(error!.localizedDescription, "Cloud Code Push Error")
                     }
                 }
             }

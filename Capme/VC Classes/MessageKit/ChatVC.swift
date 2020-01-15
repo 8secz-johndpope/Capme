@@ -14,6 +14,7 @@ import ParseLiveQuery
 import Parse
 import Photos
 import ATGMediaBrowser
+import ImageViewer
 
 /// A base class for the example controllers
 class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -41,6 +42,9 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     var roomName = ""
     var currentUser = User()
     var externalUser = User()
+    
+    // Image Message
+    var selectedImage = UIImage()
     
     // Caption Request Fields
     var messagesVcRef = MessagesVC()
@@ -90,33 +94,32 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     func loadFirstMessages() {
         DispatchQueue.global(qos: .userInitiated).async {
             let messageRef = Message()
-            
-            let currentSenderQuery = PFQuery(className: "Post")
-            currentSenderQuery.whereKey("recipients", contains: PFUser.current()!.objectId)
-            currentSenderQuery.whereKey("sender", equalTo: self.externalUser.pfuserRef!)
-            
-            let externalSenderQuery = PFQuery(className: "Post")
-            externalSenderQuery.whereKey("recipients", contains: self.externalUser.objectId)
-            externalSenderQuery.whereKey("sender", equalTo: PFUser.current()!)
-            
             let messageQuery = PFQuery(className: "Message")
-            messageQuery.order(byDescending: "createdAt")
-            messageQuery.limit = 20
-            messageQuery.includeKey("author")
             messageQuery.whereKey("roomName", equalTo: self.roomName)
             
-            let combinedQuery = PFQuery.orQuery(withSubqueries: [currentSenderQuery, externalSenderQuery])
-            combinedQuery.includeKey("sender")
+            let receivedPostsQuery = PFQuery(className: "Message")
+            receivedPostsQuery.whereKeyExists("post")
+            receivedPostsQuery.whereKey("recipients", contains: PFUser.current()?.objectId!)
+            receivedPostsQuery.whereKey("author", equalTo: self.externalUser.pfuserRef as! PFUser)
             
-            messageRef.getMessages(query: messageQuery) { (queriedMessages) in
+            let sentPostsQuery = PFQuery(className: "Message")
+            sentPostsQuery.whereKeyExists("post")
+            sentPostsQuery.whereKey("author", equalTo: PFUser.current()!)
+            sentPostsQuery.whereKey("recipients", contains: self.externalUser.objectId)
+            print("this is the objectId of the recipient", self.externalUser.objectId)
+            
+            let combinedMessagesQuery = PFQuery.orQuery(withSubqueries: [messageQuery, receivedPostsQuery, sentPostsQuery])
+            combinedMessagesQuery.includeKey("author")
+            combinedMessagesQuery.includeKey("post")
+            combinedMessagesQuery.order(byDescending: "createdAt")
+            combinedMessagesQuery.limit = 20
+            
+            messageRef.getMessages(query: combinedMessagesQuery) { (queriedMessages) in
                 self.messageList = queriedMessages
-                messageRef.getCaptionRequests(query: combinedQuery) { (queriedCaptionRequests) in
-                    self.messageList.append(contentsOf: queriedCaptionRequests)
-                    self.messageList = messageRef.sortByCreatedAt(messagesToSort: self.messageList)
-                    self.messagesCollectionView.reloadData()
-                    self.messagesCollectionView.scrollToBottom()
-                    self.skipCount += 20
-                }
+                self.messageList = messageRef.sortByCreatedAt(messagesToSort: self.messageList)
+                self.messagesCollectionView.reloadData()
+                self.messagesCollectionView.scrollToBottom()
+                self.skipCount += 20
             }
         }
     }
@@ -378,13 +381,25 @@ extension ChatVC: MessageCellDelegate {
         if let indexPath = messagesCollectionView.indexPath(for: cell) {
             let messageType = self.messageForItem(at: indexPath, in: messagesCollectionView)
             print(messageType.isCaptionRequest)
+            
             if messageType.isCaptionRequest {
-                if let index = self.messageList.firstIndex(where: { $0.messageId == messageType.messageId }) {
-                    print(index, "this is the index of the selected message where from messageId")
-                    if let captionRequest = self.messageList[index].captionRequest {
-                        self.messagesVcRef.showCaptionRequest(captionRequest: captionRequest)
+                if messageType.sender.senderId != PFUser.current()!.objectId! {
+                    if let index = self.messageList.firstIndex(where: { $0.messageId == messageType.messageId }) {
+                        Post().getPostWithObjectId(id: self.messageList[index].messageId) { (post) in
+                            self.messagesVcRef.showCaptionRequest(captionRequest: post)
+                        }
+                    }
+                } else {
+                    print("User tapped his or her own caption request")
+                }
+            } else {
+                if let cell = cell as? MediaMessageCell {
+                    if let image = cell.imageView.image {
+                        self.selectedImage = cell.imageView.image!
+                        self.presentImageGallery(GalleryViewController(startIndex: 0, itemsDataSource: self))
                     }
                 }
+                
             }
         }
         print("Message tapped")
@@ -559,5 +574,17 @@ extension ChatVC: InputBarAccessoryViewDelegate {
                 insertMessage(message)
             }
         }
+    }
+}
+
+extension ChatVC: GalleryItemsDataSource {
+    func itemCount() -> Int {
+        return 1
+    }
+
+    func provideGalleryItem(_ index: Int) -> GalleryItem {
+        var galleryItem: GalleryItem!
+        galleryItem = GalleryItem.image { $0(self.selectedImage) }
+        return galleryItem
     }
 }

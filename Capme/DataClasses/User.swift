@@ -48,8 +48,32 @@ class User: Hashable {
     init(user: PFUser, image: UIImage) {
         self.pfuserRef = user
         self.objectId = user.objectId!
-        self.username = user.username!
+        if let username = user.username {
+            self.username = username
+        }
         self.profilePic = image
+    }
+    
+    init(user: PFUser, username: String, completion: @escaping (_ result: User)->()) {
+        self.pfuserRef = user
+        self.objectId = user.objectId!
+        self.username = username
+        if let image = user["profilePic"] as? PFFileObject {
+            image.getDataInBackground {
+                (imageData:Data?, error:Error?) -> Void in
+                print("fetching the user1")
+                if error == nil  {
+                    if let finalimage = UIImage(data: imageData!) {
+                        self.profilePic = finalimage
+                        completion(self)
+                    }
+                }
+            }
+        } else {
+            print("fetching the user2")
+            self.profilePic = UIImage(named: "defaultProfilePic")
+            completion(self)
+        }
     }
     
     init(user: PFUser, completion: @escaping (_ result: User)->()) {
@@ -130,6 +154,16 @@ class User: Hashable {
                 }
             }
         }
+    }
+    
+    func getUsernameFromFriendId(id: String) -> String {
+        if id == PFUser.current()?.objectId! {
+            return PFUser.current()!.username!
+        }
+        if let i = DataModel.friends.firstIndex(where: { $0.objectId == id }) {
+            return DataModel.friends[i].username
+        }
+        return ""
     }
     
 

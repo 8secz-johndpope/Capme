@@ -9,6 +9,7 @@ PODS:
   - Bolts/Tasks (1.9.0)
   - DropDown (2.3.13)
   - FloatingPanel (1.7.1)
+  - ImageViewer (6.0.0)
   - InputBarAccessoryView (4.2.2)
   - MessageKit (3.0.0):
     - InputBarAccessoryView (~> 4.2.2)
@@ -37,6 +38,7 @@ DEPENDENCIES:
   - ATGMediaBrowser (~> 1.0)
   - DropDown
   - FloatingPanel
+  - ImageViewer
   - MessageKit
   - NVActivityIndicatorView
   - Parse
@@ -56,6 +58,7 @@ SPEC REPOS:
     - Bolts-Swift
     - DropDown
     - FloatingPanel
+    - ImageViewer
     - InputBarAccessoryView
     - MessageKit
     - NVActivityIndicatorView
@@ -76,6 +79,7 @@ SPEC CHECKSUMS:
   Bolts-Swift: afbbaf8c8186e7f769be4afa656949c14087ba44
   DropDown: 8a2116376c1981888557f72ec2ffc9a5e0e456ec
   FloatingPanel: 2f87246071476cf05d77ba3f50a373ca4b04549e
+  ImageViewer: cb88ef1c0ba19161bc10702adfdcebc116a7a59d
   InputBarAccessoryView: 2b937602598e2fab3149f37f51dd7ad795653812
   MessageKit: e892a9ca49ebe6d82684d3a93ad84021fa23e2c6
   NVActivityIndicatorView: d24b7ebcf80af5dcd994adb650e2b6c93379270f
@@ -90,6 +94,6 @@ SPEC CHECKSUMS:
   WLEmptyState: 2bbb3970f62c0b9252029d34a8f74cb3d436eeea
   WSTagsField: d57a287fd552934db1d93a85d38abbf74b067d6a
 
-PODFILE CHECKSUM: 8342fe7c85c1f81c3548006fd6eff23f73ebc882
+PODFILE CHECKSUM: a820aa950d73e67c0788c9597566dc57992d529b
 
 COCOAPODS: 1.8.3
