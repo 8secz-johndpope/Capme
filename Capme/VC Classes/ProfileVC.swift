@@ -62,6 +62,10 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     override func viewDidAppear(_ animated: Bool) {
         self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
+        if DataModel.friends.count > 0 {
+            self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
+            self.collectionView.reloadData()
+        }
     }
     
     func setupUI() {

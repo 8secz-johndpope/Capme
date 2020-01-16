@@ -138,6 +138,7 @@ class FriendRequest {
                 for object in objects! {
                     let request = FriendRequest()
                     request.objectId = object.objectId!
+                    print("Got request with this id", request.objectId)
                     request.status = (object["status"] as! String)
                     request.updatedAt = object.updatedAt!
                     if let sender = object["sender"] as? PFUser {

@@ -16,6 +16,7 @@ import Photos
 import ATGMediaBrowser
 import ImageViewer
 
+
 /// A base class for the example controllers
 class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -92,6 +93,7 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
     }
     
     func loadFirstMessages() {
+        print("loading first messages")
         DispatchQueue.global(qos: .userInitiated).async {
             let messageRef = Message()
             let messageQuery = PFQuery(className: "Message")
@@ -100,13 +102,13 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             let receivedPostsQuery = PFQuery(className: "Message")
             receivedPostsQuery.whereKeyExists("post")
             receivedPostsQuery.whereKey("recipients", contains: PFUser.current()?.objectId!)
-            receivedPostsQuery.whereKey("author", equalTo: self.externalUser.pfuserRef as! PFUser)
+            receivedPostsQuery.whereKey("author", equalTo: self.externalUser.pfuserRef!)
+            print(self.externalUser.pfuserRef, "querying for this external user")
             
             let sentPostsQuery = PFQuery(className: "Message")
             sentPostsQuery.whereKeyExists("post")
             sentPostsQuery.whereKey("author", equalTo: PFUser.current()!)
             sentPostsQuery.whereKey("recipients", contains: self.externalUser.objectId)
-            print("this is the objectId of the recipient", self.externalUser.objectId)
             
             let combinedMessagesQuery = PFQuery.orQuery(withSubqueries: [messageQuery, receivedPostsQuery, sentPostsQuery])
             combinedMessagesQuery.includeKey("author")
@@ -116,6 +118,7 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             
             messageRef.getMessages(query: combinedMessagesQuery) { (queriedMessages) in
                 self.messageList = queriedMessages
+                print(self.messageList.count, "This many messages")
                 self.messageList = messageRef.sortByCreatedAt(messagesToSort: self.messageList)
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToBottom()
@@ -384,6 +387,7 @@ extension ChatVC: MessageCellDelegate {
             
             if messageType.isCaptionRequest {
                 if messageType.sender.senderId != PFUser.current()!.objectId! {
+                    // CONTINUE... messageList does not have the new message in ChatVC
                     if let index = self.messageList.firstIndex(where: { $0.messageId == messageType.messageId }) {
                         Post().getPostWithObjectId(id: self.messageList[index].messageId) { (post) in
                             self.messagesVcRef.showCaptionRequest(captionRequest: post)
@@ -535,11 +539,11 @@ extension ChatVC: InputBarAccessoryViewDelegate {
         }
     }
     
-    public func insertImageMessage(_ data: [Any], senderId: String, displayName: String) {
+    public func insertImageMessage(_ data: [Any], senderId: String, displayName: String, isCaptionRequest: Bool) {
         for component in data {
             let user = MockUser(senderId: senderId, displayName: displayName)
             if let img = component as? UIImage {
-                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date(), isCaptionRequest: false)
+                let message = MockMessage(image: img, user: user, messageId: UUID().uuidString, date: Date(), isCaptionRequest: isCaptionRequest)
                 print("Inserting image message")
                 insertMessage(message)
             }

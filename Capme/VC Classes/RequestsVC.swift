@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Parse
 import UIKit
 
 class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -73,6 +74,27 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
         cell.removeOutlet.tag = indexPath.row
         cell.removeOutlet.addTarget(self, action: #selector(removeRequest(sender:)), for: UIControl.Event.touchUpInside)
         
+        cell.acceptRequestAction = { [unowned self] in
+            cell.acceptOutlet.isEnabled = false
+            let request = PFObject(withoutDataWithClassName: "FriendRequest", objectId: DataModel.receivedRequests[indexPath.row].requestId)
+            request["status"] = "accepted"
+            request.saveInBackground { (success, error) in
+                if error == nil {
+                    print("Success: Updated the request status to accepted")
+                    let newFriend = DataModel.receivedRequests.remove(at: indexPath.row)
+                    DataModel.friends.insert(newFriend, at: 0)
+                    self.collectionView.reloadData()
+                    self.friendsRef.tableView.reloadData()
+                    if DataModel.receivedRequests.count == 0 {
+                        self.dismiss(animated: true) {
+                            print("dismissed the reqeusts vc")
+                        }
+                    }
+                }
+            }
+            
+        }
+        
         cell.acceptOutlet.tag = indexPath.row
         cell.acceptOutlet.addTarget(self, action: #selector(acceptRequest(sender:)), for: UIControl.Event.touchUpInside)
         return cell
@@ -90,16 +112,7 @@ class RequestsVC: UIViewController, UICollectionViewDelegate, UICollectionViewDa
     }
     
     @objc func acceptRequest(sender:UIButton) {
-        let index = sender.tag
-        let newFriend = DataModel.receivedRequests.remove(at: index)
-        DataModel.friends.insert(newFriend, at: 0)
-        self.collectionView.reloadData()
-        friendsRef.tableView.reloadData()
-        if DataModel.receivedRequests.count == 0 {
-            self.dismiss(animated: true) {
-                print("dismissed the reqeusts vc")
-            }
-        }
+        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

@@ -33,19 +33,13 @@ class RequestCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    var acceptRequestAction : (() -> ())?
+    
+    override func awakeFromNib() {
+        
+    }
+    
     @IBAction func acceptAction(_ sender: Any) {
-        self.acceptOutlet.isEnabled = false
-        if let buttonRef = sender as? UIButton {
-            let _ = buttonRef.accessibilityLabel
-            // TODO send push to recipient here now that
-            // the current user has accepted the request
-            let request = PFObject(withoutDataWithClassName: "FriendRequest", objectId: requestId)
-            request["status"] = "accepted"
-            request.saveInBackground { (success, error) in
-                if error == nil {
-                    print("Success: Updated the request status to accepted")
-                }
-            }
-        }
+        acceptRequestAction?()
     }
 }

@@ -140,18 +140,27 @@ class ChatRoomManager {
     }
   
     func subscribeToUpdates() {
+        var predicates: [NSPredicate] = []
+        predicates.append(NSPredicate(format: "recipients = %@", PFUser.current()!.objectId!))
+        predicates.append(NSPredicate(format: "roomName = %@", chatRef.roomName))
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+        var newMessageQuery: PFQuery<Message>!
+        newMessageQuery = PFQuery(className: "Message", predicate: predicate)
+        newMessageQuery.order(byAscending: "createdAt")
+        newMessageQuery.includeKey("post")
+        
         subscription = liveQueryClient
-            .subscribe(messagesQuery)
+            .subscribe(newMessageQuery)
             .handle(Event.created) { _, message in
                 self.printNewMessage(message)
         }
     }
     
     fileprivate func printNewMessage(_ message: Message) {
+        print("Got new message:", message.objectId!)
         if message.authorName != PFUser.current()!.username {
             if let messageText = message.message {
                 if messageText.count > 0 {
-                    print("New Message:", message.message!)
                     DispatchQueue.main.async {
                         self.chatRef.insertReceivedMessages([messageText])
                     }
@@ -164,7 +173,23 @@ class ChatRoomManager {
                         if error == nil  {
                             if let finalimage = UIImage(data: imageData!) {
                                 print("got to final image")
-                                self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!)
+                                self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!, isCaptionRequest: false)
+                            }
+                        }
+                    }
+                }
+                if let captionRequestObject = message["post"] as? PFObject {
+                    captionRequestObject.fetchInBackground { (captionRequest, error) in
+                        if error == nil {
+                            if let image = captionRequest!["image"] as? PFFileObject {
+                                image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
+                                    if error == nil  {
+                                        if let finalimage = UIImage(data: imageData!) {
+                                            print("got to final image")
+                                            self.chatRef.insertImageMessage([finalimage], senderId: message.author!.objectId!, displayName: message.authorName!, isCaptionRequest: true)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

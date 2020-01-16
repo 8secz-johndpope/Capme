@@ -25,10 +25,6 @@ class FriendTableViewCell: UITableViewCell {
         
     }
     
-    
-    
-    
-    
     @IBAction func addFriendTapped(_ sender: Any) {
         addFriendAction?()
     }

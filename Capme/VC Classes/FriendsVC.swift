@@ -279,6 +279,8 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         cell.usernameLabel.text = customUser.username
         cell.addFriendOutlet.accessibilityLabel = customUser.objectId
         
+        
+        
         cell.addFriendAction = { [unowned self] in
             cell.addFriendOutlet.isEnabled = false
             cell.addFriendLabel.text = "Sent ✓"
@@ -438,18 +440,15 @@ class FriendsVC: UIViewController, UITableViewDelegate, UITableViewDataSource, U
         let query = PFQuery(className: "FriendRequest")
         query.whereKey("pending", equalTo: "status")
         query.whereKey("recipient", equalTo: PFUser.current()!)
-        print("REQUEST IDS TO EXCLUDE", DataModel.receivedRequests.map( { $0.requestId }))
         query.whereKey("objectId", notContainedIn: DataModel.receivedRequests.map( { $0.requestId! }))
         friendRequestRef.getNewReceivedRequests(query: query) { (queriedRequests) in
             for request in queriedRequests {
-                print("got new requests!")
                 if request.receiver.objectId == PFUser.current()!.objectId! {
                     request.sender.requestId = request.objectId
                     DataModel.receivedRequests.append(request.sender)
                 } else if request.sender.objectId == PFUser.current()!.objectId! {
                     DataModel.sentRequests.append(request.receiver)
                 }
-                print("RELOADING THE COLLECTION VIEW")
                 DataModel.requestsVC!.collectionView.reloadData()
                 self.endRefresh()
             }

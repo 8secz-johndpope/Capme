@@ -33,11 +33,41 @@ class Message: PFObject, PFSubclassing {
         messagePreview.roomName = self.roomName
         messagePreview.previewText = self.message
         messagePreview.objectId = self.objectId
-        messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: messagePreview.roomName)
+        if let roomName = messagePreview.roomName {
+            messagePreview.externalUser = messagePreview.getExternalUserFromRoomName(roomName: roomName)
+        } else {
+            if let i = DataModel.friends.firstIndex(where: { $0.username == self.authorName }) {
+                messagePreview.externalUser = DataModel.friends[i]
+            }
+        }
         messagePreview.date = self.date
         messagePreview.isViewed = self.isViewed as? Bool
         messagePreview.itemType = "message"
         return messagePreview
+    }
+    
+    func getCaptionRequestFromId(query: PFQuery<PFObject>, completion: @escaping (_ result: Message)->()) {
+        query.getFirstObjectInBackground { (object, error) in
+            if error == nil {
+                let message = Message()
+                if let error = error {
+                    print("Error: " + error.localizedDescription)
+                    completion(message)
+                } else {
+                    if let object = object {
+                        let post = object["post"] as! PFObject
+                        message.date = object.createdAt
+                        message.objectId = object.objectId
+                        message.authorName = object["authorName"] as? String
+                        message.author = object["author"] as? PFUser
+                        message.message = post["description"] as? String
+                        message.isViewed = object["isViewed"] as! Bool as NSNumber
+                        print("got a message!")
+                        completion(message)
+                    }
+                }
+            }
+        }
     }
     
     func getMessageFromId(query: PFQuery<PFObject>, id: String, completion: @escaping (_ result: Message)->()) {
@@ -80,6 +110,7 @@ class Message: PFObject, PFSubclassing {
                     if let captionRequest = object["post"] as? PFObject { // Caption Request
                         let senderId = (captionRequest["sender"] as! PFUser).objectId!
                         let user = MockUser(senderId: senderId, displayName: User().getUsernameFromFriendId(id: senderId))
+                        print("GETTING THIS DISPLAY NAME")
                         if let imageFile = captionRequest["image"] as? PFFileObject {
                             imageFile.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                 if error == nil  {

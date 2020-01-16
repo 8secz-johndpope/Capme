@@ -78,6 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // From background - (TODO) app selected (app is closed, app is resting in background on discover, app is resting in background on messages)
     
     /* BACK LOG (minor) */
+    // Selectable captionRequest from ChatVC
     // Store dictionary of ["roomName" : [Message]] to reduce queries
     // Time didnt display properly
     // Remove request until only one left, center remaining
@@ -216,11 +217,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 completionHandler([.alert, .badge, .sound])
                 if let tabBarController =  DataModel.tabBarController {
                     DataModel.newMessageId = notification.request.content.userInfo["objectId"] as! String
-                    if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
-                        let value = Int(badgeValue) {
-                        tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                    DataModel.pushId = identifier
+                    if tabBarController.selectedIndex == 1 {
+                        // Refresh the existing tableView
+                        if let messagesVC = UIApplication.getTopViewController() as? MessagesVC {
+                            print("MessagesVC is on top", DataModel.newMessageId)
+                            messagesVC.getCaptionRequestWithId()
+                        } else if let chatVC = UIApplication.getTopViewController() as? ChatVC {
+                            print("chat vc is the main!")
+                        }
                     } else {
-                        tabBarController.tabBar.items?[1].badgeValue = "1"
+                        completionHandler([.alert, .badge, .sound])
+                        if let badgeValue = tabBarController.tabBar.items?[1].badgeValue,
+                            let value = Int(badgeValue) {
+                            tabBarController.tabBar.items?[1].badgeValue = String(value + 1)
+                        } else {
+                            tabBarController.tabBar.items?[1].badgeValue = "1"
+                        }
                     }
                 } else {
                     DataModel.pushId = identifier

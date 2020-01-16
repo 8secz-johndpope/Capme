@@ -461,6 +461,41 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         return title
     }
     
+    @objc func getCaptionRequestWithId() {
+        tabBarController!.tabBar.items?[1].badgeValue = nil
+        if DataModel.newMessageId != "" {
+            let messageRef = Message()
+            let query = PFQuery(className: "Message")
+            query.includeKey("author")
+            print("new caption request id", DataModel.newMessageId)
+            query.whereKey("post", equalTo: PFObject(withoutDataWithClassName: "Post", objectId: DataModel.newMessageId))
+            query.includeKey("post")
+            messageRef.getCaptionRequestFromId(query: query) { (message) in
+                for preview in self.messagePreviews {
+                    print("1", preview.username)
+                    print("2", preview.externalUser.username)
+                }
+                if let index = self.messagePreviews.firstIndex(where: { $0.externalUser.username == message.authorName }) {
+                    let messagePreview = message.convertMessageToPreview()
+                    self.messagePreviews[index] = messagePreview
+                    self.messagePreviews = messagePreview.sortByCreatedAt(messagePreviewsToSort: self.messagePreviews)
+                    self.tableView.reloadData()
+                    if DataModel.pushId == "newMessage" {
+                        DataModel.pushId = ""
+                        if let index = self.messagePreviews.firstIndex(where: { $0.objectId == DataModel.newMessageId } ) {
+                            self.messagePreviews[index].isViewed = true
+                            self.messagePreviews[index].messageBecameViewed()
+                            self.selectedFriend = self.messagePreviews[index].externalUser
+                            self.performSegue(withIdentifier: "showMessage", sender: nil)
+                        }
+                    } else if DataModel.pushId == "captionRequest" {
+                        print("found a caption request")
+                    }
+                }
+            }
+        }
+    }
+    
     @objc func getPostWithId() {
         tabBarController!.tabBar.items?[1].badgeValue = nil
         if DataModel.newMessageId != "" {
@@ -482,6 +517,8 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                             self.selectedFriend = self.messagePreviews[index].externalUser
                             self.performSegue(withIdentifier: "showMessage", sender: nil)
                         }
+                    } else if DataModel.pushId == "captionRequest" {
+                        print("found a caption request")
                     }
                 }
             }

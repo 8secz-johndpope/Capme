@@ -205,15 +205,14 @@ class Post {
                 postMessage.saveInBackground { (success, error) in
                     if error == nil {
                         print("Success: Saved the Post as a Message")
-                    }
-                }
-                
-                PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": self.chosenFriendIds, "title": PFUser.current()?.username!, "message": self.description, "identifier" : "captionRequest", "objectId" : post.objectId]) {
-                    (response, error) in
-                    if error == nil {
-                        print(response, "response")
-                    } else {
-                        print(error!.localizedDescription, "Cloud Code Push Error")
+                        PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": self.chosenFriendIds, "title": PFUser.current()?.username!, "message": self.description, "identifier" : "captionRequest", "objectId" : post.objectId]) {
+                            (response, error) in
+                            if error == nil {
+                                print(response, "response")
+                            } else {
+                                print(error!.localizedDescription, "Cloud Code Push Error")
+                            }
+                        }
                     }
                 }
             }
