@@ -29,7 +29,7 @@
 ## Capme Developers
 Capme developers are all proficient in object oriented programming and mobile development. Through this medium, they design and develop solutions within the different software engineering fields specified below:<br/><br/>
 Gabe Wilson - (Team Lead)<br/>
-Swetha - (Machine Learning)<br/>
+swetha - (Machine Learning)<br/>
 *name* - (Full-Stack)<br/>
 *name* - (Backend)<br/>
 *name* - (Front End)
