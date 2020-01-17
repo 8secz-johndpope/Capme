@@ -13,7 +13,7 @@ import Parse
 import ATGMediaBrowser
 import FloatingPanel
 
-class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource {
+class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, UIGestureRecognizerDelegate, UITextViewDelegate, FloatingPanelControllerDelegate {
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var usernameLabel: UILabel!
@@ -24,7 +24,41 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     @IBOutlet weak var noPostsImageView: UIImageView!
     @IBOutlet weak var noPostsLabel: UILabel!
     @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
-
+    @IBOutlet weak var selectedPostLowerView: PostDetailsLowerView!
+    @IBOutlet weak var inspirationOutlet: UIButton!
+    
+    @IBAction func showCaptionsAction(_ sender: Any) {
+        print("Should show captions")
+        if let sender = sender as? UIButton {
+            print("it's a button")
+            let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+            let tempVC : CaptionsVC = mainStoryboard.instantiateViewController(withIdentifier: "captionsVC") as! CaptionsVC
+            tempVC.profileRef = self
+            tempVC.fromProfile = true
+            tempVC.postId = self.posts[sender.tag].objectId
+            tempVC.mediaBrowserRef = mediaBrowser
+            tempVC.captions = self.posts[sender.tag].captions
+            
+            if tempVC.captions.count > 0 {
+                tempVC.view.layer.cornerRadius = 10.0
+                tempVC.view.layer.masksToBounds = true
+                fpc.set(contentViewController: tempVC)
+                DataModel.captionsVC = tempVC
+                fpc.isRemovalInteractionEnabled = true
+                mediaBrowser.present(fpc, animated: true, completion: nil)
+            } else {
+                let appearance = SCLAlertView.SCLAppearance(kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!, kTextFont: UIFont(name: "HelveticaNeue", size: 14)!, kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!, showCloseButton: true)
+                let alert = SCLAlertView(appearance: appearance)
+                alert.addButton("Send Again") {
+                    print("Send again should just extend the due date")
+                }
+                alert.showInfo("Notice", subTitle: "No captions were suggested for this image. Would you like to resend the request?", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "exclamation"), animationStyle: .topToBottom)
+            }
+        }
+        
+    }
+    
+    
     var collectionViewTitles = ["RECEIVED", "SENT", "FRIENDS"]
     var collectionViewCounts = ["---", "---", "---"]
     
@@ -38,6 +72,15 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     let fpc = FloatingPanelController()
     var mediaBrowser: MediaBrowserViewController!
+    
+    // Post Lower View Fields
+    var lowerView = PostDetailsLowerView()
+    let textView = ReadMoreTextView()
+    var originalTextFieldHeight: CGFloat = 0.0
+    var translatioDistance: CGFloat = 0.0
+    var fromDismiss = false
+    var blurView = UIImageView()
+    var inspirationButton = UIButton()
 
     var selectedUserIsFriend = false
     
@@ -62,7 +105,7 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     override func viewDidAppear(_ animated: Bool) {
         self.tabBarController?.viewControllers?[2].tabBarItem.badgeValue = nil
-        if DataModel.friends.count > 0 {
+        if DataModel.friends.count > 0 && !fromSelectedUser {
             self.collectionViewCounts[2] = String(describing: DataModel.friends.count)
             self.collectionView.reloadData()
         }
@@ -70,9 +113,31 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     func setupUI() {
         
+        // Lower View
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        self.lowerView = selectedPostLowerView
+        self.lowerView.captionTextView.delegate = self
+        self.lowerView.captionTextView.layer.masksToBounds = true
+        self.lowerView.captionTextView.layer.cornerRadius = 10
+        self.lowerView.captionTextView.isHidden = true
+        // self.sendNewCaptionOutlet.isHidden = true
+        self.lowerView.captionTextView.tintColor = UIColor.white
+        
+        // Inspiration Outlet
+        self.inspirationOutlet.layer.borderWidth = 2.0
+        self.inspirationOutlet.layer.borderColor = UIColor.white.cgColor
+        self.inspirationOutlet.contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 8.0, bottom: 0.0, right: 8.0)
+        self.inspirationOutlet.layer.cornerRadius = self.inspirationOutlet.frame.height/2
+        self.inspirationOutlet.layer.masksToBounds = true
+        self.inspirationButton = self.inspirationOutlet
+        
         // Loading Indicator
         self.loadingIndicator.hidesWhenStopped = true
         self.loadingIndicator.startAnimating()
+        
+        // Floating Panel
+        fpc.delegate = self
         
         if self.fromSelectedUser {
             self.selectedUserIsFriend = DataModel.friends.map( { $0.objectId }).contains(self.selectedUser.objectId)
@@ -193,7 +258,6 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         postsRef.getPosts(query: query) { (userPosts) in
             self.posts.append(contentsOf: userPosts)
             for post in userPosts {
-                print(post.description, "post description")
                 if post === userPosts.last {
                     self.posts = postsRef.sortByCreatedAt(postsToSort: self.posts)
                 }
@@ -271,24 +335,81 @@ class ProfileVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 alert.showInfo("Your Posts:\nTiming", subTitle: "Choose a deadline for your captioners to write their captions. Once their time is up, your post with their captions will be published and the favoriting competition begins!", closeButtonTitle: "Close", timeout: .none, colorStyle: 0x003366, colorTextButton: 0xFFFFFF, circleIconImage: UIImage(named: "hourglass"), animationStyle: .topToBottom)
             } else {
                 self.selectedPost = self.posts[indexPath.row]
-                self.selectedPost = self.posts[indexPath.row]
                 mediaBrowser = MediaBrowserViewController(dataSource: self)
-                present(mediaBrowser, animated: true, completion: nil)
-                let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-                let tempVC : CaptionsVC = mainStoryboard.instantiateViewController(withIdentifier: "captionsVC") as! CaptionsVC
-                tempVC.profileRef = self
-                tempVC.fromProfile = true
-                tempVC.postId = self.posts[indexPath.row].objectId
-                tempVC.mediaBrowserRef = mediaBrowser
-                tempVC.captions = self.posts[indexPath.row].captions
-                tempVC.view.layer.cornerRadius = 10.0
-                tempVC.view.layer.masksToBounds = true
-                fpc.set(contentViewController: tempVC)
-                DataModel.captionsVC = tempVC
-                fpc.isRemovalInteractionEnabled = true
-                mediaBrowser.present(fpc, animated: true, completion: nil)
+                self.showCaptionRequest(captionRequest: self.selectedPost, index: indexPath.row)
                 //self.performSegue(withIdentifier: "showPost", sender: nil)
             }
+        }
+    }
+    
+    func floatingPanel(_ vc: FloatingPanelController, layoutFor newCollection: UITraitCollection) -> FloatingPanelLayout? {
+        print("")
+        return ProfileFloatingPanelLayout()
+    }
+    
+    func showCaptionRequest(captionRequest: Post, index: Int) {
+        self.lowerView.isHidden = false
+        self.lowerView.descriptionTextView.text = self.selectedPost.description
+        self.lowerView.descriptionTextView.isHidden = true
+        self.lowerView.addCaptionOutlet.tag = index
+        self.textView.text = self.selectedPost.description
+        self.textView.shouldTrim = true
+        self.textView.maximumNumberOfLines = 2
+        self.textView.font  = UIFont.systemFont(ofSize: 17.0)
+        self.textView.backgroundColor = UIColor.black
+        self.textView.textColor = UIColor.white
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15.0)]
+        self.textView.attributedReadMoreText = NSAttributedString(string: "... More", attributes: attributes)
+        self.textView.attributedReadLessText = NSAttributedString(string: " Less", attributes: attributes)
+        self.textView.frame = self.lowerView.descriptionTextView.frame
+        var selectTextViewGesture:UITapGestureRecognizer = UITapGestureRecognizer()
+        selectTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(ProfileVC.tapTextView(sender:)))
+        selectTextViewGesture.delegate = self
+        self.textView.addGestureRecognizer(selectTextViewGesture)
+        self.originalTextFieldHeight = self.textView.frame.height
+        self.lowerView.addSubview(self.textView)
+        
+        self.lowerView.usernameLabel.text = self.selectedPost.sender.username
+        self.lowerView.dateLabel.text = "Expires: " +  self.selectedPost.releaseDateDict.keys.first!
+        self.inspirationButton.isHidden = false
+        self.mediaBrowser.view.addSubview(self.inspirationButton)
+        self.mediaBrowser.view.addSubview(self.lowerView)
+        
+        self.present(self.mediaBrowser, animated: true, completion: nil)
+    }
+    
+    @objc func tapTextView(sender:UITapGestureRecognizer) {
+        let lastChar = self.textView.text.last!
+        if lastChar == "s" { // Show less
+            self.textView.showLessText()
+            let originalTransform = self.textView.transform
+            let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.0)
+            let scaledAndTranslatedTransform = scaledTransform.translatedBy(x: 0.0, y: self.translatioDistance)
+            self.blurView.isHidden = true
+            UIView.animate(withDuration: 0.3, animations: {
+                self.lowerView.topView.transform = scaledAndTranslatedTransform
+                self.textView.transform = scaledAndTranslatedTransform
+            }, completion: {
+                (value: Bool) in
+                let tempView = self.lowerView.bottomView
+                self.lowerView.bottomView.removeFromSuperview()
+                self.lowerView.addSubview(tempView!)
+            })
+        } else if lastChar == "e" {
+            self.textView.backgroundColor = UIColor.black
+            self.textView.showMoreText()
+            self.textView.adjustUITextViewHeight()
+            let originalTransform = self.textView.transform
+            let scaledTransform = originalTransform.scaledBy(x: 1.0, y: 1.00)
+            
+            self.translatioDistance = textView.frame.height - self.lowerView.topView.frame.maxY + 30
+            
+            self.blurView.isHidden = false
+            let scaledAndTranslatedTransform = scaledTransform.translatedBy(x: 0.0, y: -(textView.frame.height - self.lowerView.topView.frame.maxY + 30))
+            UIView.animate(withDuration: 0.3, animations: {
+                self.lowerView.topView.transform = scaledAndTranslatedTransform
+                self.textView.transform = scaledAndTranslatedTransform
+            })
         }
     }
     
@@ -413,4 +534,36 @@ extension ProfileVC {
     func mediaBrowser(_ mediaBrowser: MediaBrowserViewController, imageAt index: Int, completion: @escaping MediaBrowserViewControllerDataSource.CompletionBlock) {
         completion(index, selectedPost.images[0], ZoomScale.default, nil)
     }
+    
+    @objc func keyboardWillShow(notification: Notification) {
+        print("keyboard is showing")
+        guard let userInfo = notification.userInfo else {return}
+        guard let keyboardSize = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {return}
+        print("made it this far")
+        let keyboardFrame = keyboardSize.cgRectValue
+        self.lowerView.frame.origin.y -= keyboardFrame.height
+     }
+
+    @objc func keyboardWillHide(notification: Notification){
+        let keyboardSize = (notification.userInfo?  [UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        let keyboardHeight = keyboardSize?.height
+         self.lowerView.frame.origin.y += keyboardHeight!
+    }
 }
+
+class ProfileFloatingPanelLayout: FloatingPanelLayout {
+    public var initialPosition: FloatingPanelPosition {
+        return .half
+    }
+
+    public func insetFor(position: FloatingPanelPosition) -> CGFloat? {
+        switch position {
+            case .full: return 18.0
+            case .half: return 262.0
+            case .tip: return nil
+            case .hidden: return nil
+        }
+    }
+}
+
+

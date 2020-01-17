@@ -148,12 +148,14 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         tempVC.postId = self.posts[indexPath.row].objectId
         tempVC.mediaBrowserRef = mediaBrowser
         tempVC.captions = self.posts[indexPath.row].captions
-        tempVC.view.layer.cornerRadius = 10.0
-        tempVC.view.layer.masksToBounds = true
-        fpc.set(contentViewController: tempVC)
-        DataModel.captionsVC = tempVC
-        fpc.isRemovalInteractionEnabled = true
-        mediaBrowser.present(fpc, animated: true, completion: nil)
+        if tempVC.captions.count > 0 {
+            tempVC.view.layer.cornerRadius = 10.0
+            tempVC.view.layer.masksToBounds = true
+            fpc.set(contentViewController: tempVC)
+            DataModel.captionsVC = tempVC
+            fpc.isRemovalInteractionEnabled = true
+            mediaBrowser.present(fpc, animated: true, completion: nil)
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

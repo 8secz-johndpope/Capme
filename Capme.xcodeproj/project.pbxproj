@@ -315,12 +315,12 @@
 		8C3EFE2823A867C400039B01 /* VC Classes */ = {
 			isa = PBXGroup;
 			children = (
+				8C14B9BC23A5B0B800C4FA58 /* MessagesVC.swift */,
 				8CF5243623A98EFF0039EBDC /* CreateAttributesVC.swift */,
 				8CF5243C23A98FD60039EBDC /* CreatePostVC.swift */,
 				8C14B9B823A5A8BA00C4FA58 /* DiscoverVC.swift */,
 				8C3333A223BE77DF008ED79B /* MessageKitVC.swift */,
 				8C3333B023BE8C4F008ED79B /* MessageKit */,
-				8C14B9BC23A5B0B800C4FA58 /* MessagesVC.swift */,
 				8CF5244623ABEBB00039EBDC /* Create Post */,
 				8C14B9BA23A5ADA800C4FA58 /* ProfileVC.swift */,
 				8C3333A023BD442D008ED79B /* PostDetailsVC.swift */,

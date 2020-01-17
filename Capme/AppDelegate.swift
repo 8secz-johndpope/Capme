@@ -66,9 +66,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Image should be associated with the correct sender
     //*Change captionRequest UI for messaging
     //*Refactor captionRequest saving and querying for messaging
+    //*Receive Caption Requests when in the ChatVC and MessagesVC
+    //*Lower view in Profile
     
     /* IN PROGRESS */
-    // Receive Caption Requests when in the ChatVC and MessagesVC
+    // Show location in post on newsfeed
+    // Sender favorite should have a special icon
+    // FPC shifts up with every selection
+    // Fix fpc crash in profile old post details
     // Choose and implement an image viewer library
     // Support Images, videos, and audio
     // Show the new data associated with the didReceive push (new message (top), friend request item, NOT the favorite caption)
@@ -104,6 +109,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // Which image processing library should we use?
     // How to deliver exploitable images content?
     // Is using core data faster than querying from back4app?
+    
+    /* QUESTIONS FOR DEVS */
+    // 1) Should we support mulitple captions by the same user?
+    // 2) Is audio relevant in the messenger?
+    // 3)
     
     var window: UIWindow?
     let reachability = try! Reachability()

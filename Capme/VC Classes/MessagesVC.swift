@@ -261,10 +261,6 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         cell.usernameLabel.text = self.messagePreviews[indexPath.row].externalUser.username
         cell.selectionStyle = .none
         
-        print("first", self.messagePreviews[indexPath.row].isViewed)
-        print("second", self.messagePreviews[indexPath.row].sender == PFUser.current()?.objectId)
-        print("third", self.messagePreviews[indexPath.row].sender)
-        print("fourth")
         if self.messagePreviews[indexPath.row].isViewed || self.messagePreviews[indexPath.row].sender == PFUser.current()?.objectId {
             cell.profilePicImageView.layer.borderWidth = 0.0
             cell.usernameLabel.font = UIFont.systemFont(ofSize: 17.0, weight: UIFont.Weight.medium)
@@ -467,14 +463,10 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             let messageRef = Message()
             let query = PFQuery(className: "Message")
             query.includeKey("author")
-            print("new caption request id", DataModel.newMessageId)
+            print("New caption request id:", DataModel.newMessageId)
             query.whereKey("post", equalTo: PFObject(withoutDataWithClassName: "Post", objectId: DataModel.newMessageId))
             query.includeKey("post")
             messageRef.getCaptionRequestFromId(query: query) { (message) in
-                for preview in self.messagePreviews {
-                    print("1", preview.username)
-                    print("2", preview.externalUser.username)
-                }
                 if let index = self.messagePreviews.firstIndex(where: { $0.externalUser.username == message.authorName }) {
                     let messagePreview = message.convertMessageToPreview()
                     self.messagePreviews[index] = messagePreview
