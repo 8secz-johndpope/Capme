@@ -31,7 +31,7 @@ Capme developers are all proficient in object oriented programming and mobile de
 Gabe Wilson - (Team Lead)<br/>
 *name* - (Machine Learning)<br/>
 *name* - (Full-Stack)<br/>
-*name* - (Backend)<br/>
+Sahya Nara - (Backend)<br/>
 *name* - (Front End)
 
 
