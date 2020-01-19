@@ -15,7 +15,7 @@ import FloatingPanel
 import WLEmptyState
 import SCLAlertView
 
-class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, WLEmptyStateDelegate, WLEmptyStateDataSource {
+class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, MediaBrowserViewControllerDelegate, MediaBrowserViewControllerDataSource, WLEmptyStateDelegate, WLEmptyStateDataSource, FloatingPanelControllerDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     @IBAction func postAction(_ sender: Any) {
@@ -94,8 +94,16 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.tableView.delegate = self
         self.tableView.dataSource = self
         let postRef = Post()
-        let query = PFQuery(className: "Post")
-        query.whereKey("recipients", contains: PFUser.current()?.objectId)
+        
+        var predicates: [NSPredicate] = []
+        predicates.append(NSPredicate(format: "recipients = %@", PFUser.current()!.objectId!))
+        predicates.append(NSPredicate(format: "sender = %@", PFUser.current()!))
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+        
+        let query = PFQuery(className: "Post", predicate: predicate)
+            
+        //let query = PFQuery(className: "Post")
+        //query.whereKey("recipients", contains: PFUser.current()?.objectId)
         query.includeKey("sender")
         postRef.getPosts(query: query) { (queriedPosts) in
             if queriedPosts.count == 0 {
@@ -105,6 +113,9 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             self.posts = postRef.sortByReleaseDate(postsToSort: queriedPosts)
             self.tableView.reloadData()
         }
+        
+        // Floating Panel
+        self.fpc.delegate = self
         
         DataModel.tabBarController = tabBarController!
         
@@ -242,6 +253,13 @@ extension DiscoverVC {
         cell.secondCaptionView.favoriteButtonOutlet.accessibilityLabel = "2"
         cell.thirdCaptionView.favoriteButtonOutlet.accessibilityLabel = "3"
         
+        if self.posts[indexPath.row].location == "" { // No location
+            cell.locationImageView.isHidden = true
+            cell.locationLabel.isHidden = true
+        } else {
+            cell.locationLabel.text = self.posts[indexPath.row].location
+        }
+        
         cell.firstCaptionView.showCaptionerAction = { [unowned self] in
             self.getSelectedUser(userId: self.posts[indexPath.row].captions[0].userId)
         }
@@ -278,12 +296,10 @@ extension DiscoverVC {
                     self.posts[indexPath.row].captions[2].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
                 }
                 
-                
                 self.saveFavorite(indexPathRow: indexPath.row, captionNumber: 0)
                 self.posts[indexPath.row].captions[0].becameFavorite(captions: currentPostCaptions, username: currentPostCaptions[0].username, captionText: currentPostCaptions[0].captionText, postId: self.posts[indexPath.row].objectId)
                 self.tableView.reloadData()
             } else {
-                print("should not see this")
                 self.unsaveFavorite(indexPathRow: indexPath.row, captionNumber: 0)
                 cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 self.posts[indexPath.row].captions[0].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[0].username, captionText: currentPostCaptions[0].captionText, postId: self.posts[indexPath.row].objectId)
@@ -356,6 +372,12 @@ extension DiscoverVC {
             cell.firstCaptionView.usernameButton.setTitle(caption.username, for: .normal)
             cell.firstCaptionView.captionLabel.text = caption.captionText
             
+            if let i = DataModel.friends.firstIndex(where: { $0.objectId == caption.userId }) { // Set profile pic image and shape
+                cell.firstCaptionView.profilePic.setImage(DataModel.friends[i].profilePic, for: .normal)
+                cell.firstCaptionView.profilePic.layer.cornerRadius = cell.firstCaptionView.profilePic.frame.height/2
+                cell.firstCaptionView.profilePic.clipsToBounds = true
+            }
+        
             if self.posts[indexPath.row].captions.count == 1 {
                 cell.secondCaptionView.isHidden = true
                 cell.thirdCaptionView.isHidden = true
@@ -371,6 +393,12 @@ extension DiscoverVC {
                 cell.secondCaptionView.isHidden = false
                 cell.thirdCaptionView.isHidden = true
             }
+            
+            if let i = DataModel.friends.firstIndex(where: { $0.objectId == caption.userId }) { // Set profile pic image and shape
+                cell.secondCaptionView.profilePic.setImage(DataModel.friends[i].profilePic, for: .normal)
+                cell.secondCaptionView.profilePic.layer.cornerRadius = cell.secondCaptionView.profilePic.frame.height/2
+                cell.secondCaptionView.profilePic.clipsToBounds = true
+            }
         }
         
         if self.posts[indexPath.row].captions.count > 2 {
@@ -380,6 +408,12 @@ extension DiscoverVC {
             cell.thirdCaptionView.captionLabel.text = caption.captionText
             cell.secondCaptionView.isHidden = false
             cell.thirdCaptionView.isHidden = false
+            
+            if let i = DataModel.friends.firstIndex(where: { $0.objectId == caption.userId }) { // Set profile pic image and shape
+                cell.thirdCaptionView.profilePic.setImage(DataModel.friends[i].profilePic, for: .normal)
+                cell.thirdCaptionView.profilePic.layer.cornerRadius = cell.thirdCaptionView.profilePic.frame.height/2
+                cell.thirdCaptionView.profilePic.clipsToBounds = true
+            }
         }
         
         if DataModel.favoritedPosts.keys.contains(self.posts[indexPath.row].objectId) {
@@ -410,5 +444,24 @@ extension DiscoverVC {
         
         let title = NSAttributedString(string: description, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1), NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         return title
+    }
+    
+    func floatingPanel(_ vc: FloatingPanelController, layoutFor newCollection: UITraitCollection) -> FloatingPanelLayout? {
+        return DiscoverFloatingPanelLayout()
+    }
+}
+
+class DiscoverFloatingPanelLayout: FloatingPanelLayout {
+    public var initialPosition: FloatingPanelPosition {
+        return .tip
+    }
+
+    public func insetFor(position: FloatingPanelPosition) -> CGFloat? {
+        switch position {
+            case .full: return 18.0
+            case .half: return 262.0
+            case .tip: return 100.0
+            case .hidden: return nil
+        }
     }
 }

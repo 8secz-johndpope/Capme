@@ -15,6 +15,8 @@ class DiscoverTableViewCell: UITableViewCell {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var usernameOutlet: UIButton!
     @IBOutlet weak var profilePicOutlet: UIButton!
+    @IBOutlet weak var locationLabel: UILabel!
+    @IBOutlet weak var locationImageView: UIImageView!
     
     @IBOutlet weak var firstCaptionView: CaptionView!
     @IBOutlet weak var secondCaptionView: CaptionView!
