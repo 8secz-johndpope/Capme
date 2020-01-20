@@ -73,8 +73,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     /* IN PROGRESS */
     
     /*Keep track of users likes*/
-    // Save an array in the Parse User class
-    //
+   //*DataModel.favoriteIds = [String]
+   // PFUser["favoriteCaptionIds"] = [String]
+   // NSUserDefaults = [String]
+   // Always use DataModel when updating the tableview
+   // Query PFUser when i also get the profile pic
+   // User NSUser defaults when a new one is added (also add to DataModel). Clear when query pfuser saved
+   
+   // In registration when querying current user fields get the favoriteCaptionIds array (into DataModel)
+   // If NSUserDefaults is not empty, save new ids. Clear NSUserDefaults
+   // When a new caption is favorited, save in DataModel and then in NSUserDefault
     
     // Sender favorite should have a special icon
     // FPC shifts up with every selection
@@ -124,20 +132,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     let reachability = try! Reachability()
     private var observer: NSObjectProtocol?
-    private var exitObserver: NSObjectProtocol?
     
     deinit {
         if let observer = observer {
             NotificationCenter.default.removeObserver(observer)
         }
-    }
-    
-    func applicationWillResignActive(_ application: UIApplication) {
-    
-    }
-    
-    func applicationWillTerminate(_ application: UIApplication) {
-        
     }
     
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -155,27 +154,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         observer = NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [unowned self] notification in
             // do whatever you want when the app is brought back to the foreground
             UIApplication.shared.applicationIconBadgeNumber = 0
-        }
-        
-        observer = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [unowned self] notification in
-            // do whatever you want when the app is brought back to the foreground
-            print("exiting...")
-            let content      = UNMutableNotificationContent()
-            content.userInfo = ["identifier" : "silentPush", "newFavorites" : ["fave1", "fave2"]]
-            content.title    = "Title"
-            content.
-            content.sound    = .default
-            
-            let date = Date().addingTimeInterval(3)
-            let calendar = Calendar.current
-
-            let trigger = UNCalendarNotificationTrigger(dateMatching: calendar.dateComponents([.hour, .year, .minute, .second], from: date), repeats: false)
-            let id = UUID().uuidString
-            let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-            
-            UNUserNotificationCenter.current().add(request) { error in
-                guard error == nil else { return }
-            }
         }
         
         registerForPushNotifications()
@@ -465,11 +443,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     DataModel.newMessageId = userInfo["objectId"] as! String
                     DataModel.pushId = identifier
                 }
-            } else if identifier == "silentPush" {
-                let test = PFObject(className: "Test")
-                test.saveInBackground { (success, error) in
-                    print("Success: Saved test object")
-                }
             }
         }
 
@@ -488,9 +461,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             if identifier == "captionRequest" {
                 let nav = window?.rootViewController as! UINavigationController
                 DataModel.pushId = identifier
-            } else if identifier == "silentPush" {
-                
-                
             }
         }
         

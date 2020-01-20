@@ -14,12 +14,14 @@ struct DataModel {
     static var profilePic = UIImage()
     
     
-    /* Users Network (Profile) */
+    /* User's Network (Profile) */
     static var users = [User]()
     static var friends = [User]()
     static var receivedRequests = [User]()
     static var sentRequests = [User]()
     static var currentUser = User()
+    
+    static var favoriteCaptions = [String: String]() // ["postId" : "username"]
     
     static var requestsVC: RequestsVC?
     static var captionsVC = CaptionsVC()

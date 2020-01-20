@@ -227,7 +227,10 @@ extension DiscoverVC {
         
         // TODO add logic to determine if sending a push is really necessary (time elapsed and favorite still is true)
         // Don't send a push if the user has recieved a ton recently
-        print("favorited Caption ID!")
+        print("Data to pass: \(self.posts[indexPathRow].captions[captionNumber].userId) \(self.posts[indexPathRow].captions[captionNumber].captionText)")
+        
+        Cache().addFavorite(postId: self.posts[indexPathRow].objectId, userId: self.posts[indexPathRow].captions[captionNumber].userId, captionText: self.posts[indexPathRow].captions[captionNumber].captionText)
+        
         PFCloud.callFunction(inBackground: "pushToUser", withParameters: ["recipientIds": [self.posts[indexPathRow].captions[captionNumber].userId], "title": "", "message": "\(PFUser.current()!.username!) favorited your caption", "identifier" : "favoritedCaption", "objectId" : self.posts[indexPathRow].objectId]) {
             (response, error) in
             if error == nil {
@@ -241,6 +244,8 @@ extension DiscoverVC {
     func unsaveFavorite(indexPathRow: Int, captionNumber: Int) {
         DataModel.favoritedPosts.removeValue(forKey: self.posts[indexPathRow].objectId)
         print("removed", DataModel.favoritedPosts)
+        
+        Cache().removeFavorite(postId: self.posts[indexPathRow].objectId)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -417,11 +422,11 @@ extension DiscoverVC {
         }
         
         if DataModel.favoritedPosts.keys.contains(self.posts[indexPath.row].objectId) {
-            if self.posts[indexPath.row].captions[0].username + "*" + self.posts[indexPath.row].captions[0].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]  {
+            if self.posts[indexPath.row].captions.count > 0 && self.posts[indexPath.row].captions[0].userId + "*" + self.posts[indexPath.row].captions[0].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]  {
                 cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
-            } else if self.posts[indexPath.row].captions[1].username + "*" + self.posts[indexPath.row].captions[1].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]   {
+            } else if self.posts[indexPath.row].captions.count > 1 && self.posts[indexPath.row].captions[1].userId + "*" + self.posts[indexPath.row].captions[1].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId] {
                 cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
-            } else if self.posts[indexPath.row].captions[2].username + "*" + self.posts[indexPath.row].captions[2].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId]   {
+            } else if self.posts[indexPath.row].captions.count > 2 && self.posts[indexPath.row].captions[2].userId + "*" + self.posts[indexPath.row].captions[2].captionText == DataModel.favoritedPosts[self.posts[indexPath.row].objectId] {
                 cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
             }
             self.showFavorites(cell: cell)

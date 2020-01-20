@@ -75,14 +75,15 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let vc = storyboard.instantiateViewController(withIdentifier: "TabBarController") as! UITabBarController
             vc.modalPresentationStyle = .fullScreen
-            self.present(vc,
-             animated: false)
+            self.present(vc, animated: false)
             if let image = PFUser.current()!["profilePic"] as? PFFileObject {
                 image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                     if error == nil  {
                         if let finalimage = UIImage(data: imageData!) {
                             DataModel.profilePic = finalimage
                             DataModel.currentUser = User(user: PFUser.current()!, image: finalimage)
+                            DataModel.favoritedPosts = Cache().getFavoritePosts()
+                            print(DataModel.favoritedPosts, "these are the favorite posts")
                         }
                     }
                 }
@@ -165,7 +166,7 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                     if let myError = error{
                         print("Error saving parse installation \(myError.localizedDescription)")
                     }else{
-                        print("Uknown error")
+                        print("Unknown error")
                     }
                 }
             }
@@ -186,6 +187,8 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                             if let finalimage = UIImage(data: imageData!) {
                                 DataModel.profilePic = finalimage
                                 DataModel.currentUser = User(user: user!, image: finalimage)
+                                DataModel.favoritedPosts = Cache().getFavoritePosts()
+                                print(DataModel.favoritedPosts, "these are the favorite posts")
                             }
                         }
                     }
