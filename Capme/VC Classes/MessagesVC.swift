@@ -47,7 +47,7 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         newCaption.username = PFUser.current()!.username!
         newCaption.userId = PFUser.current()!.objectId!
         newCaption.favoritesCount = 0
-        newCaption.isCurrentUserFavorite = false
+        newCaption.isSenderFavorite = false
         self.selectedPost.saveNewCaption(caption: newCaption.convertToJSON())
         self.lowerView.captionTextView.text = ""
         self.lowerView.captionTextView.resignFirstResponder()

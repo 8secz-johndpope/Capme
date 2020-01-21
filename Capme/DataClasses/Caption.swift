@@ -18,11 +18,21 @@ class Caption: Codable {
     var captionText = String()
     var creationDate = String()
     var favoritesCount = Int()
-    var isCurrentUserFavorite = Bool()
+    var isSenderFavorite = Bool()
     
     func convertToJSON() -> String {
         print(self.convertToString!)
         return self.convertToString!
+    }
+    
+    func becameSenderFavorite(captions: inout [Caption]) {
+        // Unfavorites all captions then saves selected as favorite
+        for caption in captions {
+            caption.isSenderFavorite = false
+            if caption === captions.last {
+                self.isSenderFavorite = true
+            }
+        }
     }
     
     func becameFavorite(captions: [Caption], username: String, captionText: String, postId: String) {

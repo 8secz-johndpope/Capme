@@ -69,22 +69,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Receive Caption Requests when in the ChatVC and MessagesVC
     //*Lower view in Profile
     //*Show location in post on newsfeed
+    //*Sender favorite should have a special icon
     
     /* IN PROGRESS */
-    
-    /*Keep track of users likes*/
-   //*DataModel.favoriteIds = [String]
-   // PFUser["favoriteCaptionIds"] = [String]
-   // NSUserDefaults = [String]
-   // Always use DataModel when updating the tableview
-   // Query PFUser when i also get the profile pic
-   // User NSUser defaults when a new one is added (also add to DataModel). Clear when query pfuser saved
-   
-   // In registration when querying current user fields get the favoriteCaptionIds array (into DataModel)
-   // If NSUserDefaults is not empty, save new ids. Clear NSUserDefaults
-   // When a new caption is favorited, save in DataModel and then in NSUserDefault
-    
-    // Sender favorite should have a special icon
+    // Add separator to horizontal images
+    // Add Capme Logo at the top of the newsfeed
+    // Have CaptionVC (Newsfeed details floating panel show data like it is seen in the newsfeed)
+    // Captioner username selection should show profile
+    // Test 3 captions on one post
     // FPC shifts up with every selection
     // Fix fpc crash in profile old post details
     // Choose and implement an image viewer library
@@ -465,7 +457,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         if (application.applicationState == .inactive) {
-            // App was in closed state
             
         } else {
         

@@ -169,15 +169,39 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
+    func getHeight(indexPath: Int, fromHeightMethod: Bool) -> CGFloat {
+        let screenSize = UIScreen.main.bounds
+        let screenWidth = screenSize.width
+        let headerHeight: CGFloat = 60.0
+        let imageHeight = self.posts[indexPath].images[0].size.height / ((self.posts[indexPath].images[0].size.width / screenWidth))
+        let exceedsMaxHeight = self.posts[indexPath].images[0].size.height / ((self.posts[indexPath].images[0].size.width / screenWidth)) > 427
+        var separatorHeight: CGFloat  = 0.0
+        if fromHeightMethod { separatorHeight = 6.0 }
+        print(imageHeight)
+        if exceedsMaxHeight {
+            return headerHeight + 427.0 + separatorHeight
+        } else {
+            return  headerHeight + imageHeight + separatorHeight
+        }
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        print(self.posts[indexPath.row].images[0].size.height, "this is the image height")
+        
+        
+        // Get shrink factor
+        // Return the shrunken height
+        // Try height of the upper view + image (without captions)
+        // Add captions at the bottom
+        let heightWithoutCaptions = getHeight(indexPath: indexPath.row, fromHeightMethod: true)
         if self.posts[indexPath.row].captions.count == 0 {
-            return 294.0
+            return heightWithoutCaptions
         } else if self.posts[indexPath.row].captions.count == 1 {
-            return 347.0
+            return heightWithoutCaptions + 53.0
         } else if self.posts[indexPath.row].captions.count == 2 {
-            return 401.0
+            return heightWithoutCaptions + 53.0 + 54.0
         } else if self.posts[indexPath.row].captions.count >= 3 {
-            return 454.0
+            return heightWithoutCaptions + 53.0 + 54.0 + 53.0
         }
         return 0.0
     }
@@ -246,7 +270,7 @@ extension DiscoverVC {
             if error == nil {
                 print("Success: Pushed the notification for favoritedCaption")
             } else {
-                print(error?.localizedDescription, "Cloud Code Push Error")
+                print(error!.localizedDescription, "Cloud Code Push Error")
             }
         }
     }
@@ -264,6 +288,12 @@ extension DiscoverVC {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! DiscoverTableViewCell
         cell.mainImageView.image = self.posts[indexPath.row].images[0]
+        
+        let screenSize = UIScreen.main.bounds
+        let screenWidth = screenSize.width
+        cell.mainImageView.frame = CGRect(x: cell.mainImageView.frame.minX, y: cell.mainImageView.frame.minY, width: screenWidth, height:  self.getHeight(indexPath: indexPath.row, fromHeightMethod: false))
+        // set the separator below - Continue here...
+        
         cell.usernameOutlet.setTitle(self.posts[indexPath.row].sender.username, for: .normal)
         cell.profilePicOutlet.setImage(self.posts[indexPath.row].sender.profilePic, for: .normal)
         cell.dateLabel.text = self.posts[indexPath.row].releaseDateDict[self.posts[indexPath.row].releaseDateDict.keys.first!]!.timeAgo()
@@ -303,13 +333,18 @@ extension DiscoverVC {
         cell.firstCaptionView.favoriteAction = { [unowned self] in
             if cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "unfilledStar")) {
                 
-                cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                if self.posts[indexPath.row].sender.objectId == PFUser.current()?.objectId {
+                    self.posts[indexPath.row].captions[0].becameSenderFavorite(captions: &self.posts[indexPath.row].captions)
+                    cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "crown"), for: .normal)
+                } else {
+                    cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                }
+                
                 self.showFavorites(cell: cell)
-
-                if cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                if cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) || cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "crown")) {
                     cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                     self.posts[indexPath.row].captions[1].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[1].username, captionText: currentPostCaptions[1].captionText, postId: self.posts[indexPath.row].objectId)
-                } else if cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                } else if cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) || cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "crown")) {
                     cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                     self.posts[indexPath.row].captions[2].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
                 }
@@ -328,13 +363,18 @@ extension DiscoverVC {
         cell.secondCaptionView.favoriteAction = { [unowned self] in
             if cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "unfilledStar")) {
                 
-                cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                if self.posts[indexPath.row].sender.objectId == PFUser.current()?.objectId {
+                    self.posts[indexPath.row].captions[1].becameSenderFavorite(captions: &self.posts[indexPath.row].captions)
+                    cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "crown"), for: .normal)
+                } else {
+                    cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                }
                 self.showFavorites(cell: cell)
                 
-                if cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                if cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) || cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "crown")) {
                     cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                     self.posts[indexPath.row].captions[0].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[0].username, captionText: currentPostCaptions[0].captionText, postId: self.posts[indexPath.row].objectId)
-                } else if cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                } else if cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) || cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "crown")) {
                     cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                     self.posts[indexPath.row].captions[2].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[2].username, captionText: currentPostCaptions[2].captionText, postId: self.posts[indexPath.row].objectId)
                 }
@@ -353,13 +393,18 @@ extension DiscoverVC {
         cell.thirdCaptionView.favoriteAction = { [unowned self] in
             if cell.thirdCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "unfilledStar")) {
                 
-                cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                if self.posts[indexPath.row].sender.objectId == PFUser.current()?.objectId {
+                    self.posts[indexPath.row].captions[2].becameSenderFavorite(captions: &self.posts[indexPath.row].captions)
+                    cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "crown"), for: .normal)
+                } else {
+                    cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                }
                 self.showFavorites(cell: cell)
                 
-                if cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                if cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) || cell.firstCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "crown")) {
                     cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                     self.posts[indexPath.row].captions[0].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[0].username, captionText: currentPostCaptions[0].captionText, postId: self.posts[indexPath.row].objectId)
-                } else if cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) {
+                } else if cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "filledStar")) || cell.secondCaptionView.favoriteButtonOutlet.currentImage!.isEqual(UIImage(named: "crown")) {
                     cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                     self.posts[indexPath.row].captions[1].unFavorite(captions: currentPostCaptions, username: currentPostCaptions[1].username, captionText: currentPostCaptions[1].captionText, postId: self.posts[indexPath.row].objectId)
                 }
@@ -437,19 +482,29 @@ extension DiscoverVC {
         if let favoritePosts = DataModel.currentUser.favoritePosts {
             if favoritePosts.keys.contains(self.posts[indexPath.row].objectId) {
                 if self.posts[indexPath.row].captions.count > 0 && self.posts[indexPath.row].captions[0].userId + "*" + self.posts[indexPath.row].captions[0].captionText == favoritePosts[self.posts[indexPath.row].objectId]  {
-                    cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                    if self.posts[indexPath.row].captions[0].isSenderFavorite {
+                        cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "crown"), for: .normal)
+                    } else {
+                        cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                    }
                 } else if self.posts[indexPath.row].captions.count > 1 && self.posts[indexPath.row].captions[1].userId + "*" + self.posts[indexPath.row].captions[1].captionText == favoritePosts[self.posts[indexPath.row].objectId] {
-                    cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                    if self.posts[indexPath.row].captions[1].isSenderFavorite {
+                        cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "crown"), for: .normal)
+                    } else {
+                        cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                    }
                 } else if self.posts[indexPath.row].captions.count > 2 && self.posts[indexPath.row].captions[2].userId + "*" + self.posts[indexPath.row].captions[2].captionText == favoritePosts[self.posts[indexPath.row].objectId] {
-                    cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                    if self.posts[indexPath.row].captions[2].isSenderFavorite {
+                        cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "crown"), for: .normal)
+                    } else {
+                        cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "filledStar"), for: .normal)
+                    }
                 }
-                print(self.posts[indexPath.row].objectId, "should not be:", "cOMcjHH1JA")
                 self.showFavorites(cell: cell)
             } else {
                 cell.firstCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 cell.secondCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
                 cell.thirdCaptionView.favoriteButtonOutlet.setImage(UIImage(named: "unfilledStar"), for: .normal)
-                
                 cell.firstCaptionView.favoritesCountLabel.isHidden = true
                 cell.secondCaptionView.favoritesCountLabel.isHidden = true
                 cell.thirdCaptionView.favoritesCountLabel.isHidden = true
