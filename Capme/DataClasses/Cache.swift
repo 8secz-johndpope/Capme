@@ -10,6 +10,12 @@ import Foundation
 
 class Cache {
     
+    func clearFavorites() {
+        let defaults = UserDefaults.standard
+        let result = [String : String]()
+        defaults.setValue(result, forKey: "favoritedPostIds")
+    }
+    
     func getFavoritePosts() -> [String : String] {
         let defaults = UserDefaults.standard
         var result = [String : String]()
@@ -35,7 +41,7 @@ class Cache {
     func removeFavorite(postId: String) {
         let defaults = UserDefaults.standard
         if var favoritePostIdDict = defaults.value(forKey: "favoritedPostIds") as? [String : String] {
-            favoritePostIdDict.removeValue(forKey: postId)
+            favoritePostIdDict[postId] = "removed"
             defaults.setValue(favoritePostIdDict, forKey: "favoritedPostIds")
         }
         printFavoritedPostIds()

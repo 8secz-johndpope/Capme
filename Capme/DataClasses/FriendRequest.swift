@@ -138,14 +138,12 @@ class FriendRequest {
                 for object in objects! {
                     let request = FriendRequest()
                     request.objectId = object.objectId!
-                    print("Got request with this id", request.objectId)
                     request.status = (object["status"] as! String)
                     request.updatedAt = object.updatedAt!
                     if let sender = object["sender"] as? PFUser {
                         if sender.objectId == PFUser.current()!.objectId! {
                             request.sender = User(user: PFUser.current()!, image: DataModel.profilePic)
                             if let recipient = object["recipient"] as? PFUser {
-                                print(recipient)
                                 if let image = recipient.object(forKey: "profilePic") as? PFFileObject {
                                     image.getDataInBackground { (imageData:Data?, error:Error?) -> Void in
                                         if error == nil  {
@@ -163,7 +161,6 @@ class FriendRequest {
                                     request.receiver = User(user: recipient, image: UIImage(named: "defaultProfilePic")!)
                                     self.requests.append(request)
                                     if self.requests.count == objects?.count {
-                                        print(self.requests.count)
                                         completion(self.sortRequests(requestsToSort: self.requests))
                                     }
                                 }

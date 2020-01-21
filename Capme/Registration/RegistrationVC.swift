@@ -82,8 +82,11 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                         if let finalimage = UIImage(data: imageData!) {
                             DataModel.profilePic = finalimage
                             DataModel.currentUser = User(user: PFUser.current()!, image: finalimage)
-                            DataModel.favoritedPosts = Cache().getFavoritePosts()
-                            print(DataModel.favoritedPosts, "these are the favorite posts")
+                            if let favoritePosts = PFUser.current()!["favoritePosts"] as? String {
+                                DataModel.currentUser.favoritePosts = DataModel.currentUser.convertPostsJsonToDict(posts: favoritePosts)
+                                print("These are the favorite posts: \(DataModel.currentUser.favoritePosts)")
+                            }
+                            DataModel.currentUser.saveNewFavoritePosts()
                         }
                     }
                 }
@@ -187,8 +190,12 @@ class RegistrationVC: UIViewController, UITextFieldDelegate {
                             if let finalimage = UIImage(data: imageData!) {
                                 DataModel.profilePic = finalimage
                                 DataModel.currentUser = User(user: user!, image: finalimage)
-                                DataModel.favoritedPosts = Cache().getFavoritePosts()
-                                print(DataModel.favoritedPosts, "these are the favorite posts")
+                                if let favoritePosts = user!["favoritePosts"] as? String {
+                                    DataModel.currentUser.favoritePosts = DataModel.currentUser.convertPostsJsonToDict(posts: favoritePosts)
+                                    print("These are the favorite posts: \(DataModel.currentUser.favoritePosts)")
+                                }
+                                DataModel.currentUser.saveNewFavoritePosts()
+                                
                             }
                         }
                     }

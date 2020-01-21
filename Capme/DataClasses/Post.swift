@@ -236,7 +236,6 @@ class Post {
         for caption in captions {
             do {
                 let convertedCaption = try jsonDecoder.decode(Caption.self, from: caption.data(using: .utf8)!)
-                print(convertedCaption, "Convert")
                 result.append(convertedCaption)
             } catch {
                 print("could not convert the caption")

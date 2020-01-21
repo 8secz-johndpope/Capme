@@ -36,6 +36,8 @@ class User: Hashable {
     
     var users = [User]()
     
+    var favoritePosts: [String : String]?
+    
     // For friend selection
     var isSelected = false
     
@@ -61,7 +63,6 @@ class User: Hashable {
         if let image = user["profilePic"] as? PFFileObject {
             image.getDataInBackground {
                 (imageData:Data?, error:Error?) -> Void in
-                print("fetching the user1")
                 if error == nil  {
                     if let finalimage = UIImage(data: imageData!) {
                         self.profilePic = finalimage
@@ -70,7 +71,6 @@ class User: Hashable {
                 }
             }
         } else {
-            print("fetching the user2")
             self.profilePic = UIImage(named: "defaultProfilePic")
             completion(self)
         }
@@ -83,7 +83,6 @@ class User: Hashable {
         if let image = user["profilePic"] as? PFFileObject {
             image.getDataInBackground {
                 (imageData:Data?, error:Error?) -> Void in
-                print("fetching the user1")
                 if error == nil  {
                     if let finalimage = UIImage(data: imageData!) {
                         self.profilePic = finalimage
@@ -92,7 +91,6 @@ class User: Hashable {
                 }
             }
         } else {
-            print("fetching the user2")
             self.profilePic = UIImage(named: "defaultProfilePic")
             completion(self)
         }
@@ -164,6 +162,62 @@ class User: Hashable {
             return DataModel.friends[i].username
         }
         return ""
+    }
+    
+    func convertPostsJsonToDict(posts: String) -> [String : String] {
+        let result = [String : String]()
+        if let dict = posts.data(using: .utf8) {
+            do {
+                return try JSONSerialization.jsonObject(with: dict, options: []) as! [String: String]
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+        return result
+    }
+    
+    func saveNewFavoritePosts() {
+        let cacheFavoritePosts = Cache().getFavoritePosts()
+        if cacheFavoritePosts.count > 0 {
+            
+            print("Current Cache State:", cacheFavoritePosts)
+            
+            if var currentFavoritePostsDict = self.favoritePosts { // User has some favorite posts
+                
+                for favorite in cacheFavoritePosts {
+                    if favorite.value != "removed" {
+                        currentFavoritePostsDict[favorite.key] = favorite.value
+                    } else {
+                        currentFavoritePostsDict.removeValue(forKey: favorite.key)
+                    }
+                }
+                 
+                DataModel.currentUser.favoritePosts = currentFavoritePostsDict
+                
+                print("State used for the newsfeeed \(currentFavoritePostsDict)")
+                
+                if let user = pfuserRef {
+                    user["favoritePosts"] = currentFavoritePostsDict.convertToString
+                    user.saveInBackground { (success, error) in
+                        print("Success: Updated the current user's favorite posts from the cache")
+                        Cache().clearFavorites()
+                    }
+                }
+                
+            } else { // No favorite posts from Parse
+                DataModel.favoritedPosts = cacheFavoritePosts
+                let favoritePostsJson = favoritePosts.convertToString
+                if let user = pfuserRef {
+                    user["favoritePosts"] = favoritePostsJson
+                    user.saveInBackground { (success, error) in
+                        print("Success: Updated the current user's favorite posts from the cache")
+                        Cache().clearFavorites()
+                    }
+                }
+            }
+        } else {
+            print("No New Favorites")
+        }
     }
     
 
