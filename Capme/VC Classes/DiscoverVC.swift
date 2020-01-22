@@ -82,6 +82,11 @@ class DiscoverVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     func setupUI() {
         
+        // Title
+        self.navigationController?.navigationBar.titleTextAttributes =
+            [NSAttributedString.Key.foregroundColor: UIColor.white,
+         NSAttributedString.Key.font: UIFont(name: "Palatino-Bold", size: 24)!]
+        
         // Refresh Controller
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor(#colorLiteral(red: 0, green: 0.2, blue: 0.4, alpha: 1))]
         refreshControl.attributedTitle = NSAttributedString(string: "Searching for new posts...", attributes: attributes)
@@ -291,7 +296,10 @@ extension DiscoverVC {
         
         let screenSize = UIScreen.main.bounds
         let screenWidth = screenSize.width
-        cell.mainImageView.frame = CGRect(x: cell.mainImageView.frame.minX, y: cell.mainImageView.frame.minY, width: screenWidth, height:  self.getHeight(indexPath: indexPath.row, fromHeightMethod: false))
+        let imageHeight = self.getHeight(indexPath: indexPath.row, fromHeightMethod: false)
+        cell.mainImageView.frame = CGRect(x: cell.mainImageView.frame.minX, y: cell.mainImageView.frame.minY, width: screenWidth, height:  imageHeight)
+        
+        cell.imageViewSeparator.frame = CGRect(x: cell.mainImageView.frame.minX, y: cell.frame.height - 6.0, width: screenWidth, height:  6.0)
         // set the separator below - Continue here...
         
         cell.usernameOutlet.setTitle(self.posts[indexPath.row].sender.username, for: .normal)
@@ -439,6 +447,10 @@ extension DiscoverVC {
                 cell.firstCaptionView.profilePic.setImage(DataModel.friends[i].profilePic, for: .normal)
                 cell.firstCaptionView.profilePic.layer.cornerRadius = cell.firstCaptionView.profilePic.frame.height/2
                 cell.firstCaptionView.profilePic.clipsToBounds = true
+            } else if caption.userId == PFUser.current()!.objectId! {
+                cell.firstCaptionView.profilePic.setImage(DataModel.profilePic, for: .normal)
+                cell.firstCaptionView.profilePic.layer.cornerRadius = cell.firstCaptionView.profilePic.frame.height/2
+                cell.firstCaptionView.profilePic.clipsToBounds = true
             }
         
             if self.posts[indexPath.row].captions.count == 1 {
@@ -461,6 +473,10 @@ extension DiscoverVC {
                 cell.secondCaptionView.profilePic.setImage(DataModel.friends[i].profilePic, for: .normal)
                 cell.secondCaptionView.profilePic.layer.cornerRadius = cell.secondCaptionView.profilePic.frame.height/2
                 cell.secondCaptionView.profilePic.clipsToBounds = true
+            } else if caption.userId == PFUser.current()!.objectId! {
+                cell.secondCaptionView.profilePic.setImage(DataModel.profilePic, for: .normal)
+                cell.secondCaptionView.profilePic.layer.cornerRadius = cell.secondCaptionView.profilePic.frame.height/2
+                cell.secondCaptionView.profilePic.clipsToBounds = true
             }
         }
         
@@ -474,6 +490,10 @@ extension DiscoverVC {
             
             if let i = DataModel.friends.firstIndex(where: { $0.objectId == caption.userId }) { // Set profile pic image and shape
                 cell.thirdCaptionView.profilePic.setImage(DataModel.friends[i].profilePic, for: .normal)
+                cell.thirdCaptionView.profilePic.layer.cornerRadius = cell.thirdCaptionView.profilePic.frame.height/2
+                cell.thirdCaptionView.profilePic.clipsToBounds = true
+            } else if caption.userId == PFUser.current()!.objectId! {
+                cell.thirdCaptionView.profilePic.setImage(DataModel.profilePic, for: .normal)
                 cell.thirdCaptionView.profilePic.layer.cornerRadius = cell.thirdCaptionView.profilePic.frame.height/2
                 cell.thirdCaptionView.profilePic.clipsToBounds = true
             }

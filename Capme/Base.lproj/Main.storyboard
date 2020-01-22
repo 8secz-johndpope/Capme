@@ -211,7 +211,7 @@
             </objects>
             <point key="canvasLocation" x="1688.8" y="-1356.0719640179911"/>
         </scene>
-        <!--DiscoverVC-->
+        <!--CAPME-->
         <scene sceneID="anc-i5-AsP">
             <objects>
                 <viewController storyboardIdentifier="discoverVC" id="cfB-dr-iwY" customClass="DiscoverVC" customModule="Capme" customModuleProvider="target" sceneMemberID="viewController">
@@ -488,6 +488,7 @@
                                         <connections>
                                             <outlet property="dateLabel" destination="n8g-Ui-BZ8" id="0Gt-bB-3S9"/>
                                             <outlet property="firstCaptionView" destination="QcL-4L-4by" id="Tjt-4E-TNB"/>
+                                            <outlet property="imageViewSeparator" destination="sKo-US-mZL" id="V9n-DD-QUC"/>
                                             <outlet property="locationImageView" destination="2ga-lK-2fR" id="xhr-uY-im5"/>
                                             <outlet property="locationLabel" destination="qRk-D5-7vD" id="QpC-vp-y2i"/>
                                             <outlet property="mainImageView" destination="MgJ-yz-u51" id="fme-ug-ssV"/>
@@ -503,7 +504,7 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="WK7-td-HJR"/>
                     </view>
-                    <navigationItem key="navigationItem" id="JaZ-EE-n4Z">
+                    <navigationItem key="navigationItem" title="CAPME" id="JaZ-EE-n4Z">
                         <barButtonItem key="rightBarButtonItem" systemItem="compose" id="Nke-HE-e4c">
                             <color key="tintColor" red="0.98823529409999999" green="0.81960784310000001" blue="0.1647058824" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <connections>
@@ -674,7 +675,7 @@
                         <viewLayoutGuide key="safeArea" id="YFe-Hr-Q7J"/>
                     </view>
                     <navigationItem key="navigationItem" id="4w0-Py-ZZk">
-                        <barButtonItem key="rightBarButtonItem" systemItem="compose" id="Mix-Na-470">
+                        <barButtonItem key="rightBarButtonItem" image="newMessage" id="Mix-Na-470">
                             <color key="tintColor" red="0.98823529409999999" green="0.81960784310000001" blue="0.1647058824" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <connections>
                                 <action selector="addMessageAction:" destination="uH9-z6-gru" id="ejL-Ib-RUY"/>
@@ -2374,6 +2375,7 @@
         <image name="locationMarker" width="30" height="30"/>
         <image name="messaging" width="25" height="25"/>
         <image name="navyBlueGradient" width="300" height="250"/>
+        <image name="newMessage" width="25" height="25"/>
         <image name="noPosts" width="48" height="48"/>
         <image name="registrationBackground" width="540" height="960"/>
         <image name="sendInactive" width="30" height="30"/>

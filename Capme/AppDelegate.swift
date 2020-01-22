@@ -70,14 +70,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     //*Lower view in Profile
     //*Show location in post on newsfeed
     //*Sender favorite should have a special icon
+    //*Add separator to horizontal images
+    //*Add Capme Logo at the top of the newsfeed
     
     /* IN PROGRESS */
-    // Add separator to horizontal images
-    // Add Capme Logo at the top of the newsfeed
+    
+    /// Caption Creation Workflow (MessagesVC)
+    // Caption Request Border corners missing
+    // FPC shifts up with every selection
+    // Inspiration should hide at the same time as close button
+    // Image view selection should close the keyboard and hide the textfield (thus showing caption icon)
+    // Sender should be able to open his or her own caption request (show the description and make it editable)
+    // Caption Creation should notify (original sender)
+        // Caption creation should trigger a segue that shows the SuggestedCaptionsVC
+        // When the user goes back from the segue, he or she should see the new button described below
+        // Caption Request bottom view should have another icon that shows the captions the current user suggested
+        // Caption creator should have edit capabilities
+    
     // Have CaptionVC (Newsfeed details floating panel show data like it is seen in the newsfeed)
     // Captioner username selection should show profile
     // Test 3 captions on one post
-    // FPC shifts up with every selection
+    
     // Fix fpc crash in profile old post details
     // Choose and implement an image viewer library
     // Support Images, videos, and audio
