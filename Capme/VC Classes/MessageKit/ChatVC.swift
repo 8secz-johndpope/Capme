@@ -254,7 +254,10 @@ class ChatVC: MessagesViewController, MessagesDataSource, UIImagePickerControlle
             let cell = messagesCollectionView.dequeueReusableCell(MediaMessageCell.self, for: indexPath)
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             if message.isCaptionRequest {
-                cell.imageView.layer.borderWidth = 2.0
+                cell.imageView.backgroundColor = UIColor.clear
+                cell.imageView.layer.cornerRadius = 15.0
+                cell.imageView.layer.masksToBounds = true
+                cell.imageView.layer.borderWidth = 5.0
                 cell.imageView.layer.borderColor = UIColor.primaryColor.cgColor
             } else {
                 cell.imageView.layer.borderWidth = 0.0

@@ -283,11 +283,16 @@ class MessagesVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         return cell
     }
     
+    @objc func hideBottomView() {
+        print("should hide bottom view")
+    }
     
     func showCaptionRequest(captionRequest: Post) {
         self.selectedPost = captionRequest
         self.mediaBrowser = MediaBrowserViewController(dataSource: self)
-            
+        let mediaBrowserTap = UITapGestureRecognizer(target: self, action: #selector(MessagesVC.hideBottomView))
+        mediaBrowserTap.delegate = self
+        self.mediaBrowser.view.addGestureRecognizer(mediaBrowserTap)
         self.lowerView.descriptionTextView.text = self.selectedPost.description
         self.lowerView.descriptionTextView.isHidden = true
         

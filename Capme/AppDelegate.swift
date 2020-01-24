@@ -76,7 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     /* IN PROGRESS */
     
     /// Caption Creation Workflow (MessagesVC)
-    // Caption Request Border corners missing
+    //*Caption Request Border corners missing
     // FPC shifts up with every selection
     // Inspiration should hide at the same time as close button
     // Image view selection should close the keyboard and hide the textfield (thus showing caption icon)
